@@ -1,0 +1,87 @@
+\documentclass{article}
+
+\PassOptionsToPackage{dvipsnames,table}{xcolor}
+\usepackage[table]{xcolor}          % load once, up front, so no later option clash
+\usepackage{iclr2025_conference}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{caption}
+\captionsetup{labelfont=bf,skip=4pt}
+\usepackage[section]{placeins}
+\usepackage[T1]{fontenc}
+% newtx is what the C4 paper uses and what Overleaf has; this machine's TeX Live 2019 does
+% not ship it, so fall back to mathptmx (also Times-like, in every base install) rather than
+% editing the font stack away.
+\IfFileExists{newtxtext.sty}{\usepackage{newtxtext,newtxmath}}{\usepackage{mathptmx}}
+
+% Colour conventions carried over from the C4 paper so both read the same way.
+\definecolor{oursemph}{RGB}{0,90,181}      % our method
+\definecolor{failred}{RGB}{178,24,43}      % fails the operating requirement
+\definecolor{sabercyan}{HTML}{0B828D}      % accent for important prose claims
+\definecolor{newres}{RGB}{223,245,223}     % measured for this revision
+\definecolor{notmeasured}{RGB}{178,24,43}  % NOT measured
+\definecolor{finalres}{RGB}{250,222,236}   % headline row
+\newcommand{\important}[1]{\textit{\textcolor{sabercyan}{#1}}}
+
+\usepackage[breaklinks,colorlinks,linkcolor=failred,citecolor=oursemph,urlcolor=oursemph]{hyperref}
+\usepackage{url}
+
+\title{BasinMark: Watermarking Diffusion Language Models\\via Keyed Re-denoising Contrast}
+\author{Working draft --- baseline table}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Working draft. This document exists to typeset and check the baseline comparison while the
+experiments are still running; the prose is deliberately minimal. Every number is measured
+on one TITAN RTX unless a row says otherwise, and rows that have not been measured are
+marked \textcolor{notmeasured}{pending} rather than left blank or filled in from a paper.
+\end{abstract}
+
+\section{Baseline comparison}
+\label{sec:baselines}
+
+Table~\ref{tab:baselines} reports watermark detectability against the text quality
+actually paid for. The axis that matters is not the largest achievable $z$: an earlier
+revision of this work tuned an operating point to $z\approx5$ and only afterwards measured
+that it cost $4.8\times$ perplexity. Detection is therefore reported as the true positive
+rate at a controlled false positive rate, and quality as perplexity relative to a
+non-watermarked control produced under the same decoding regime.
+
+Two properties of the comparison are worth stating before the numbers.
+\important{First, each block of the table has its own non-watermarked control.} The three
+methods require different decoding regimes --- dgMARK uses block decoding with top-$k$
+sampling, KGW requires strict left-to-right decoding because its green list is seeded by
+the preceding token, and BasinMark operates post-hoc on drafts sampled at temperature
+$0.8$ over the full vocabulary --- so a single shared baseline would charge the cost of a
+decoding regime to whichever watermark happened to use it.
+\important{Second, detection cost is a column, not a footnote.} dgMARK and KGW detect by
+hashing token identities and need zero model forward passes; BasinMark's detector must run
+the diffusion model itself. Collapsing the comparison to detectability alone would hide
+the method's main structural disadvantage.
+
+\input{tables/baseline_table}
+
+\paragraph{Reading the table.}
+The strongest baseline, dgMARK with $3$-beam lookahead, reaches $0.86$ TPR at $1\%$ FPR
+for $1.23\times$ perplexity. BasinMark's best configuration inside a comparable quality
+budget reaches $0.10$, and its best configuration at any quality reaches $0.50$ while
+paying $2.49\times$. The gap is roughly $8\times$ in detectability at matched quality,
+which is far too large to attribute to hyperparameter search.
+
+The measured cause is capacity rather than tuning. Across all $36$ BasinMark
+configurations the median carrier position admits exactly \emph{one} token within the
+fluency budget, and the candidate slate never truncates, so a watermark defined on
+\emph{which tokens are present} has almost no freedom to spend. This also explains why
+moving the watermark to generation time made things worse rather than better: the schedule
+it forces --- all non-carrier positions, then all carrier positions --- costs $1.98\times$
+perplexity on its own, before any watermark is applied.
+
+\bibliographystyle{iclr2025_conference}
+\bibliography{main}
+
+\end{document}
