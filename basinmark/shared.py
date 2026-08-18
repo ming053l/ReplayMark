@@ -18,6 +18,7 @@ the magnitudes the signs are independent Rademacher -- the same exact sign-flip 
 Blocks are correlated through the shared patterns, but the conditional test never
 required independent magnitudes.
 """
+import hashlib, hmac
 import numpy as np, torch
 from .prng import stream, payload_bits
 from .carrier import signflip_pvalue
@@ -63,8 +64,18 @@ def shared_patterns(key, n, n_probes, carrier_rate, ctx_rate, n_patterns, n_abla
 class SharedMark:
     def __init__(self, model, key: bytes, n_probes=16, carrier_rate=0.30, ctx_rate=0.20,
                  tau=6.0, lam=8.0, commit_steps=4, n_patterns=8, n_ablations=3,
-                 pool_rate=None):
-        self.M, self.key = model, key
+                 pool_rate=None, nonce=None):
+        self.M = model
+        # Per-document key. Without it, deployment is one fixed key over many documents,
+        # so the relevant null is P_Y( . | K = k) for that one k -- and validity has to
+        # hold for the worst key, not on average over keys. A nonce makes every document
+        # an independent draw of the key, which is both easier to defend and strictly
+        # stronger. The nonce must be recoverable by the detector: derive it from
+        # material outside the watermarked span (here, the prompt prefix) or ship it.
+        self.nonce = nonce
+        self.key = key if nonce is None else hmac.new(
+            key, bytes(nonce) if isinstance(nonce, (bytes, bytearray)) else str(nonce).encode(),
+            hashlib.sha256).digest()
         self.n_probes, self.carrier_rate, self.ctx_rate = n_probes, carrier_rate, ctx_rate
         self.tau, self.lam, self.commit_steps = tau, lam, commit_steps
         self.n_patterns, self.n_ablations = n_patterns, n_ablations
@@ -131,13 +142,16 @@ class SharedMark:
         signs = payload_bits(self.key, self.n_probes, message)
         a = (signs[:, None] * grid).ravel()
         D = grid.mean(1)
+        r = signflip_pvalue(a)
         k = int((np.sign(D) == signs).sum())
         return dict(matches=k, n=self.n_probes, n_blocks=int(a.size),
                     n_forwards=self.n_patterns,
                     p_sign=float(binom.sf(k - 1, self.n_probes, 0.5)),
-                    p_value=signflip_pvalue(a),
-                    z=float(a.sum() / (np.sqrt((a ** 2).sum()) + 1e-12)),
-                    Delta=D.tolist())
+                    # the guaranteed p-value: exact enumeration when affordable,
+                    # otherwise Hoeffding's finite-sample bound -- never a Gaussian tail
+                    p_value=r["p_exact"] if r["p_exact"] is not None else r["p_bound"],
+                    p_mc=r["p_mc"], p_bound=r["p_bound"], p_exact=r["p_exact"],
+                    mc_floor=r["mc_floor"], z=r["z"], Delta=D.tolist())
 
     @torch.no_grad()
     def embed(self, ids, span, message=0):

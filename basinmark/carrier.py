@@ -148,34 +148,64 @@ class CarrierMark:
         return work
 
 
-def signflip_pvalue(a: np.ndarray):
-    """Exact conditional p-value for T = sum_j a_j, where a_j = s_j * Delta_j.
+def signflip_pvalue(a: np.ndarray, n_mc: int = 200_000, seed: int = 0):
+    """Randomization p-values for T = sum_j a_j, a_j = s_j * Delta_j.
 
-    Counting signs throws away the magnitude of each Delta_j. Exchangeability of
-    D_j^0/D_j^1 makes every a_j symmetric about 0 *independently*, so conditional on the
-    magnitudes |a_j| the null is a Rademacher mixture: enumerate all 2^M sign patterns
-    for an exact one-sided p-value. Same assumption as the sign test, strictly more power.
+    Exchangeability of the two arms of each block makes every a_j symmetric about 0
+    independently, so conditional on the magnitudes |a_j| the null is a Rademacher
+    mixture. Returns three numbers, and the caller must not confuse them:
+
+      p_exact  enumeration of all 2^M sign patterns. Only defined for M <= 20; None
+               otherwise. This is the only one that is literally exact.
+      p_mc     Monte-Carlo randomization estimate with the add-one correction,
+               (1 + #{null >= T}) / (1 + n_mc). Valid (conservative in expectation) for
+               any n_mc, but it CANNOT resolve below 1/(1+n_mc) -- reporting 1e-10 from
+               2e5 draws would be fabrication.
+      p_bound  exp(-z^2 / 2), z = T / sqrt(sum a_j^2). Hoeffding's inequality for
+               Rademacher sums: a rigorous finite-sample UPPER BOUND on the exact
+               randomization p-value, with no resolution floor and no distributional
+               assumption. Weaker than a Gaussian tail, and correct.
+
+    An earlier version returned scipy.stats.norm.sf(z) for M > 20 and the README called
+    it exact. It is neither exact nor conservative: measured false-positive rate was
+    0.145 at a nominal 0.10 over 200 unwatermarked draws (results/null.json).
     """
-    m = np.abs(a)
+    m = np.abs(a).astype(np.float64)
     M = len(m)
     T = float(a.sum())
+    ss = float((m ** 2).sum())
+    z = T / (np.sqrt(ss) + 1e-12)
+    p_bound = float(np.exp(-0.5 * z * z)) if T > 0 else 1.0
+
+    p_exact = None
     if M <= 20:
         signs = ((np.arange(1 << M)[:, None] >> np.arange(M)) & 1) * 2 - 1
-        return float((signs @ m >= T).mean())
-    from scipy.stats import norm
-    return float(norm.sf(T / (np.sqrt((m ** 2).sum()) + 1e-12)))
+        p_exact = float((signs @ m >= T).mean())
+
+    rng = np.random.default_rng(seed)
+    hits, done = 0, 0
+    while done < n_mc:                      # chunked so the sign matrix stays small
+        b = min(20_000, n_mc - done)
+        eps = rng.integers(0, 2, size=(b, M)).astype(np.float64) * 2 - 1
+        hits += int((eps @ m >= T).sum())
+        done += b
+    p_mc = (1.0 + hits) / (1.0 + n_mc)
+    return dict(p_exact=p_exact, p_mc=float(p_mc), p_bound=min(1.0, p_bound),
+                z=float(z), mc_floor=1.0 / (1.0 + n_mc))
 
 
 def _detect_full(self, ids, span, message=0):
     from scipy.stats import binom
     D, T, grid = self.deltas(ids, span, per_ablation=True)
     signs = payload_bits(self.key, self.n_probes, message)
-    a = (signs[:, None] * grid).ravel()               # M*R independent symmetric blocks
+    a = (signs[:, None] * grid).ravel()               # M*R blocks, signs independent
+    r = signflip_pvalue(a)
     k = int((np.sign(D) == signs).sum())
     return dict(matches=k, n=self.n_probes, n_blocks=int(a.size),
                 p_sign=float(binom.sf(k - 1, self.n_probes, 0.5)),
-                p_value=signflip_pvalue(a),           # the reported p-value
-                z=float(a.sum() / (np.sqrt((a ** 2).sum()) + 1e-12)),
+                p_value=r["p_exact"] if r["p_exact"] is not None else r["p_bound"],
+                p_mc=r["p_mc"], p_bound=r["p_bound"], p_exact=r["p_exact"],
+                mc_floor=r["mc_floor"], z=r["z"],
                 stat=float(a.sum()), Delta=D.tolist(), t=T.tolist())
 
 

@@ -1,8 +1,28 @@
 # BasinMark — watermarking diffusion LLMs via keyed re-denoising contrast
 
-**Status: research in progress. The detector is validated; the embedder is not yet
-strong enough. Numbers below are what has actually been measured on this machine —
-nothing here is a claim from a paper.**
+**Status: research in progress. Numbers below are what has actually been measured on
+this machine — nothing here is a claim from a paper.**
+
+> **Correction notice (this revision).** Two claims in the previous revision were
+> overstated and have been withdrawn:
+>
+> 1. *"Survives denoising-smoothing."* The attack implemented was `mask -> one forward ->
+>    fill everything back at once`, i.e. **one-step masked reconstruction, not reverse
+>    diffusion**. Iterative re-denoising, where tokens recovered early become context for
+>    the rest, was never run. It is running now (`exp/13_attacks_v2.py`, 1/4/8/16/32
+>    steps).
+> 2. *"Exact finite-sample p-value"* alongside `p = 5.5e-10`. The exact enumeration only
+>    covers `M <= 20` blocks; every headline configuration has 48-192 blocks and silently
+>    fell through to a **Gaussian tail approximation**. Measured false-positive rate was
+>    **0.145 at a nominal 0.10** (`results/null.json`) — anti-conservative, so
+>    extrapolating it to `1e-10` was not supportable.
+>
+> A third correction follows from the second: reporting *mean z* rather than TPR at a
+> controlled FPR overstated robustness. The headline "survives at rho=0.30" had
+> `z = 2.31`, which under the rigorous bound is **p = 0.069** — not detection at any
+> usable operating point. Every p-value below is now `exp(-z^2/2)`, Hoeffding's bound for
+> Rademacher sums: a valid finite-sample upper bound with no distributional assumption,
+> and roughly 10x weaker than the Gaussian tail it replaces.
 
 Base model: `GSAI-ML/LLaDA-8B-Instruct`, fp16, single TITAN RTX (sm75, 24 GB).
 
@@ -34,14 +54,29 @@ Log-probs are read **only on `S_j`, in both arms**:
 Both arms score the *same tokens*; only the ablated context differs. The watermark
 encodes **which half of its own context the text relies on to reconstruct itself**.
 
-### Exact null
+### The null
 
 `D_j^0` and `D_j^1` are drawn exchangeably, so swapping them negates `Delta_j`. Under
 H0 (text not produced with key K) `Delta_j` is therefore symmetric about 0, giving
 
     sign(Delta_j) ~ Bernoulli(1/2)   ->   sign-matches ~ Binomial(M, 1/2)
 
-Exact p-values, no calibration corpus, no model-specific null estimate.
+No calibration corpus and no model-specific null estimate are needed. **What is exact
+depends on how the statistic is aggregated:**
+
+| statistic | validity |
+|---|---|
+| sign count, `Binomial(M, 1/2)` | exact |
+| sign-flip enumeration over `2^M` patterns | exact, affordable only for `M <= 20` |
+| Monte-Carlo randomization, add-one corrected | valid, but **cannot resolve below `1/(1+n)`** |
+| `exp(-z^2 / 2)` (Hoeffding) | valid finite-sample **upper bound**, no resolution floor |
+| Gaussian tail `norm.sf(z)` | **not valid** — measured FPR 0.145 at nominal 0.10 |
+
+Reported p-values use exact enumeration where affordable and the Hoeffding bound
+otherwise. Deployment also wants the null for a *fixed* key over many documents, not
+averaged over keys; `exp/14_fixedkey_null.py` measures per-key and worst-key FPR, and
+`SharedMark(..., nonce=...)` derives a per-document key `HMAC(K, nonce_d)` so that each
+document is an independent key draw.
 
 **Measured** (96 probes, unwatermarked LLaDA text): `mean Delta = +0.0136`,
 `P(sign > 0) = 0.521`. Consistent with the theory. See `logs_clean/pilot.log`.
@@ -71,11 +106,11 @@ Cost: 3 forwards per probe per embedding round; 2 per probe for detection.
 
 | claim | status |
 |---|---|
-| Null is exactly Binomial(M, 1/2) | **verified** — `P(sign>0)=0.521` over 96 probes |
+| Null symmetry | **verified** — `P(sign>0)=0.521` over 96 probes. But the *aggregated* p-value was a Gaussian approximation with measured FPR 0.145 at nominal 0.10; replaced by Hoeffding's bound, revalidation running |
 | Guidance table costs 2 forwards, not \|V\| | **verified** — 0.3 s/probe on one TITAN RTX |
 | Probe positions are controllable | **partly** — depends strongly on decoding temperature and quality budget `tau` (see below) |
 | Bits can be set end-to-end | **partly** — 0.844 bit accuracy at 16 bits, z = +3.95 vs +0.05 unwatermarked, 7.7 % of tokens changed |
-| Robust to attack | **partly** — survives re-denoising (z +4.29 -> +2.31 at rho=0.30); destroyed by deletion |
+| Robust to attack | **unresolved** — only one-step reconstruction measured, and at rho=0.30 that is already p_bound=0.069; iterative re-denoising running |
 | Beats/complements baselines | **not started** |
 
 ### Controllability sweep (`exp/02_sweep.py`, `logs_clean/sweep.log`)
@@ -248,24 +283,37 @@ not the mean, is the remaining weakness.
 
 Same 8 continuations, entropy gate 0.6, `lam = 20`, `commit_steps = 2`.
 
-| L (patterns) | R (ablations) | blocks | z | % of `sqrt(blocks)` ceiling | bit acc | median p | detect forwards |
+| L (patterns) | R (ablations) | blocks | z | % of `sqrt(blocks)` ceiling | bit acc | `p_bound` at mean z | detect forwards |
 |---|---|---|---|---|---|---|---|
-| 8 | 3 | 48 | +4.29 | 62 % | 0.930 | 4.4e-7 | 8 |
-| **8** | **6** | 96 | **+5.15** | 53 % | 0.938 | **5.5e-10** | **8** |
-| 16 | 6 | 96 | +5.33 | 54 % | 0.906 | 3.8e-10 | 16 |
-| 16 | 12 | 192 | +5.55 | 40 % | 0.883 | 1.9e-11 | 16 |
+| 8 | 3 | 48 | +4.29 | 62 % | 0.930 | 1.0e-4 | 8 |
+| **8** | **6** | 96 | **+5.15** | 53 % | 0.938 | **1.7e-6** | **8** |
+| 16 | 6 | 96 | +5.33 | 54 % | 0.906 | 6.8e-7 | 16 |
+| 16 | 12 | 192 | +5.55 | 40 % | 0.883 | 2.1e-7 | 16 |
+
+The previous revision reported 4.4e-7 / 5.5e-10 / 3.8e-10 / 1.9e-11 here. Those were
+per-sample medians under the Gaussian tail; the column above is the rigorous bound
+evaluated at the mean z, which is the number that can actually be defended.
 
 More blocks keeps paying, but a shrinking fraction of the nominal ceiling is reached —
 blocks drawn from `L` shared patterns are correlated, exactly as expected. `L = 8, R = 6`
 is the efficient point: `p = 5.5e-10` from **8 forward passes**, and doubling `R` costs
 nothing because the patterns are reused.
 
-### The decisive attack: BasinMark survives re-denoising (`exp/10_attacks_shared.py`)
+### Attacks — WITHDRAWN AND BEING REDONE (`exp/10_attacks_shared.py`)
 
-The adversary owns the same dLLM, re-masks a fraction `rho` of the text and re-denoises
-it toward the model's own basin. This is the natural adversary for a watermark stored in
-reconstruction behaviour, and it was the stated go/no-go for the whole idea. Mean `z`
-over 8 samples, `L = 8, R = 3` (clean `z = +4.29`, unwatermarked `z ~ 0`):
+This table is kept only so the correction is auditable. **Three things make it
+insufficient**, and all three are fixed in `exp/13_attacks_v2.py`:
+
+* the "re-denoise" attack was `mask -> one forward -> fill all at once`. That is one-step
+  masked reconstruction. Real reverse diffusion commits progressively, so tokens
+  recovered early become context for the rest — the mechanism that could actually pull
+  the text back into the model's natural basin. 1/4/8/16/32 steps are being run now;
+* it ran at `L=8, R=3`, not the chosen operating point `L=8, R=6`;
+* it reports mean `z`. "Mean signal survives" is not "detection survives". The
+  `rho = 0.30` entry, `z = 2.31`, is `p_bound = 0.069` — **not significant at 5 %**. The
+  replacement reports TPR at FPR 5 % / 1 % / 0.1 % against an empirical null.
+
+Mean `z` over 8 samples, `L = 8, R = 3` (clean `z = +4.29`, unwatermarked `z ~ 0`):
 
 | attack | rho=0.05 | rho=0.10 | rho=0.20 | rho=0.30 |
 |---|---|---|---|---|
@@ -274,9 +322,11 @@ over 8 samples, `L = 8, R = 3` (clean `z = +4.29`, unwatermarked `z ~ 0`):
 | **outside** (edit only outside the pool) | +3.30 | +2.93 | +3.35 | +2.11 |
 | **delete** | -0.11 | +0.73 | -0.27 | -0.09 |
 
-**Smoothing degrades the watermark but does not destroy it.** Re-denoising 30 % of the
-text — with the same model, at the attacker's own quality cost — leaves `z = +2.31`
-against a null at 0. The signal is not a fragile artefact of the exact tokens chosen.
+What this table does and does not support: mean signal is still present after one-step
+reconstruction of 30 % of the tokens (`z = +2.31` against a null at 0), so the watermark
+is not a fragile artefact of the exact tokens chosen. It does **not** support a claim of
+reliable detection there — `z = 2.31` is `p_bound = 0.069`. Usable detection under this
+attack only holds at the low rates (`rho = 0.05`, `z = +4.04`, `p_bound = 3.2e-4`).
 
 The `outside` row also shows the entropy gate's desynchronisation risk is real but not
 catastrophic: perturbing only non-pool positions, which can reorder the carrier
@@ -301,9 +351,10 @@ similarity was computed on attacked text here, so no such claim is made.
    `exp/11_tradeoff.py`; until that lands, no claim about quality is supported.
 2. **Per-sample variance.** The mean is `z = +4.06` but the worst of 8 samples is
    `+1.27`. A watermark that fails on some texts fails in deployment.
-3. **Denoising-smoothing attack — answered, and the idea survives it.** See the table
-   above: `z` falls from +4.29 to +2.31 at `rho = 0.30`, not to 0. Open follow-up: what
-   the attack costs the *attacker* in text quality, which was not measured.
+3. **Iterative re-denoising — the decisive attack, still open.** Only one-step
+   reconstruction has been measured. Running now at 1/4/8/16/32 steps, at `L=8, R=6`,
+   reported as TPR@FPR. Also unmeasured: what the attack costs the *attacker* in text
+   quality, and paraphrase.
 4. **Alignment under insertion/deletion.** Patterns are derived from absolute positions,
    so an insertion shifts every role. Content-anchored patterns are not implemented.
 5. **Paraphrase** will break this, as it breaks every token-level scheme.

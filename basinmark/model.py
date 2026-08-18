@@ -48,36 +48,47 @@ class BasinModel:
 
     @torch.no_grad()
     def generate(self, prompt_ids, gen_len=128, steps=128, block_len=32, temperature=0.0,
-                 seed=0):
-        """LLaDA low-confidence-remasking sampler (semi-autoregressive over blocks)."""
+                 seed=0, remasking="low_confidence"):
+        """LLaDA's reference sampler, matching GSAI-ML/LLaDA `generate.py`.
+
+        The confidence used for low-confidence remasking is p(x0) under the *clean*
+        softmax, not the max of the Gumbel-perturbed logits. An earlier version used the
+        latter, which ranks positions by a noise draw rather than by model certainty and
+        is not the reference sampler the baselines are evaluated with.
+        """
         g = torch.Generator(device=self.device).manual_seed(seed)
         B, P = prompt_ids.shape
         x = torch.full((B, P + gen_len), MASK_ID, dtype=torch.long, device=self.device)
         x[:, :P] = prompt_ids.to(self.device)
-        n_blocks = gen_len // block_len
+        n_blocks = max(1, gen_len // block_len)
         steps_pb = max(1, steps // n_blocks)
         for b in range(n_blocks):
             lo, hi = P + b * block_len, P + (b + 1) * block_len
-            blk_mask = x[:, lo:hi] == MASK_ID
-            per_step = _split_evenly(blk_mask.sum(1, keepdim=True), steps_pb)
+            per_step = _split_evenly((x[:, lo:hi] == MASK_ID).sum(1, keepdim=True), steps_pb)
             for t in range(steps_pb):
                 m_idx = x == MASK_ID
                 logits = self.model(x).logits
                 if temperature > 0:
-                    noise = torch.rand(logits.shape, device=logits.device, generator=g)
-                    logits = logits / temperature + (-torch.log(-torch.log(noise + 1e-10) + 1e-10))
-                x0 = logits.argmax(-1)
-                conf = F.softmax(logits.float(), -1).max(-1).values
+                    u = torch.rand(logits.shape, device=logits.device, dtype=torch.float64,
+                                   generator=g)
+                    x0 = (logits.double() / temperature
+                          + (-torch.log(-torch.log(u)))).argmax(-1)
+                else:
+                    x0 = logits.argmax(-1)
+                if remasking == "low_confidence":
+                    conf = F.softmax(logits.double(), dim=-1).gather(
+                        -1, x0.unsqueeze(-1)).squeeze(-1)
+                else:
+                    conf = torch.rand(x0.shape, device=x0.device, generator=g).double()
                 del logits
                 conf = torch.where(m_idx, conf, torch.full_like(conf, -np.inf))
                 conf[:, hi:] = -np.inf
                 x0 = torch.where(m_idx, x0, x)
                 for i in range(B):
                     k = int(per_step[i, t])
-                    if k <= 0:
-                        continue
-                    sel = torch.topk(conf[i], k=k).indices
-                    x[i, sel] = x0[i, sel]
+                    if k > 0:
+                        sel = torch.topk(conf[i], k=k).indices
+                        x[i, sel] = x0[i, sel]
         return x
 
 
