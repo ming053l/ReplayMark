@@ -110,6 +110,7 @@ Cost: 3 forwards per probe per embedding round; 2 per probe for detection.
 | Guidance table costs 2 forwards, not \|V\| | **verified** — 0.3 s/probe on one TITAN RTX |
 | Probe positions are controllable | **partly** — depends strongly on decoding temperature and quality budget `tau` (see below) |
 | Bits can be set end-to-end | **partly** — 0.844 bit accuracy at 16 bits, z = +3.95 vs +0.05 unwatermarked, 7.7 % of tokens changed |
+| Quality cost | **the binding constraint** — the tuned operating point costs 4.8x perplexity; nothing with acceptable quality currently detects |
 | Robust to attack | **unresolved** — only one-step reconstruction measured, and at rho=0.30 that is already p_bound=0.069; iterative re-denoising running |
 | Beats/complements baselines | **not started** |
 
@@ -341,6 +342,84 @@ obvious fix — not yet implemented.
 Not measured: the attacker's *own* cost. An attack that rewrites 30 % of a text may
 degrade it enough that the attack is self-defeating, but no perplexity or semantic
 similarity was computed on attacked text here, so no such claim is made.
+
+### Quality was never measured until late, and it changes the verdict (`exp/11`, `exp/15`)
+
+The operating point everything above was tuned at (entropy gate, `lam = 20`, `tau = 6`)
+costs **4.8x GPT-2-large perplexity**. Detection was tuned with quality unmeasured; that
+is the same class of mistake as the two withdrawn claims.
+
+`tau` is a *relative* budget: a substitution is admissible iff
+`log p(v) >= log p(v*) - tau`, i.e. `p(v)/p(v*) >= e^-tau`. So
+
+| tau | 1 | 2 | 3 | 6 |
+|---|---|---|---|---|
+| `p(v)/p(v*)` at least | 36.8 % | 13.5 % | 5.0 % | **0.25 %** |
+
+`tau = 6` is extremely loose, and it was never swept.
+
+### Fixing the sampler made the watermark harder, not easier (`exp/15_tau.py`)
+
+With the reference LLaDA sampler in place (confidence from the clean softmax at `x0`),
+draft perplexity drops **22.2 -> 9.5**: the earlier confidence bug had been degrading
+generation all along, so every quality baseline before this was flattered. Re-running the
+sweep on properly-generated drafts:
+
+| tau | carrier | z | bit acc | tokens changed | ppl (draft 9.5) |
+|---|---|---|---|---|---|
+| 1 | keyed | +0.18 | 0.583 | 0.008 | 9.6 (x1.02) |
+| 2 | keyed | +0.47 | 0.599 | 0.010 | 9.6 (x1.02) |
+| 3 | entropy | +1.83 | 0.688 | 0.047 | 15.3 (x1.61) |
+| 6 | keyed | +1.21 | 0.682 | 0.025 | 15.9 (x1.68) |
+| 6 | entropy | **+2.84** | 0.755 | 0.070 | **38.1 (x4.01)** |
+
+Every setting with acceptable quality has no signal; the only setting with signal costs
+4x perplexity, and `z = 2.84` is still only `p_bound = 0.051`. **On the current
+formulation there is no usable operating point.** Two of the earlier z ~ 5 results were
+obtained partly because a buggy generator produced looser text.
+
+Whether that mechanism — better generation sits nearer the model's mode, sharpening the
+denoiser's conditional and shrinking the admissible set — is real is *inferred, not
+measured*. `exp/17_capacity.py` measures it directly (denoiser entropy and `|A_i(tau)|`
+for drafts from both samplers, the buggy one reproduced behind a `legacy_conf` flag).
+
+### Carrier selection is now the bottleneck, and the selector was scoring the wrong thing
+
+The embedder pushes along the R-pair *average* guidance
+`g_{j,i}(v) = (1/R) sum_r [l_{v_r,i}(v) - l_{u_r,i}(v)]`. The first leverage selector
+scored the mean of each pair's individual range — a different objective. A position where
+pair 1 favours token A by +5 and pair 2 favours token B by +5 has a large range under
+both pairs and almost no swing in their average, and would have been selected.
+
+`basinmark/select.py` now partitions the pool into probe shares *first* (keyed,
+text-independent), so every candidate knows which probe it would serve and is scored on
+that probe's true aggregate guidance:
+
+    U_{j,i} = ( max_{v in A_i} g_{j,i}(v) - min_{v in A_i} g_{j,i}(v) ) / 2
+    C_{j,i} = mean fluency cost of reaching those extremes
+    W_{j,i} = U_{j,i} / (C_{j,i} + eps)
+
+Sign-free, because orientation swaps leave a range invariant and the randomization null
+must stay clean. A second bug is fixed with it: `select="none"` was taking the first
+positions of a position-sorted pool, so the keyed-only baseline was a left-of-text
+carrier and the three-way comparison was meaningless. It is now a keyed random pick
+inside each probe's share.
+
+Known open issue with `W = U/(C+eps)`: the ratio prefers `U=0.05, C=0.001` over
+`U=2, C=0.2`, and `eps = 0.25` only damps it. If the ratio beats entropy at all, the
+formulation to use is `max U subject to C <= budget`, which is also the framing the rest
+of the method already has.
+
+### A baseline anchor, before any further tuning
+
+We do not know whether "TPR is low at ppl x1.2" is specific to BasinMark or the price
+every dLLM watermark pays. dgMARK is being reproduced at matched settings — same LLaDA
+checkpoint, same reference sampler (verified line by line against their `generation.py`),
+same C4 file and order, 256 tokens — and reported on the same axes, with detection cost
+stated separately since dgMARK is generation-time with a zero-forward detector and
+BasinMark is post-hoc with a model-forward detector. Prompt construction still differs
+(they truncate to 300 characters, BasinMark took 40 tokens); the fix belongs on our side,
+not in their published protocol.
 
 ---
 

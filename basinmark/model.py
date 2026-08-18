@@ -48,7 +48,7 @@ class BasinModel:
 
     @torch.no_grad()
     def generate(self, prompt_ids, gen_len=128, steps=128, block_len=32, temperature=0.0,
-                 seed=0, remasking="low_confidence"):
+                 seed=0, remasking="low_confidence", legacy_conf=False):
         """LLaDA's reference sampler, matching GSAI-ML/LLaDA `generate.py`.
 
         The confidence used for low-confidence remasking is p(x0) under the *clean*
@@ -75,7 +75,13 @@ class BasinModel:
                           + (-torch.log(-torch.log(u)))).argmax(-1)
                 else:
                     x0 = logits.argmax(-1)
-                if remasking == "low_confidence":
+                if remasking == "low_confidence" and legacy_conf:
+                    # reproduces the earlier bug on purpose, for the capacity ablation:
+                    # rank by the max of the Gumbel-perturbed logits, i.e. by a noise
+                    # draw rather than by model certainty
+                    conf = F.softmax(
+                        (logits.double() / max(temperature, 1e-6)), dim=-1).max(-1).values
+                elif remasking == "low_confidence":
                     conf = F.softmax(logits.double(), dim=-1).gather(
                         -1, x0.unsqueeze(-1)).squeeze(-1)
                 else:
