@@ -81,6 +81,34 @@ moving the watermark to generation time made things worse rather than better: th
 it forces --- all non-carrier positions, then all carrier positions --- costs $1.98\times$
 perplexity on its own, before any watermark is applied.
 
+\section{Detector validity}
+\label{sec:validity}
+
+The detector's $p$-value carries no calibration corpus and no model-specific null estimate:
+exchangeability of the two arms of each challenge makes every per-probe contrast
+independently symmetric about zero, so conditional on the magnitudes the null is a
+Rademacher mixture. Exact enumeration is affordable only up to $20$ blocks, and every
+configuration here has $48$ or more, so the reported value is Hoeffding's bound
+$\exp(-z^2/2)$ --- a finite-sample upper bound with no distributional assumption and no
+resolution floor. A Monte-Carlo randomization estimate is also computed, but it cannot
+resolve below $1/(1+n)$ and is never used for tail claims.
+
+Table~\ref{tab:validity} checks the guarantee in the form deployment needs. Each document
+receives its own key $K_d=\mathrm{HMAC}(K,\text{nonce}_d)$, and false positive rates are
+reported per key and at the worst key rather than averaged over keys.
+
+\input{tables/validity_table}
+
+\paragraph{What is settled and what is not.}
+The statistical side of BasinMark holds: the null is valid at the worst key, detection cost
+is $L$ forward passes independent of payload size, and the challenge-response signal is
+present. The embedding channel is what fails. A watermark defined on \emph{which tokens
+are present} can only be driven by changing tokens, and on this model the median carrier
+position admits one token inside the fluency budget, so the channel is priced out. Whether
+steering commit \emph{order} instead --- never changing a candidate token, the property
+that makes dgMARK nearly free --- can carry the same statistic is the open question, and
+the block-local formulation testing it is running.
+
 \bibliographystyle{iclr2025_conference}
 \bibliography{main}
 
