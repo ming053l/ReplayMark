@@ -31,10 +31,11 @@ dgMARK \citep{hong2026dgmark} & $k=1$ & 15.40 & 1.55$\times$ & 0.88 & 0.74 & 0.6
 \rowcolor{finalres}
 dgMARK \citep{hong2026dgmark} & $+3$-beam & 12.23 & 1.23$\times$ & \textbf{0.92} & \textbf{0.86} & \textbf{0.82} & $+5.81$ & \textbf{0} \\
 \midrule
-No watermark & left-to-right & 11.61 & 1.00$\times$ & -- & -- & -- & $+0.00$ & -- \\
-KGW \citep{kirchenbauer2023watermark} & $\delta=1$ & \textcolor{notmeasured}{pending} & -- & -- & -- & -- & -- & \textbf{0} \\
-KGW \citep{kirchenbauer2023watermark} & $\delta=2$ & \textcolor{notmeasured}{pending} & -- & -- & -- & -- & -- & \textbf{0} \\
-KGW \citep{kirchenbauer2023watermark} & $\delta=3$ & \textcolor{notmeasured}{pending} & -- & -- & -- & -- & -- & \textbf{0} \\
+No watermark & left-to-right & 11.61 & 1.00$\times$ & -- & -- & -- & $+0.24$ & -- \\
+\rowcolor{finalres}
+KGW \citep{kirchenbauer2023watermark} & $\delta=1$ & 11.96 & \textbf{1.03}$\times$ & 0.97 & \textbf{0.93} & 0.73 & $+3.85$ & \textbf{0} \\
+KGW \citep{kirchenbauer2023watermark} & $\delta=2$ & 16.21 & 1.40$\times$ & 1.00 & 1.00 & 1.00 & $+6.93$ & \textbf{0} \\
+KGW \citep{kirchenbauer2023watermark} & $\delta=3$ & 14.05 & 1.21$\times$ & 1.00 & 1.00 & 1.00 & $+8.92$ & \textbf{0} \\
 \midrule
 \multicolumn{9}{l}{\textit{Post-hoc watermarks (the watermark is applied to text that already exists)}} \\
 \midrule
@@ -56,10 +57,15 @@ regime differs: dgMARK uses block decoding with top-$k$ 3, KGW requires strict
 left-to-right decoding (its green list is seeded by the preceding token, which
 order-agnostic decoding does not provide), and BasinMark operates on drafts sampled at
 $T=0.8$ over the full vocabulary. \emph{Det.\ fwd.} is the number of model forward passes
-a detection requires. Non-watermarked arms sit at $|z|\le0.05$ with unit standard
-deviation, so the thresholds are not inflated. \textcolor{notmeasured}{Pending} rows are
-re-running after a detector fault: scoring repeated bigrams gave a $37\%$ false-positive
-rate at $\delta=0$ under forced left-to-right decoding, and each distinct bigram is now
-scored once.}
+a detection requires. Non-watermarked arms sit at $|z|\le0.25$, so the thresholds are not inflated. KGW is scored on
+each \emph{distinct} bigram: its green list is seeded by the preceding token, and under
+forced left-to-right decoding LLaDA repeats roughly a third of its bigrams, so re-scoring
+repetitions gave $z=+3.32$ and a $37\%$ false positive rate on the non-watermarked
+$\delta=0$ arm. Two caveats on KGW's apparently free detectability. Its regime carries a
+cost the ratio column hides: left-to-right decoding scores $11.61$ against $9.94$ for
+block decoding, so measured against the better control $\delta=1$ costs $1.20\times$, not
+$1.03\times$. And perplexity is not monotone in $\delta$ here ($16.21$ at $\delta=2$
+versus $14.05$ at $\delta=3$), because a strong green-list bias also makes the text more
+repetitive, which an $n$-gram-blind perplexity rewards.}
 \label{tab:baselines}
 \end{table}

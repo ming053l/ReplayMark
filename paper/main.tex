@@ -67,11 +67,13 @@ the method's main structural disadvantage.
 \input{tables/baseline_table}
 
 \paragraph{Reading the table.}
-The strongest baseline, dgMARK with $3$-beam lookahead, reaches $0.86$ TPR at $1\%$ FPR
-for $1.23\times$ perplexity. BasinMark's best configuration inside a comparable quality
+The strongest baseline is KGW at $\delta=1$: $0.93$ TPR at $1\%$ FPR for $1.03\times$
+perplexity against its own control, or $1.20\times$ if the cost of the left-to-right regime
+it requires is charged to it. dgMARK with $3$-beam lookahead reaches $0.86$ at
+$1.23\times$ without needing that regime. BasinMark's best configuration inside a comparable quality
 budget reaches $0.10$, and its best configuration at any quality reaches $0.50$ while
-paying $2.49\times$. The gap is roughly $8\times$ in detectability at matched quality,
-which is far too large to attribute to hyperparameter search.
+paying $2.49\times$. The gap is close to an order of magnitude in detectability at matched
+quality, which is far too large to attribute to hyperparameter search.
 
 The measured cause is capacity rather than tuning. Across all $36$ BasinMark
 configurations the median carrier position admits exactly \emph{one} token within the
