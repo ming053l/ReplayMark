@@ -1,0 +1,160 @@
+# BasinMark — watermarking diffusion LLMs via keyed re-denoising contrast
+
+**Status: research in progress. The detector is validated; the embedder is not yet
+strong enough. Numbers below are what has actually been measured on this machine —
+nothing here is a claim from a paper.**
+
+Base model: `GSAI-ML/LLaDA-8B-Instruct`, fp16, single TITAN RTX (sm75, 24 GB).
+
+---
+
+## Idea
+
+Existing dLLM watermarks hide the signal in token choice (Gloaguen et al., ICLR 2026),
+sampling randomness (Bagchi et al.), unmasking order (dgMARK, ICML 2026), or global
+sequence statistics (Global Sketch). BasinMark instead asks what the *final text does
+when you push it back through the diffusion operator*:
+
+> re-corrupt the text with a secret key, re-denoise, and read the response.
+
+The watermark lives in the text's **reconstruction behaviour**, not in its tokens.
+
+## The statistic
+
+For probe `j`, the key derives three disjoint position sets over the generated span:
+`S_j` (probe), `D_j^0`, `D_j^1` (two equal-size context ablations). Two corruptions:
+
+    C^0 = mask(S_j u D_j^0)        C^1 = mask(S_j u D_j^1)
+
+Log-probs are read **only on `S_j`, in both arms**:
+
+    delta_i = log p(y_i | C^1) - log p(y_i | C^0),   i in S_j
+    Delta_j = mean_i delta_i
+
+Both arms score the *same tokens*; only the ablated context differs. The watermark
+encodes **which half of its own context the text relies on to reconstruct itself**.
+
+### Exact null
+
+`D_j^0` and `D_j^1` are drawn exchangeably, so swapping them negates `Delta_j`. Under
+H0 (text not produced with key K) `Delta_j` is therefore symmetric about 0, giving
+
+    sign(Delta_j) ~ Bernoulli(1/2)   ->   sign-matches ~ Binomial(M, 1/2)
+
+Exact p-values, no calibration corpus, no model-specific null estimate.
+
+**Measured** (96 probes, unwatermarked LLaDA text): `mean Delta = +0.0136`,
+`P(sign > 0) = 0.521`. Consistent with the theory. See `logs_clean/pilot.log`.
+
+> A first version of this design compared energies over *different* token sets
+> (`E(y,C^0) - E(y,C^1)` with `C^0`, `C^1` masking disjoint positions). That statistic
+> is dominated by whether the key happened to select function words or content words —
+> several nats of text-dependent bias, and no usable null. It was discarded.
+
+### Embedding guidance is free
+
+Every position in `S_j` is masked in **both** arms, so `y_i` never enters either
+conditioning context. The guidance is therefore a table lookup
+
+    g_i(v) = log p(v | C^1) - log p(v | C^0)
+
+and **two forward passes give the full guidance table over every probe position and the
+entire vocabulary**. No per-candidate lookahead. Embedding becomes
+`generate -> keyed re-mask -> biased re-denoise`, an operation an autoregressive model
+cannot perform on its own output.
+
+Cost: 3 forwards per probe per embedding round; 2 per probe for detection.
+
+---
+
+## What is measured so far
+
+| claim | status |
+|---|---|
+| Null is exactly Binomial(M, 1/2) | **verified** — `P(sign>0)=0.521` over 96 probes |
+| Guidance table costs 2 forwards, not \|V\| | **verified** — 0.3 s/probe on one TITAN RTX |
+| Probe positions are controllable | **partly** — depends strongly on decoding temperature and quality budget `tau` (see below) |
+| Bits can be set end-to-end | **not yet** — best so far 0.771 bit accuracy at 16 bits |
+| Robust to attack | **not started** — `exp/04_attacks.py` written, not run |
+| Beats/complements baselines | **not started** |
+
+### Controllability sweep (`exp/02_sweep.py`, `logs_clean/sweep.log`)
+
+Fraction of probes whose sign can be set in one pass, over 96 probes:
+
+| temperature | probe_rate | tau (nats) | settable | positions with >1 admissible token |
+|---|---|---|---|---|
+| 0.0 | 0.12 | 1.5 | 0.34 | 0.09 |
+| 0.0 | 0.40 | 6.0 | 1.00 | 0.38 |
+| 1.0 | 0.25 | 3.0 | 0.89 | 0.41 |
+| 1.0 | 0.25 | 6.0 | 1.00 | 0.58 |
+
+Greedy decoding destroys controllability — 91 % of positions admit no alternative
+token at all. The baselines' `temperature = 0.8` is the right regime.
+
+### Where it currently fails (`exp/03c_lambda.py`, `logs_clean/lam.log`)
+
+Embedding maximises `log p_base(v) + lam * s_j * g_i(v)` subject to a hard cap `tau` on
+how far below the denoiser's own argmax a substitution may fall. With 16 probes over a
+192-token span (disjoint probe sets, `|S_j| = 12`):
+
+| lam | tau | s*Delta before -> after | bit accuracy | tokens changed | cost |
+|---|---|---|---|---|---|
+| 1 | 4 | — | 0.542 (= chance) | 0.16 | 0.05 nats |
+| 3 | 4 | +0.063 -> +0.129 | 0.667 | 0.24 | 0.30 nats |
+| 3 | 6 | +0.063 -> +0.231 | 0.771 | 0.30 | 0.43 nats |
+
+`s*Delta` moves in the intended direction, so the mechanism is real, but the guidance
+is too weak at these settings. Larger `lam` is under test.
+
+Two implementation bugs already found and fixed, both of which flatlined the embedder:
+dividing the guidance by `|S_j|` (putting it ~50x below the fluency term), and letting
+probe sets overlap so that ~6 probes fought over each position and cancelled out
+(fixed by a keyed *partition* of the span — `prng.partition_patterns`).
+
+---
+
+## Open questions — what an auditor should attack
+
+1. **Is the residual signal big enough at an acceptable quality cost?** `tau = 6` nats
+   is a large per-token budget. The realised cost is far lower (0.43 nats) but the
+   quality impact has not been measured against an external perplexity model yet.
+2. **Denoising-smoothing attack.** The adversary owns the same dLLM, masks x % of the
+   text at random and re-denoises, pulling it into the model's natural basin. This is
+   the natural adversary for a *functional* watermark and none of the four prior dLLM
+   watermarks face it in this form. If BasinMark dies here, the idea dies.
+   `exp/04_attacks.py` implements it; it has not been run.
+3. **Alignment under insertion/deletion.** Patterns are derived from absolute positions,
+   so an insertion shifts every role. Content-anchored patterns are not implemented.
+4. **Paraphrase** will break this, as it breaks every token-level scheme.
+5. **Capacity.** Disjoint probe sets trade payload against per-bit SNR
+   (`|S_j| = span / M`). The right operating point is not established.
+
+## Layout
+
+```
+basinmark/prng.py    keyed pattern derivation (HMAC); partition_patterns
+basinmark/model.py   LLaDA-8B wrapper: masked log-probs + low-confidence-remask sampler
+basinmark/core.py    BasinMark.embed / .detect / .deltas
+exp/01_pilot_signal.py   go/no-go: null symmetry + controllability
+exp/02_sweep.py          temperature x probe_rate x tau
+exp/03_e2e.py            end-to-end embed/detect on C4 prompts
+exp/03c_lambda.py        guidance-strength sweep with before/after diagnostic
+exp/04_attacks.py        smoothing / substitution / deletion  (WRITTEN, NOT RUN)
+DESIGN.md                full derivation and the honest risk list
+logs_clean/              raw stdout of every run quoted above
+```
+
+Baselines (`eth-sri/diffusion-lm-watermark`, `pyomin/dgmark-watermarking`) are cloned
+into `baselines/` and git-ignored. Both were patched for sm75: `bfloat16 -> float16`,
+and re-enabling mem-efficient SDPA, which LLaDA's shipped code disables with a note
+written for A100s — on sm75 there is no flash kernel, so torch silently falls back to
+the math backend and materialises the full LxL attention matrix per layer.
+
+## Reproduce
+
+```bash
+python exp/01_pilot_signal.py     # ~2 min after model load
+python exp/02_sweep.py            # ~15 min
+python exp/03c_lambda.py          # ~20 min
+```

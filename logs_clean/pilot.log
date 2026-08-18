@@ -1,0 +1,17 @@
+[load] 21.1s
+[gen 0] 4.4s :: 'Diffusion language models can generate tokens in parallel because they use a technique called "parallel token '
+  probes done, 7.8s
+[gen 1] 4.1s :: "The water cycle is the continuous movement of water between the Earth's oceans, atmosphere, and land. It begin"
+  probes done, 7.4s
+[gen 2] 4.1s :: 'A good scientific hypothesis is be aable to be tested and proven.\n. It should be specificable and testable. It'
+  probes done, 7.5s
+[gen 3] 4.1s :: 'The Industrial Revolution was caused by a combination of factors, including the availability of new technologi'
+  probes done, 7.4s
+===== PILOT =====
+probes                 96   |S| = 15
+per-position sd(delta) 0.581 nats
+noise sd(Delta_j)      0.150 nats      <- what we must overcome
+achievable |shift|     -0.085 nats/pos   (tau=1.5, worst direction)
+SNR  gain/noise        -0.6x
+admissible tokens      median 1, frac positions with >1 choice 0.09
+null Delta_j: mean +0.0136  sd 0.2180  P(sign>0) 0.521  (want ~0, ~0.5)

@@ -1,0 +1,10 @@
+# third-party baseline clones (eth-sri/diffusion-lm-watermark, pyomin/dgmark-watermarking)
+baselines/
+# datasets and model weights
+data/
+*.gz
+*.safetensors
+__pycache__/
+*.pyc
+logs/
+logs_clean/*.tmp
