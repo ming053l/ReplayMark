@@ -219,22 +219,52 @@ so the nominal ceiling is not attainable — `exp/09_blocks.py` measures where t
 gain stops) and higher per-block consistency (bit accuracy 0.844 means ~15 % of probes
 carry the wrong sign and subtract from `z`).
 
+### Shared patterns and the entropy gate (`exp/08_shared.py`)
+
+8 C4 continuations, 256-token span, `M = 16`, `R = 3`, `L = 8` shared patterns.
+
+| carrier selection | lam | z (wm) | worst sample | z (no wm) | z (wrong key) | bit acc | median p | tokens changed |
+|---|---|---|---|---|---|---|---|---|
+| keyed only | 8 | +3.10 | +1.41 | +0.38 | +0.52 | 0.820 | 1.9e-4 | 0.081 |
+| keyed only | 20 | +3.18 | +1.41 | +0.38 | +0.58 | 0.836 | 7.6e-5 | 0.088 |
+| entropy gate 0.6 | 8 | +3.99 | +1.21 | -0.25 | +0.31 | 0.891 | 7.8e-6 | 0.171 |
+| entropy gate 0.6 | 20 | **+4.06** | +1.27 | -0.25 | -0.43 | **0.906** | **2.0e-6** | 0.182 |
+
+Shared patterns also cut the wall clock from 26 s to **4 s per sample**, as expected from
+`L = 8` forwards instead of `2*M*R = 96`.
+
+The entropy gate is a **trade, not a free win**: ~24x better p-value, but the edit rate
+doubles to 18 % of tokens. That is unsurprising — high-entropy positions are exactly the
+ones with room to move, so they actually move. The internal substitution cost cannot
+adjudicate this (gating to high-entropy positions raises mean cost mechanically, since
+those positions have the largest admissible sets), so it is settled by perplexity under
+an independent model in `exp/11_tradeoff.py`, which sweeps the same grid and reports the
+detection-vs-quality curve — the form the baselines are actually compared on.
+
+The worst sample stays around `z = +1.2-1.4` in every configuration. Per-sample variance,
+not the mean, is the remaining weakness.
+
 ---
 
 ## Open questions — what an auditor should attack
 
-1. **Is the residual signal big enough at an acceptable quality cost?** `tau = 6` nats
-   is a large per-token budget. The realised cost is far lower (0.43 nats) but the
-   quality impact has not been measured against an external perplexity model yet.
-2. **Denoising-smoothing attack.** The adversary owns the same dLLM, masks x % of the
+1. **Is the detection strength worth the edit rate?** The best configuration changes
+   18 % of tokens for `p ~ 2e-6`. External-model perplexity is measured in
+   `exp/11_tradeoff.py`; until that lands, no claim about quality is supported.
+2. **Per-sample variance.** The mean is `z = +4.06` but the worst of 8 samples is
+   `+1.27`. A watermark that fails on some texts fails in deployment.
+3. **Denoising-smoothing attack.** The adversary owns the same dLLM, masks x % of the
    text at random and re-denoises, pulling it into the model's natural basin. This is
    the natural adversary for a *functional* watermark and none of the four prior dLLM
    watermarks face it in this form. If BasinMark dies here, the idea dies.
    `exp/04_attacks.py` implements it; it has not been run.
-3. **Alignment under insertion/deletion.** Patterns are derived from absolute positions,
+4. **Alignment under insertion/deletion.** Patterns are derived from absolute positions,
    so an insertion shifts every role. Content-anchored patterns are not implemented.
-4. **Paraphrase** will break this, as it breaks every token-level scheme.
-5. **Capacity.** Disjoint probe sets trade payload against per-bit SNR
+5. **Paraphrase** will break this, as it breaks every token-level scheme.
+6. **Capacity.** Also: the entropy gate reads its ranking from a forward that masks
+   the whole pool, so edits *outside* the pool can reorder the selection and
+   desynchronise the detector without touching a single carrier token. Measured as the
+   `outside` row in `exp/10_attacks_shared.py`. Disjoint probe sets trade payload against per-bit SNR
    (`|S_j| = span / M`). The right operating point is not established.
 
 ## Layout
