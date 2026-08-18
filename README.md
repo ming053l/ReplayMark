@@ -1,7 +1,10 @@
 # BasinMark — watermarking diffusion LLMs via keyed re-denoising contrast
 
-**Status: research in progress. Numbers below are what has actually been measured on
-this machine — nothing here is a claim from a paper.**
+**Status: the detector works and the embedding channel does not pay for itself.** The
+keyed re-denoising contrast carries real signal with a finite-sample-valid null, but
+post-hoc token substitution costs far more text quality than published dLLM watermarks
+pay for the same detection (see the baseline anchor below). Numbers here are measured on
+this machine unless explicitly attributed to a paper.
 
 > **Correction notice (this revision).** Two claims in the previous revision were
 > overstated and have been withdrawn:
@@ -420,6 +423,52 @@ stated separately since dgMARK is generation-time with a zero-forward detector a
 BasinMark is post-hoc with a model-forward detector. Prompt construction still differs
 (they truncate to 300 characters, BasinMark took 40 tokens); the fix belongs on our side,
 not in their published protocol.
+
+### The baseline anchor, read off the dgMARK paper (arXiv:2601.22985, Table 2)
+
+LLaDA 1.5, C4, 256 tokens, PPL under Gemma3-12B:
+
+| method | PPL | PPL ratio | TPR @ FPR=1% |
+|---|---|---|---|
+| multinomial baseline | 4.21 | — | — |
+| **dgMARK** | 5.27 | **x1.25** | **99.41 %** |
+| dgMARK + 3-beam | 5.40 | x1.28 | 100.00 % |
+| greedy baseline | 4.03 | — | — |
+| **dgMARK (greedy)** | 4.44 | **x1.10** | **91.98 %** |
+| KGW (delta=3) | 7.87 | x1.87 | 99.21 % |
+| PATTERN-MARK (delta=3) | 7.69 | x1.83 | 95.96 % |
+
+**This settles the strategic question.** A dLLM watermark reaches ~92 % TPR at 1 % FPR
+for **x1.10** perplexity, and ~99 % for **x1.25**. BasinMark, post-hoc, has **no usable
+TPR at x1.35**, and its only configuration with any signal costs **x4.01** for
+`z = 2.84` (`p_bound = 0.051`). Even KGW — the crude baseline — buys 99 % at x1.87.
+On the quality-detection plane the current embedder is dominated by every published
+method, by about an order of magnitude. This is not a tuning gap.
+
+**Why dgMARK is cheap is also the lesson.** It never modifies token probabilities: it
+changes *which masked position is unmasked next*, preferring positions whose
+already-preferred token satisfies a parity condition. Quality is nearly free because
+nothing is substituted. BasinMark's post-hoc embedder does the opposite — it replaces
+tokens the model had already chosen — and pays for every replacement.
+
+The negative result is worth keeping: **post-hoc token substitution cannot pay for
+itself on a dLLM at this operating range.** The detector is not the problem; the
+challenge-response signal is real, has an exact-by-construction null, and survives
+one-step reconstruction. The embedding channel is the problem.
+
+#### Reproduction status and its deviations from the paper
+
+Running locally at 256 tokens, block size 32, min length 200 (all matching the paper),
+with the reference sampler verified line-by-line against their `generation.py`, and the
+z-statistic verified equivalent to their Eq. 1. Known deviations, none of which change
+the conclusion above:
+
+| item | paper | here | consequence |
+|---|---|---|---|
+| samples | 300 | 50 | TPR at FPR 0.1 % / 0.01 % not resolvable |
+| PPL evaluator | Gemma3-12B | GPT-2-large | absolute PPL not comparable; only *ratios* are |
+| best config | dgMARK + 3-beam | +3-beam queued after the k=1 run | — |
+| model | Table 2 is LLaDA 1.5 | LLaDA-8B-Instruct | their Table 1 covers LLaDA-8B (PPL 4.90, TPR 0.957 at z=4) |
 
 ---
 
