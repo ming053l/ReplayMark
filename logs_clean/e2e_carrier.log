@@ -1,0 +1,12 @@
+[00] wm 14/16 z=+4.10 p=2.1e-05 | no-wm z=+2.21 | wrong-key z=+1.48 | changed 0.039 cost 0.13 | 49s
+  --- draft ---
+   cluster of 8-core eServer 325 servers and storage arrays, which includes an integrated HPC cluster, integrated server software, and systems management.
+The price of the PowerCluster is 779,500 and comes with 16 AMD Opteron x86 processors, multiple storage systems, a dual-array RAID, 7 TB of RAM, and additional disk storage.
+The PowerCluster is set
+  --- watermarked ---
+   cluster of 8-core eServer 325 servers and storage arrays, which includes an integrated HPC cluster, integrated server software, and systems management.
+The price of the PowerCluster is 779,500 and comes with 148 Opteron x64 processors, multiple storage systems, a multi-array RAID, 7 TB of RAM, and-attached storage.
+The PowerCluster is set to emerg
+[01] wm 8/16 z=+1.39 p=8.2e-02 | no-wm z=-1.28 | wrong-key z=-0.45 | changed 0.008 cost 0.09 | 49s
+[02] wm 8/16 z=+1.43 p=7.6e-02 | no-wm z=-0.73 | wrong-key z=-0.23 | changed 0.012 cost 0.09 | 50s
+[03] wm 13/16 z=+4.43 p=4.8e-06 | no-wm z=-0.00 | wrong-key z=-0.23 | changed 0.105 cost 0.69 | 50s

@@ -4,11 +4,13 @@ import sys, gzip, json, time
 sys.path.insert(0, "/ssd1/ming/basinmark")
 import numpy as np, torch, torch.nn.functional as F
 from basinmark.model import BasinModel, MASK_ID
-from basinmark.core import BasinMark
+from basinmark.carrier import CarrierMark
 
 KEY = b"basinmark-key-A"
-N_SAMPLES, GEN, PREFIX = 12, 192, 40
-CFG = dict(n_probes=24, probe_rate=0.25, ctx_rate=0.20, tau=4.0, lam=2.0, margin=0.15)
+N_SAMPLES, GEN, PREFIX = 12, 256, 40
+NPR = 16
+CFG = dict(n_probes=NPR, carrier_rate=0.30, ctx_rate=0.20, tau=6.0, lam=3.0,
+           commit_steps=8)
 MESSAGE = 0xA53C7
 RATES = [0.05, 0.10, 0.20, 0.30]
 
@@ -64,7 +66,7 @@ def attack_delete(M, ids, span, rho, rng):
 
 def main():
     M = BasinModel()
-    wm = BasinMark(M, KEY, **CFG)
+    wm = CarrierMark(M, KEY, **CFG)
     prefixes = c4_prefixes(M.tok, N_SAMPLES, PREFIX)
     rng = np.random.default_rng(0)
     res = {a: {r: [] for r in RATES} for a in ("smooth", "substitute", "delete")}
@@ -73,17 +75,17 @@ def main():
         x = M.generate(p, gen_len=GEN, steps=GEN // 2, block_len=32,
                        temperature=0.8, seed=1000 + i).cpu()
         span = np.arange(p.shape[1], p.shape[1] + GEN)
-        y = wm.embed(x, span, MESSAGE, rounds=3)
+        y = wm.embed(x, span, MESSAGE)
         clean.append(wm.detect(y, span, MESSAGE)["matches"])
         for r in RATES:
             res["smooth"][r].append(wm.detect(attack_smooth(M, y, span, r, rng), span, MESSAGE)["matches"])
             res["substitute"][r].append(wm.detect(attack_substitute(M, y, span, r, rng), span, MESSAGE)["matches"])
             yd, sd = attack_delete(M, y, span, r, rng)
             res["delete"][r].append(wm.detect(yd, sd, MESSAGE)["matches"])
-        print(f"[{i:02d}] clean {clean[-1]}/24 | " + " | ".join(
+        print(f"[{i:02d}] clean {clean[-1]}/{NPR} | " + " | ".join(
             f"{a}@{r:.2f} {res[a][r][-1]}" for a in res for r in RATES), flush=True)
 
-    print("\n===== ATTACKS (mean sign-matches out of 24; chance = 12) =====")
+    print(f"\n===== ATTACKS (mean sign-matches out of {NPR}; chance = {NPR/2:.0f}) =====")
     print(f"{'attack':<12}" + "".join(f"  rho={r:<6.2f}" for r in RATES))
     print(f"{'none':<12}  {np.mean(clean):.1f}")
     for a in res:

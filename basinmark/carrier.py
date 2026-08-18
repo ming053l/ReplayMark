@@ -23,7 +23,14 @@ from .prng import stream, payload_bits
 from .model import MASK_ID
 
 
-def carrier_patterns(key, n, n_probes, carrier_rate, ctx_rate):
+def carrier_patterns(key, n, n_probes, carrier_rate, ctx_rate, n_ablations=1):
+    """P (carrier), the M probe sets partitioning it, and R ablation PAIRS per probe.
+
+    Each pair (D_j^{0,r}, D_j^{1,r}) is an independent exchangeable draw, so swapping
+    within any one pair negates only that contrast. The null therefore has M*R
+    independent symmetric blocks rather than M -- more detection power at the same
+    carrier size, and sqrt(R) less noise per bit.
+    """
     rng = stream(key, "carrier", n, n_probes, carrier_rate)
     perm = rng.permutation(n)
     n_p = max(n_probes, int(round(carrier_rate * n)))
@@ -34,47 +41,60 @@ def carrier_patterns(key, n, n_probes, carrier_rate, ctx_rate):
     S_list = [np.sort(c) for c in np.array_split(P, n_probes)]
     D = []
     for j in range(n_probes):
-        q = stream(key, "ctx2", j, n).permutation(len(rest))
-        D.append((np.sort(rest[q[:n_d]]), np.sort(rest[q[n_d:2 * n_d]])))
+        pairs = []
+        for r in range(n_ablations):
+            q = stream(key, "ctx2", j, r, n).permutation(len(rest))
+            pairs.append((np.sort(rest[q[:n_d]]), np.sort(rest[q[n_d:2 * n_d]])))
+        D.append(pairs)
     return np.sort(P), S_list, D
 
 
 class CarrierMark:
     def __init__(self, model, key: bytes, n_probes=16, carrier_rate=0.30, ctx_rate=0.20,
-                 tau=6.0, lam=3.0, commit_steps=8):
+                 tau=6.0, lam=3.0, commit_steps=8, n_ablations=3):
         self.M, self.key = model, key
         self.n_probes, self.carrier_rate, self.ctx_rate = n_probes, carrier_rate, ctx_rate
         self.tau, self.lam, self.commit_steps = tau, lam, commit_steps
+        self.n_ablations = n_ablations
         self._cn, self._cp = -1, None
 
     def _pat(self, span):
         n = len(span)
         if self._cn != n:
             self._cn, self._cp = n, carrier_patterns(
-                self.key, n, self.n_probes, self.carrier_rate, self.ctx_rate)
+                self.key, n, self.n_probes, self.carrier_rate, self.ctx_rate,
+                self.n_ablations)
         P, S_list, D = self._cp
-        return span[P], [span[S] for S in S_list], [(span[a], span[b]) for a, b in D]
+        return (span[P], [span[S] for S in S_list],
+                [[(span[a], span[b]) for a, b in pairs] for pairs in D])
 
     @torch.no_grad()
     def _arms(self, ids, span):
-        """Per-probe (lp0, lp1) at S_j. Independent of the carrier tokens by construction."""
+        """[probe][ablation] -> (lp0, lp1) at S_j. By construction these never depend on
+        the carrier tokens, so they are fixed for the whole embedding."""
         P, S_list, D = self._pat(span)
         out = []
-        for S, (D0, D1) in zip(S_list, D):
-            batch = torch.cat([self.M.corrupt(ids, np.concatenate([P, D0])),
-                               self.M.corrupt(ids, np.concatenate([P, D1]))], 0)
-            out.append(self.M.logprobs_rows(batch, torch.tensor(S), chunk=2))
+        for S, pairs in zip(S_list, D):
+            batch = torch.cat([self.M.corrupt(ids, np.concatenate([P, d]))
+                               for D0, D1 in pairs for d in (D0, D1)], 0)
+            lp = self.M.logprobs_rows(batch, torch.tensor(S), chunk=2)
+            out.append([(lp[2 * r], lp[2 * r + 1]) for r in range(len(pairs))])
         return out
 
-    def deltas(self, ids, span):
-        P, S_list, _ = self._pat(span)
-        D, T = [], []
-        for S, lp in zip(S_list, self._arms(ids, span)):
+    def deltas(self, ids, span, per_ablation=False):
+        """Delta_j (mean over ablations). With per_ablation, also the M x R raw grid,
+        whose signs are independently symmetric under H0."""
+        _, S_list, _ = self._pat(span)
+        grid = []
+        for S, pairs in zip(S_list, self._arms(ids, span)):
             y = ids[0, torch.tensor(S)]
-            d = (lp[1].gather(1, y[:, None]) - lp[0].gather(1, y[:, None])).squeeze(1).numpy()
-            D.append(d.mean())
-            T.append(d.mean() / (d.std(ddof=1) / np.sqrt(len(d)) + 1e-9))
-        return np.array(D), np.array(T)
+            grid.append([float((lp1.gather(1, y[:, None]) - lp0.gather(1, y[:, None])).mean())
+                         for lp0, lp1 in pairs])
+        grid = np.array(grid)                                   # [M, R]
+        D = grid.mean(1)
+        T = D / (grid.std(1, ddof=1) / np.sqrt(grid.shape[1]) + 1e-9) if grid.shape[1] > 1 \
+            else np.zeros_like(D)
+        return (D, T, grid) if per_ablation else (D, T)
 
     def detect(self, ids, span, message=0):
         from scipy.stats import binom
@@ -92,8 +112,8 @@ class CarrierMark:
         arms = self._arms(ids, span)                       # fixed for the whole embedding
 
         gvec = {}                                          # position -> signed guidance row
-        for j, (S, lp) in enumerate(zip(S_list, arms)):
-            g = signs[j] * (lp[1] - lp[0])
+        for j, (S, pairs) in enumerate(zip(S_list, arms)):
+            g = signs[j] * torch.stack([lp1 - lp0 for lp0, lp1 in pairs]).mean(0)
             for u, i in enumerate(S):
                 gvec[i] = g[u]
 
@@ -110,16 +130,53 @@ class CarrierMark:
             neg = torch.finfo(obj.dtype).min
             obj = torch.where(adm, obj, torch.full_like(obj, neg))
             pick = obj.argmax(1)
-            # commit the positions the fluency model is most sure about, as in
-            # low-confidence remasking, so the joint text stays in-distribution
-            conf = base.gather(1, pick[:, None]).squeeze(1)
-            order = conf.argsort(descending=True)[:per]
+            # Order by the model's INTRINSIC certainty at the position (top of base),
+            # not by the log-prob of the chosen token. Using the chosen token would
+            # systematically defer every watermark-driven pick to the last steps, where
+            # the context is richest and the admissible set collapses to a singleton --
+            # a feedback loop that starves exactly the positions meant to carry payload.
+            order = top.squeeze(1).argsort(descending=True)[:per]
             for o in order.tolist():
                 work[0, todo[o]] = pick[o]
                 cost.append(float(top[o, 0] - base[o, pick[o]]))
+
             todo = [p for k, p in enumerate(todo) if k not in set(order.tolist())]
         self.last_cost = float(np.mean(cost)) if cost else 0.0
         if verbose:
             print(f"    carrier {len(P)} positions, mean cost {self.last_cost:.2f} nats",
                   flush=True)
         return work
+
+
+def signflip_pvalue(a: np.ndarray):
+    """Exact conditional p-value for T = sum_j a_j, where a_j = s_j * Delta_j.
+
+    Counting signs throws away the magnitude of each Delta_j. Exchangeability of
+    D_j^0/D_j^1 makes every a_j symmetric about 0 *independently*, so conditional on the
+    magnitudes |a_j| the null is a Rademacher mixture: enumerate all 2^M sign patterns
+    for an exact one-sided p-value. Same assumption as the sign test, strictly more power.
+    """
+    m = np.abs(a)
+    M = len(m)
+    T = float(a.sum())
+    if M <= 20:
+        signs = ((np.arange(1 << M)[:, None] >> np.arange(M)) & 1) * 2 - 1
+        return float((signs @ m >= T).mean())
+    from scipy.stats import norm
+    return float(norm.sf(T / (np.sqrt((m ** 2).sum()) + 1e-12)))
+
+
+def _detect_full(self, ids, span, message=0):
+    from scipy.stats import binom
+    D, T, grid = self.deltas(ids, span, per_ablation=True)
+    signs = payload_bits(self.key, self.n_probes, message)
+    a = (signs[:, None] * grid).ravel()               # M*R independent symmetric blocks
+    k = int((np.sign(D) == signs).sum())
+    return dict(matches=k, n=self.n_probes, n_blocks=int(a.size),
+                p_sign=float(binom.sf(k - 1, self.n_probes, 0.5)),
+                p_value=signflip_pvalue(a),           # the reported p-value
+                z=float(a.sum() / (np.sqrt((a ** 2).sum()) + 1e-12)),
+                stat=float(a.sum()), Delta=D.tolist(), t=T.tolist())
+
+
+CarrierMark.detect = _detect_full

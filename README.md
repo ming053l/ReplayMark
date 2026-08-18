@@ -142,6 +142,56 @@ exact null is unchanged.
 
 Results pending (`exp/05_carrier.py`).
 
+### Detector: use the magnitudes, and many ablations
+
+Counting sign matches discards how large each `Delta_j` is, and caps the attainable
+p-value at `2^-M`. Two changes:
+
+* **Exact sign-flip test** (`carrier.signflip_pvalue`). Exchangeability makes each
+  `a_j = s_j * Delta_j` symmetric about 0 *independently*, so conditional on the
+  magnitudes the null is a Rademacher mixture — enumerate all `2^M` sign patterns.
+  Same assumption as the sign test, strictly more power: on one real 13/16 detection,
+  `p = 9.2e-4` versus `1.1e-2` for sign counting.
+* **R ablation pairs per probe.** Swapping `D_j^{0,r}` and `D_j^{1,r}` negates only that
+  contrast, so R independent pairs give `M*R` independent symmetric blocks instead of
+  `M`, and `sqrt(R)` less noise per bit. At `M=16, R=3` the attainable floor moves from
+  `2^-16 = 1.5e-5` to `2^-48 = 3.6e-15` — the range the baselines report.
+
+### Detection cost — the method's main structural disadvantage
+
+Every baseline detects with **zero model calls**: dgMARK checks token-id parity, and
+KGW / eth-sri / KTH / Unigram / AAR hash the context. BasinMark needs model forwards,
+which matters for anything that scans documents at scale. Stating it plainly rather
+than burying it:
+
+| | forwards per detection |
+|---|---|
+| dgMARK, KGW, eth-sri, KTH, Unigram, AAR | **0** |
+| BasinMark, naive (`carrier.py`) | `2*M*R` = 96 |
+| BasinMark, shared patterns (`shared.py`) | **`L` = 8, independent of payload** |
+
+`shared.py` exploits the fact that every arm masks the *whole* carrier set, so one
+forward on `mask(P u D)` already returns log-probs at every carrier position — for all
+M probe sets at once. Draw `L` shared ablation patterns, and let the key choose which
+ordered pair each `(probe, repetition)` block contrasts. Each block still carries its
+own keyed orientation bit, so the exact sign-flip test is unchanged; blocks become
+correlated through the shared patterns, but the conditional test never required
+independent magnitudes. This does not close the gap to zero, and should not be
+presented as if it did.
+
+### A third embedder bug: the commit order starved the payload
+
+Carrier tokens are committed progressively, most-confident-first. The confidence was
+read off *the chosen token*, but a watermark-driven pick has a lower base log-prob **by
+construction** — so every pushed position was systematically deferred to the last
+commit steps, where the context is richest, the distribution sharpest, and the
+admissible set collapses to a singleton. The positions meant to carry payload were
+exactly the ones denied the freedom to carry it.
+
+Observed as near-zero embedding on most samples: 0.8-1.2 % of tokens changed, `z` around
++1.4. Fixed by ordering on the position's *intrinsic* certainty (`max_v base(v)`).
+Re-tuning after the fix is in progress.
+
 ---
 
 ## Open questions — what an auditor should attack
@@ -170,7 +220,8 @@ exp/01_pilot_signal.py   go/no-go: null symmetry + controllability
 exp/02_sweep.py          temperature x probe_rate x tau
 exp/03_e2e.py            end-to-end embed/detect on C4 prompts
 exp/03c_lambda.py        guidance-strength sweep with before/after diagnostic
-basinmark/carrier.py     BasinMark-C: exact, staleness-free guidance (UNDER TEST)
+basinmark/carrier.py     BasinMark-C: exact, staleness-free guidance; sign-flip test
+basinmark/shared.py      shared ablation patterns: detection in L forwards
 exp/04_attacks.py        smoothing / substitution / deletion  (WRITTEN, NOT RUN)
 exp/05_carrier.py        BasinMark-C sweep
 DESIGN.md                full derivation and the honest risk list
