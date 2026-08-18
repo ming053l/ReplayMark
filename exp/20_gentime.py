@@ -14,6 +14,7 @@ import sys, gzip, json, time, itertools
 sys.path.insert(0, "/ssd1/ming/basinmark")
 import numpy as np, torch
 from basinmark.model import BasinModel
+from basinmark.data import c4_prompts
 from basinmark.select import LeverageMark
 from basinmark.gentime import GenMark
 
@@ -22,17 +23,6 @@ GEN, PREFIX, NS, NPR, STEPS = 256, 40, 8, 16, 128
 GRID = list(itertools.product([2.0, 3.0, 6.0], [8.0, 20.0]))
 SHAPE = dict(n_probes=NPR, pool_rate=0.50, carrier_rate=0.30, ctx_rate=0.15,
              n_patterns=8, n_ablations=6, select="leverage")
-
-
-def c4(tok, n, ntok):
-    out = []
-    with gzip.open("/ssd1/ming/basinmark/data/c4-validation.json.gz", "rt") as f:
-        for line in f:
-            ids = tok(json.loads(line)["text"])["input_ids"]
-            if len(ids) >= ntok + 60:
-                out.append(torch.tensor(ids[:ntok], dtype=torch.long)[None])
-                if len(out) == n:
-                    return out
 
 
 class Nll:
@@ -57,7 +47,7 @@ class Nll:
 def main():
     M = BasinModel()
     nll = Nll()
-    prompts = c4(M.tok, NS, PREFIX)
+    prompts = c4_prompts(M.tok, NS)
     spans = [np.arange(p.shape[1], p.shape[1] + GEN) for p in prompts]
 
     ref = [M.generate(p, gen_len=GEN, steps=STEPS, block_len=32, temperature=0.8,

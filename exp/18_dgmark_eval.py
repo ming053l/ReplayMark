@@ -55,45 +55,64 @@ class Nll:
         return np.array(o)
 
 
+def arm(tag, og_rows, n_o, nll):
+    try:
+        f = find(tag)
+    except FileNotFoundError:
+        print(f"[{tag}] not present, skipped", flush=True)
+        return None
+    rows = load(f)
+    r = np.array([x[2] for x in rows]); n = np.array([x[3] for x in rows])
+    ro = np.array([x[2] for x in og_rows]); no = np.array([x[3] for x in og_rows])
+    z = (r - 0.5) * np.sqrt(n) / 0.5
+    zo = (ro - 0.5) * np.sqrt(no) / 0.5
+    nw = nll([x[1] for x in rows])
+    k = min(len(nw), len(n_o))
+    dn = nw[:k] - n_o[:k]                        # paired: same prompt list, same order
+    out = dict(tag=tag, file=f.split("/")[-1], n=len(rows), rate=float(r.mean()),
+               z=float(z.mean()), ppl=float(np.exp(np.nanmean(nw))),
+               ratio=float(np.exp(np.nanmean(nw)) / np.exp(np.nanmean(n_o))),
+               dnll=float(np.nanmean(dn)),
+               dnll_q=[float(np.nanquantile(dn, q)) for q in (.25, .5, .75)],
+               tpr={str(a): float(np.mean(z > t))
+                    for a, t in ((0.05, 1.645), (0.01, 2.326), (0.001, 3.090))},
+               fpr={str(a): float(np.mean(zo > t))
+                    for a, t in ((0.05, 1.645), (0.01, 2.326), (0.001, 3.090))},
+               z_all=z.tolist(), zo_all=zo.tolist(), nll=nw.tolist())
+    print(f"[{tag:<10}] n={out['n']:<3} match {out['rate']:.4f}  z {out['z']:+.2f}  "
+          f"TPR@5% {out['tpr']['0.05']:.2f} @1% {out['tpr']['0.01']:.2f} "
+          f"@0.1% {out['tpr']['0.001']:.2f}  ppl {out['ppl']:.2f} "
+          f"(x{out['ratio']:.3f})  dNLL {out['dnll']:+.4f}", flush=True)
+    return out
+
+
 def main():
-    fw, fo = find("watermark"), find("original")
-    wm, og = load(fw), load(fo)
-    print(f"loaded {len(wm)} watermarked ({fw.split('/')[-1]}), "
-          f"{len(og)} original ({fo.split('/')[-1]})", flush=True)
-
-    rw = np.array([r[2] for r in wm]); nw_ = np.array([r[3] for r in wm])
-    ro = np.array([r[2] for r in og]); no_ = np.array([r[3] for r in og])
-    zw_a = (rw - 0.5) * np.sqrt(nw_) / 0.5
-    zo_a = (ro - 0.5) * np.sqrt(no_) / 0.5
-    mu0, sd0 = ro.mean(), ro.std()
-    zw_e, zo_e = (rw - mu0) / sd0, (ro - mu0) / sd0
-
+    fo = find("original")
+    og = load(fo)
     nll = Nll()
-    n_w = nll([r[1] for r in wm])
     n_o = nll([r[1] for r in og])
-    k = min(len(n_w), len(n_o))
-    dn = n_w[:k] - n_o[:k]                       # paired: same prompt list, same order
+    ro = np.array([r[2] for r in og]); no = np.array([r[3] for r in og])
+    zo = (ro - 0.5) * np.sqrt(no) / 0.5
+    print(f"[original  ] n={len(og)} match {ro.mean():.4f}  z {zo.mean():+.2f} "
+          f"(sd {zo.std():.2f})  ppl {np.exp(np.nanmean(n_o)):.2f}", flush=True)
 
-    print("\n===== dgMARK @ LLaDA-8B-Instruct, C4, 256 tokens =====")
-    print(f"match ratio   watermarked {rw.mean():.4f}   original {ro.mean():.4f}")
-    print(f"analytic z    watermarked {zw_a.mean():+.2f}   original {zo_a.mean():+.2f} "
-          f"(sd {zo_a.std():.2f})")
-    for a, t in ((0.05, 1.645), (0.01, 2.326), (0.001, 3.090)):
-        print(f"  TPR @ FPR={a:<6g} (analytic z>{t:.3f}) = {np.mean(zw_a > t):.2f}"
-              f"   [observed FPR {np.mean(zo_a > t):.2f}]")
-    print(f"empirical null n={len(zo_e)} -> FPR resolution {1/len(zo_e):.3f}; "
-          f"1% is below resolution, shown only for completeness")
-    for a in (0.05, 0.01):
-        thr = float(np.quantile(zo_e, 1 - a))
-        print(f"  TPR @ empirical FPR={a:<5g} (z>{thr:.2f}) = {np.mean(zw_e > thr):.2f}")
-    print(f"\nGPT-2-large  ppl original {np.exp(np.nanmean(n_o)):.2f}   "
-          f"watermarked {np.exp(np.nanmean(n_w)):.2f}   "
-          f"ratio x{np.exp(np.nanmean(n_w))/np.exp(np.nanmean(n_o)):.3f}")
-    print(f"paired dNLL  mean {np.nanmean(dn):+.4f}  q25 {np.nanquantile(dn,.25):+.4f}  "
-          f"q50 {np.nanquantile(dn,.5):+.4f}  q75 {np.nanquantile(dn,.75):+.4f}")
+    arms = [a for a in (arm("watermark", og, n_o, nll), arm("beam3", og, n_o, nll))
+            if a is not None]
+
+    print("\n===== dgMARK @ LLaDA-8B-Instruct, C4 (300-char prompts), 256 tokens =====")
+    print(f"{'arm':<12}{'ppl ratio':>11}{'TPR@5%':>9}{'TPR@1%':>9}{'TPR@0.1%':>10}{'z':>8}")
+    for a in arms:
+        print(f"{a['tag']:<12}{a['ratio']:>11.3f}{a['tpr']['0.05']:>9.2f}"
+              f"{a['tpr']['0.01']:>9.2f}{a['tpr']['0.001']:>10.2f}{a['z']:>+8.2f}")
+    print(f"observed FPR on the non-watermarked arm at the same thresholds: "
+          + "  ".join(f"{a}: {np.mean(zo > t):.2f}"
+                      for a, t in ((0.05, 1.645), (0.01, 2.326), (0.001, 3.090))))
+    print(f"empirical-null resolution is 1/{len(og)} = {1/len(og):.3f}; FPR=0.1% is "
+          f"below it and the analytic threshold is what carries that column")
     print("detection cost: 0 model forwards (token-id parity only)")
-    json.dump(dict(zw_a=zw_a.tolist(), zo_a=zo_a.tolist(), zw_e=zw_e.tolist(),
-                   zo_e=zo_e.tolist(), nll_wm=n_w.tolist(), nll_og=n_o.tolist()),
+    json.dump(dict(original=dict(n=len(og), rate=float(ro.mean()), z=float(zo.mean()),
+                                 ppl=float(np.exp(np.nanmean(n_o))), nll=n_o.tolist(),
+                                 z_all=zo.tolist()), arms=arms),
               open("/ssd1/ming/basinmark/results/dgmark_eval.json", "w"), indent=1)
 
 

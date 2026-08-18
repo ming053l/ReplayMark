@@ -1,0 +1,44 @@
+[drafts] n=10  ppl 26.2
+pool=0.5 carr=0.3 none      tau=1.0  lam=8.0   | TPR@1% 0.00 @5% 0.00 | z -0.13 | ppl x0.94 (dNLL -0.062) | chg 0.012 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 none      tau=1.0  lam=20.0  | TPR@1% 0.00 @5% 0.00 | z -0.11 | ppl x0.94 (dNLL -0.062) | chg 0.013 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 none      tau=2.0  lam=8.0   | TPR@1% 0.00 @5% 0.00 | z +0.19 | ppl x0.97 (dNLL -0.031) | chg 0.014 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 none      tau=2.0  lam=20.0  | TPR@1% 0.00 @5% 0.00 | z +0.24 | ppl x0.98 (dNLL -0.023) | chg 0.015 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 none      tau=3.0  lam=8.0   | TPR@1% 0.00 @5% 0.00 | z +0.70 | ppl x1.09 (dNLL +0.088) | chg 0.016 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 none      tau=3.0  lam=20.0  | TPR@1% 0.00 @5% 0.10 | z +0.73 | ppl x1.11 (dNLL +0.106) | chg 0.018 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 entropy   tau=1.0  lam=8.0   | TPR@1% 0.00 @5% 0.00 | z -0.08 | ppl x0.99 (dNLL -0.010) | chg 0.031 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 entropy   tau=1.0  lam=20.0  | TPR@1% 0.00 @5% 0.00 | z -0.06 | ppl x0.99 (dNLL -0.010) | chg 0.032 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 entropy   tau=2.0  lam=8.0   | TPR@1% 0.00 @5% 0.10 | z +0.56 | ppl x1.28 (dNLL +0.247) | chg 0.033 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 entropy   tau=2.0  lam=20.0  | TPR@1% 0.00 @5% 0.10 | z +0.63 | ppl x1.17 (dNLL +0.157) | chg 0.036 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 entropy   tau=3.0  lam=8.0   | TPR@1% 0.20 @5% 0.20 | z +1.10 | ppl x1.62 (dNLL +0.480) | chg 0.041 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 entropy   tau=3.0  lam=20.0  | TPR@1% 0.20 @5% 0.30 | z +1.49 | ppl x1.59 (dNLL +0.464) | chg 0.048 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 leverage  tau=1.0  lam=8.0   | TPR@1% 0.00 @5% 0.00 | z +0.21 | ppl x0.99 (dNLL -0.014) | chg 0.028 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 leverage  tau=1.0  lam=20.0  | TPR@1% 0.00 @5% 0.00 | z +0.23 | ppl x0.98 (dNLL -0.016) | chg 0.029 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 leverage  tau=2.0  lam=8.0   | TPR@1% 0.00 @5% 0.10 | z +0.58 | ppl x1.28 (dNLL +0.245) | chg 0.034 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 leverage  tau=2.0  lam=20.0  | TPR@1% 0.00 @5% 0.10 | z +0.77 | ppl x1.20 (dNLL +0.182) | chg 0.037 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 leverage  tau=3.0  lam=8.0   | TPR@1% 0.20 @5% 0.20 | z +1.16 | ppl x1.50 (dNLL +0.402) | chg 0.042 | adm med 1 capped 0.00
+pool=0.5 carr=0.3 leverage  tau=3.0  lam=20.0  | TPR@1% 0.20 @5% 0.30 | z +1.52 | ppl x1.62 (dNLL +0.479) | chg 0.048 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 none      tau=1.0  lam=8.0   | TPR@1% 0.00 @5% 0.00 | z -0.02 | ppl x1.44 (dNLL +0.032) | chg 0.005 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 none      tau=1.0  lam=20.0  | TPR@1% 0.00 @5% 0.00 | z -0.02 | ppl x1.44 (dNLL +0.032) | chg 0.005 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 none      tau=2.0  lam=8.0   | TPR@1% 0.00 @5% 0.00 | z +0.11 | ppl x1.43 (dNLL +0.025) | chg 0.004 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 none      tau=2.0  lam=20.0  | TPR@1% 0.00 @5% 0.00 | z +0.12 | ppl x1.43 (dNLL +0.026) | chg 0.005 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 none      tau=3.0  lam=8.0   | TPR@1% 0.00 @5% 0.00 | z +0.25 | ppl x1.45 (dNLL +0.044) | chg 0.007 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 none      tau=3.0  lam=20.0  | TPR@1% 0.00 @5% 0.00 | z +0.26 | ppl x1.45 (dNLL +0.045) | chg 0.007 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 entropy   tau=1.0  lam=8.0   | TPR@1% 0.00 @5% 0.00 | z +0.55 | ppl x1.25 (dNLL +0.219) | chg 0.026 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 entropy   tau=1.0  lam=20.0  | TPR@1% 0.00 @5% 0.00 | z +0.56 | ppl x1.25 (dNLL +0.220) | chg 0.026 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 entropy   tau=2.0  lam=8.0   | TPR@1% 0.00 @5% 0.10 | z +1.04 | ppl x1.46 (dNLL +0.378) | chg 0.030 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 entropy   tau=2.0  lam=20.0  | TPR@1% 0.00 @5% 0.10 | z +1.12 | ppl x1.54 (dNLL +0.429) | chg 0.032 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 entropy   tau=3.0  lam=8.0   | TPR@1% 0.20 @5% 0.20 | z +1.58 | ppl x1.53 (dNLL +0.423) | chg 0.034 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 entropy   tau=3.0  lam=20.0  | TPR@1% 0.20 @5% 0.20 | z +1.74 | ppl x1.66 (dNLL +0.504) | chg 0.037 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 leverage  tau=1.0  lam=8.0   | TPR@1% 0.10 @5% 0.10 | z +0.58 | ppl x1.17 (dNLL +0.153) | chg 0.022 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 leverage  tau=1.0  lam=20.0  | TPR@1% 0.10 @5% 0.10 | z +0.59 | ppl x1.17 (dNLL +0.159) | chg 0.022 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 leverage  tau=2.0  lam=8.0   | TPR@1% 0.10 @5% 0.20 | z +1.03 | ppl x1.27 (dNLL +0.241) | chg 0.027 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 leverage  tau=2.0  lam=20.0  | TPR@1% 0.10 @5% 0.20 | z +1.12 | ppl x1.34 (dNLL +0.295) | chg 0.029 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 leverage  tau=3.0  lam=8.0   | TPR@1% 0.00 @5% 0.20 | z +1.42 | ppl x1.41 (dNLL +0.341) | chg 0.030 | adm med 1 capped 0.00
+pool=0.6 carr=0.15 leverage  tau=3.0  lam=20.0  | TPR@1% 0.00 @5% 0.20 | z +1.53 | ppl x1.51 (dNLL +0.410) | chg 0.033 | adm med 1 capped 0.00
+===== PARETO (TPR@1% FPR vs perplexity ratio) =====
+  ppl <= x1.2: best TPR@1% 0.10  (leverage pool=0.6 carr=0.15 tau=1.0 lam=8.0, ppl x1.17)
+  ppl <= x1.35: best TPR@1% 0.10  (leverage pool=0.6 carr=0.15 tau=1.0 lam=8.0, ppl x1.17)
+  ppl <= x1.6: best TPR@1% 0.20  (entropy pool=0.5 carr=0.3 tau=3.0 lam=20.0, ppl x1.59)
+  none      best TPR@1% under ppl x1.35: 0.00
+  entropy   best TPR@1% under ppl x1.35: 0.00
+  leverage  best TPR@1% under ppl x1.35: 0.10

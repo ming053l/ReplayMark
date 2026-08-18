@@ -489,6 +489,97 @@ the conclusion above:
 
 ---
 
+## Verdict: the detector works, the embedding channel does not have the capacity
+
+Everything below is measured locally, same LLaDA-8B-Instruct checkpoint, same C4 prompts
+(300-char truncation), 256 tokens, GPT-2-large perplexity.
+
+### Local dgMARK (not the paper's table)
+
+| arm | match rate | z | TPR@5% | TPR@1% | TPR@0.1% | ppl | ratio |
+|---|---|---|---|---|---|---|---|
+| no watermark | 0.5097 | +0.04 (sd 0.98) | — | — | — | 9.94 | — |
+| dgMARK k=1 | 0.7057 | +4.35 | 0.88 | 0.74 | 0.62 | 15.40 | x1.55 |
+| dgMARK 3-beam | 0.7404 | +5.81 | 0.92 | **0.86** | 0.82 | 12.23 | **x1.23** |
+
+The non-watermarked arm sits at `z = +0.04, sd = 0.98`, so the pipeline is sound. Local
+dgMARK is **weaker than its published table** (x1.25 -> 99.4 %): different checkpoint,
+50 vs 300 samples, GPT-2-large vs Gemma3-12B. Which is exactly why the local run was
+worth doing — reading the paper would have overstated the opponent.
+
+### BasinMark Pareto screening, 36 configurations (`exp/16_pareto.py`)
+
+| perplexity budget | best TPR@1% | configuration |
+|---|---|---|
+| <= x1.20 | **0.10** | leverage, pool 0.6, carrier 0.15, tau 1, lam 8 (x1.17) |
+| <= x1.35 | **0.10** | same |
+| <= x1.60 | 0.20 | entropy, tau 3, lam 20 (x1.59) |
+
+By selector, under x1.35: `none` 0.00, `entropy` 0.00, `leverage` **0.10**. The
+probe-conditioned leverage score is the only selector that gets off zero, so that rewrite
+was right — and it is still roughly **8x short** of local dgMARK's 0.86 at a comparable
+x1.23.
+
+**The measured root cause is capacity, printed in every row: `adm med 1`.** The median
+pool position has exactly *one* admissible token even at tau = 3, and `capped 0.00`
+confirms the top-256 candidate slate never truncates, so this is not a measurement
+artefact. LLaDA's denoising conditionals are peaked enough that there is almost no token
+freedom to spend, and every bit of signal must be bought at real fluency cost.
+
+### Generation-time made it worse (`exp/20_gentime.py`)
+
+The `lambda = 0` control priced the forced schedule before any watermark:
+
+| arm | ppl | ratio |
+|---|---|---|
+| reference generation | 26.21 | — |
+| two-phase order, no watermark | 51.86 | **x1.98** |
+| two-phase + guidance (tau 6, lam 20) | 203.65 | x7.77 (z +1.14, TPR@1% 0.00) |
+| post-hoc, same tau/lam | 65.29 | x2.49 (z +2.94, TPR@1% 0.50) |
+
+The schedule alone costs **x1.98** — more than dgMARK's entire watermark — so the sweep
+aborted by design. Deferring half the span to a second phase is worse than editing after
+the fact. The coherence hypothesis is falsified: post-hoc's problem was never the
+independent refill.
+
+### Challenge-pair headroom is real but small (`exp/21_challenge.py`)
+
+Dynamic range of `g` inside the fluency-preserving set, best of 28 pattern pairs vs the
+average pair: **1.83x - 2.22x**. Content-selected challenges would roughly double the
+available swing. Against an 8x gap, that is not enough on its own.
+
+### What this means
+
+The challenge-response signal is real, the null is finite-sample valid, and detection
+costs `L` forwards independent of payload. What fails is the **channel**: a statistic
+defined on *which tokens* are present can only be controlled by changing tokens, and on a
+dLLM whose median admissible set is a singleton, that is priced out. dgMARK is cheap for
+the complementary reason — it controls *which position is unmasked next* and never
+touches a token the model did not already prefer.
+
+Closing an 8x gap would need a statistic controllable through a channel that does not
+require specific tokens. Block-local scheduling does not address this: it changes when
+positions are decided, not how much freedom exists at them, and freedom is what was
+measured to be missing.
+
+### Caveat on the comparison
+
+BasinMark's drafts are sampled at temperature 0.8 over the full vocabulary (ppl 26.2),
+dgMARK's at its repo default of top-k 3 (ppl 9.9). Higher draft entropy should *help*
+BasinMark, so the comparison is generous to it and it loses anyway. A final table would
+still need one sampler for both.
+
+### KGW is being re-run; its first pass had an invalid null
+
+At `delta = 0` — no watermark — the detector reported `z = +3.32` and a 37 % false
+positive rate. Cause: the green list is seeded by the previous token, so a repeated
+bigram is scored repeatedly with a perfectly correlated indicator, and LLaDA under forced
+left-to-right decoding (which its own quality reflects: ppl 11.6 vs 9.9 for block
+decoding) produces repetitive text. Fixed by scoring each distinct bigram once, the
+standard remedy; re-running.
+
+---
+
 ## Open questions — what an auditor should attack
 
 1. **Is the detection strength worth the edit rate?** The best configuration changes

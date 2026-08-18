@@ -1,0 +1,10 @@
+[original  ] n=50 match 0.5097  z +0.04 (sd 0.98)  ppl 9.94
+[watermark ] n=50  match 0.7057  z +4.35  TPR@5% 0.88 @1% 0.74 @0.1% 0.62  ppl 15.40 (x1.550)  dNLL +0.4359
+[beam3     ] n=50  match 0.7404  z +5.81  TPR@5% 0.92 @1% 0.86 @0.1% 0.82  ppl 12.23 (x1.231)  dNLL +0.2134
+===== dgMARK @ LLaDA-8B-Instruct, C4 (300-char prompts), 256 tokens =====
+arm           ppl ratio   TPR@5%   TPR@1%  TPR@0.1%       z
+watermark         1.550     0.88     0.74      0.62   +4.35
+beam3             1.231     0.92     0.86      0.82   +5.81
+observed FPR on the non-watermarked arm at the same thresholds: 0.05: 0.10  0.01: 0.00  0.001: 0.00
+empirical-null resolution is 1/50 = 0.020; FPR=0.1% is below it and the analytic threshold is what carries that column
+detection cost: 0 model forwards (token-id parity only)

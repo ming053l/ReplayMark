@@ -10,21 +10,11 @@ import sys, gzip, json
 sys.path.insert(0, "/ssd1/ming/basinmark")
 import numpy as np, torch
 from basinmark.model import BasinModel
+from basinmark.data import c4_prompts
 from basinmark.select import pool_patterns
 
 GEN, PREFIX, NS = 256, 40, 16
 TAUS = [1.0, 2.0, 3.0, 6.0]
-
-
-def c4(tok, n, ntok):
-    out = []
-    with gzip.open("/ssd1/ming/basinmark/data/c4-validation.json.gz", "rt") as f:
-        for line in f:
-            ids = tok(json.loads(line)["text"])["input_ids"]
-            if len(ids) >= ntok + 60:
-                out.append(torch.tensor(ids[:ntok], dtype=torch.long)[None])
-                if len(out) == n:
-                    return out
 
 
 def main():
@@ -41,7 +31,7 @@ def main():
         ids = tk(t, return_tensors="pt", truncation=True, max_length=512).input_ids.cuda()
         return float(torch.exp(gm(ids, labels=ids).loss))
 
-    prompts = c4(M.tok, NS, PREFIX)
+    prompts = c4_prompts(M.tok, NS)
     out = {}
     for tag, legacy in (("reference", False), ("buggy", True)):
         P, H, A = [], [], {t: [] for t in TAUS}
