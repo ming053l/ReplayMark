@@ -23,15 +23,28 @@ from .prng import stream, payload_bits
 from .carrier import signflip_pvalue
 
 
-def shared_patterns(key, n, n_probes, carrier_rate, ctx_rate, n_patterns, n_ablations):
+def shared_patterns(key, n, n_probes, carrier_rate, ctx_rate, n_patterns, n_ablations,
+                    pool_rate=None):
+    """With pool_rate set, P is not returned -- a keyed POOL Q is, and the carrier is
+    chosen inside it by entropy at detection/embedding time (see SharedMark._carrier).
+
+    Key-blind carrier positions waste payload: wherever the denoiser is certain there is
+    no admissible alternative, so the position contributes noise and no signal. Observed
+    as extreme sample-to-sample variance -- 3.9 % of tokens moved and z=+4.1 on one C4
+    continuation, 0.8 % and z=+1.4 on the next.
+
+    The entropy gate is exactly reproducible by the detector: entropy is read from a
+    forward with the WHOLE pool masked, whose conditioning context contains no pool
+    position, so it cannot be changed by anything the embedder writes.
+    """
     rng = stream(key, "shared", n, n_probes, carrier_rate)
     perm = rng.permutation(n)
-    n_p = max(n_probes, int(round(carrier_rate * n)))
+    n_p = max(n_probes, int(round((pool_rate or carrier_rate) * n)))
     P, rest = perm[:n_p], perm[n_p:]
     n_d = max(1, int(round(ctx_rate * n)))
     if n_d > len(rest):
         raise ValueError("ctx_rate too large for the non-carrier region")
-    S_list = [np.sort(c) for c in np.array_split(P, n_probes)]
+    S_list = None if pool_rate else [np.sort(c) for c in np.array_split(P, n_probes)]
     pats = [np.sort(stream(key, "pat", l, n).choice(rest, n_d, replace=False))
             for l in range(n_patterns)]
     pairs = []                                   # [M][R] -> (u, v) ordered pattern indices
@@ -49,31 +62,61 @@ def shared_patterns(key, n, n_probes, carrier_rate, ctx_rate, n_patterns, n_abla
 
 class SharedMark:
     def __init__(self, model, key: bytes, n_probes=16, carrier_rate=0.30, ctx_rate=0.20,
-                 tau=6.0, lam=8.0, commit_steps=4, n_patterns=8, n_ablations=3):
+                 tau=6.0, lam=8.0, commit_steps=4, n_patterns=8, n_ablations=3,
+                 pool_rate=None):
         self.M, self.key = model, key
         self.n_probes, self.carrier_rate, self.ctx_rate = n_probes, carrier_rate, ctx_rate
         self.tau, self.lam, self.commit_steps = tau, lam, commit_steps
         self.n_patterns, self.n_ablations = n_patterns, n_ablations
+        self.pool_rate = pool_rate
         self._cn, self._cp = -1, None
+        self._gate = {}
 
     def _pat(self, span):
         n = len(span)
         if self._cn != n:
             self._cn, self._cp = n, shared_patterns(
                 self.key, n, self.n_probes, self.carrier_rate, self.ctx_rate,
-                self.n_patterns, self.n_ablations)
+                self.n_patterns, self.n_ablations, self.pool_rate)
         P, S_list, pats, pairs = self._cp
-        return span[P], [span[S] for S in S_list], [span[p] for p in pats], pairs
+        return (span[P], None if S_list is None else [span[S] for S in S_list],
+                [span[p] for p in pats], pairs)
+
+    @torch.no_grad()
+    def _carrier(self, ids, span):
+        """(carrier positions, probe sets). Without a pool these are purely keyed; with
+        one, the highest-entropy positions of the pool are kept -- reproducibly, since
+        the entropy forward masks the entire pool."""
+        Q, S_list, _, _ = self._pat(span)
+        if S_list is not None:
+            return Q, S_list
+        # The selection depends only on tokens OUTSIDE the pool, which the embedder never
+        # writes to -- so cache on exactly those, and the same forward is never repeated
+        # between _carrier, _logp and _grid.
+        ctx = self.M.corrupt(ids, Q)
+        ck = hash(ctx.numpy().tobytes())
+        if ck in self._gate:
+            return self._gate[ck]
+        base = self.M.logprobs_rows(ctx, torch.tensor(Q), chunk=1)[0]
+        H = -(base.exp() * base).sum(1).numpy()
+        n_c = max(self.n_probes, int(round(self.carrier_rate * len(span))))
+        keep = np.sort(Q[np.argsort(-H)[:n_c]])
+        order = stream(self.key, "split", len(span)).permutation(len(keep))
+        out = keep, [np.sort(keep[c]) for c in np.array_split(order, self.n_probes)]
+        self._gate[ck] = out
+        return out
 
     @torch.no_grad()
     def _logp(self, ids, span):
         """L forwards -> log-probs at every carrier position under each shared pattern."""
-        P, _, pats, _ = self._pat(span)
+        P, _ = self._carrier(ids, span)
+        _, _, pats, _ = self._pat(span)
         batch = torch.cat([self.M.corrupt(ids, np.concatenate([P, d])) for d in pats], 0)
         return self.M.logprobs_rows(batch, torch.tensor(P), chunk=2)   # [L, |P|, V]
 
     def _grid(self, ids, span, lp=None):
-        P, S_list, _, pairs = self._pat(span)
+        P, S_list = self._carrier(ids, span)
+        _, _, _, pairs = self._pat(span)
         lp = self._logp(ids, span) if lp is None else lp
         idx = {int(p): k for k, p in enumerate(P)}
         y = ids[0, torch.tensor(P)]
@@ -98,7 +141,8 @@ class SharedMark:
 
     @torch.no_grad()
     def embed(self, ids, span, message=0):
-        P, S_list, pats, pairs = self._pat(span)
+        P, S_list = self._carrier(ids, span)
+        _, _, pats, pairs = self._pat(span)
         signs = payload_bits(self.key, self.n_probes, message)
         lp = self._logp(ids, span)                      # fixed: no carrier token enters it
         idx = {int(p): k for k, p in enumerate(P)}

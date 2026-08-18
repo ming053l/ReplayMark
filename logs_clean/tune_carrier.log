@@ -1,0 +1,7 @@
+[drafts ready] M=16 GEN=256
+lam=3.0   commit_steps=2 | z +3.20 (no-wm +0.05) | bit acc 0.750 | changed 0.046 cost 0.36 | 26s/sample
+lam=3.0   commit_steps=8 | z +2.96 (no-wm +0.05) | bit acc 0.703 | changed 0.044 cost 0.36 | 27s/sample
+lam=8.0   commit_steps=2 | z +3.95 (no-wm +0.05) | bit acc 0.797 | changed 0.071 cost 0.86 | 26s/sample
+lam=8.0   commit_steps=8 | z +3.55 (no-wm +0.05) | bit acc 0.781 | changed 0.066 cost 0.87 | 26s/sample
+lam=20.0  commit_steps=2 | z +3.95 (no-wm +0.05) | bit acc 0.844 | changed 0.077 cost 1.00 | 26s/sample
+lam=20.0  commit_steps=8 | z +3.61 (no-wm +0.05) | bit acc 0.828 | changed 0.072 cost 1.01 | 26s/sample

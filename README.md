@@ -74,7 +74,7 @@ Cost: 3 forwards per probe per embedding round; 2 per probe for detection.
 | Null is exactly Binomial(M, 1/2) | **verified** — `P(sign>0)=0.521` over 96 probes |
 | Guidance table costs 2 forwards, not \|V\| | **verified** — 0.3 s/probe on one TITAN RTX |
 | Probe positions are controllable | **partly** — depends strongly on decoding temperature and quality budget `tau` (see below) |
-| Bits can be set end-to-end | **not yet** — best 0.771 at 16 bits; diagnosed as guidance-table staleness, fix under test |
+| Bits can be set end-to-end | **partly** — 0.844 bit accuracy at 16 bits, z = +3.95 vs +0.05 unwatermarked, 7.7 % of tokens changed |
 | Robust to attack | **not started** — `exp/04_attacks.py` written, not run |
 | Beats/complements baselines | **not started** |
 
@@ -192,6 +192,33 @@ Observed as near-zero embedding on most samples: 0.8-1.2 % of tokens changed, `z
 +1.4. Fixed by ordering on the position's *intrinsic* certainty (`max_v base(v)`).
 Re-tuning after the fix is in progress.
 
+### Operating point after the commit-order fix (`exp/07_tune_carrier.py`)
+
+`M = 16` probes, `R = 3` ablation pairs, 256-token span, 4 C4 continuations,
+`carrier_rate = 0.30`, `tau = 6`. `z` is the sign-flip statistic
+`sum(a) / sqrt(sum(a^2))` over the `M*R = 48` blocks.
+
+| lam | commit_steps | z (watermarked) | z (no watermark) | bit accuracy | tokens changed | cost (nats) |
+|---|---|---|---|---|---|---|
+| 3 | 2 | +3.20 | +0.05 | 0.750 | 0.046 | 0.36 |
+| 3 | 8 | +2.96 | +0.05 | 0.703 | 0.044 | 0.36 |
+| 8 | 2 | +3.95 | +0.05 | 0.797 | 0.071 | 0.86 |
+| 8 | 8 | +3.55 | +0.05 | 0.781 | 0.066 | 0.87 |
+| **20** | **2** | **+3.95** | +0.05 | **0.844** | 0.077 | 1.00 |
+| 20 | 8 | +3.61 | +0.05 | 0.828 | 0.072 | 1.01 |
+
+Fewer commit steps is consistently better, for the same reason the ordering bug hurt:
+each committed carrier token sharpens the distribution at the positions still to be
+decided, so a coarse schedule leaves them more room to carry payload. The unwatermarked
+control sits at `z = +0.05` throughout.
+
+**This is not yet a competitive detection strength.** With 48 blocks the ceiling is
+`sqrt(48) = 6.93`; +3.95 is 57 % of it, roughly `p ~ 1e-5`. Raising it means more blocks
+(nearly free under shared patterns, but blocks drawn from few patterns are correlated,
+so the nominal ceiling is not attainable — `exp/09_blocks.py` measures where the real
+gain stops) and higher per-block consistency (bit accuracy 0.844 means ~15 % of probes
+carry the wrong sign and subtract from `z`).
+
 ---
 
 ## Open questions — what an auditor should attack
@@ -224,6 +251,9 @@ basinmark/carrier.py     BasinMark-C: exact, staleness-free guidance; sign-flip 
 basinmark/shared.py      shared ablation patterns: detection in L forwards
 exp/04_attacks.py        smoothing / substitution / deletion  (WRITTEN, NOT RUN)
 exp/05_carrier.py        BasinMark-C sweep
+exp/07_tune_carrier.py   operating point after the commit-order fix
+exp/08_shared.py         shared patterns, with and without the entropy gate
+exp/09_blocks.py         detection power vs number of null blocks
 DESIGN.md                full derivation and the honest risk list
 logs_clean/              raw stdout of every run quoted above
 ```
