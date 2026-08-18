@@ -74,7 +74,7 @@ Cost: 3 forwards per probe per embedding round; 2 per probe for detection.
 | Null is exactly Binomial(M, 1/2) | **verified** — `P(sign>0)=0.521` over 96 probes |
 | Guidance table costs 2 forwards, not \|V\| | **verified** — 0.3 s/probe on one TITAN RTX |
 | Probe positions are controllable | **partly** — depends strongly on decoding temperature and quality budget `tau` (see below) |
-| Bits can be set end-to-end | **not yet** — best so far 0.771 bit accuracy at 16 bits |
+| Bits can be set end-to-end | **not yet** — best 0.771 at 16 bits; diagnosed as guidance-table staleness, fix under test |
 | Robust to attack | **not started** — `exp/04_attacks.py` written, not run |
 | Beats/complements baselines | **not started** |
 
@@ -92,25 +92,55 @@ Fraction of probes whose sign can be set in one pass, over 96 probes:
 Greedy decoding destroys controllability — 91 % of positions admit no alternative
 token at all. The baselines' `temperature = 0.8` is the right regime.
 
-### Where it currently fails (`exp/03c_lambda.py`, `logs_clean/lam.log`)
+### Where core.py fails, and why (`exp/03c_lambda.py`, `logs_clean/lam.log`)
 
 Embedding maximises `log p_base(v) + lam * s_j * g_i(v)` subject to a hard cap `tau` on
-how far below the denoiser's own argmax a substitution may fall. With 16 probes over a
-192-token span (disjoint probe sets, `|S_j| = 12`):
+how far below the denoiser's own argmax a substitution may fall. 16 probes over a
+192-token span, disjoint probe sets, `|S_j| = 12`:
 
-| lam | tau | s*Delta before -> after | bit accuracy | tokens changed | cost |
+| lam | tau | s*Delta before -> after | bit accuracy | tokens changed | cost (nats) |
 |---|---|---|---|---|---|
-| 1 | 4 | — | 0.542 (= chance) | 0.16 | 0.05 nats |
-| 3 | 4 | +0.063 -> +0.129 | 0.667 | 0.24 | 0.30 nats |
-| 3 | 6 | +0.063 -> +0.231 | 0.771 | 0.30 | 0.43 nats |
+| 1 | 4 | — | 0.542 | 0.16 | 0.05 |
+| 3 | 4 | +0.063 -> +0.129 | 0.667 | 0.24 | 0.30 |
+| **3** | **6** | **+0.063 -> +0.231** | **0.771** | 0.30 | 0.43 |
+| 10 | 4 | +0.063 -> +0.031 | 0.604 | 0.29 | 0.34 |
+| 10 | 6 | +0.063 -> +0.170 | 0.646 | 0.39 | 0.87 |
+| 30 | 4 | +0.063 -> +0.096 | 0.500 | 0.36 | 0.69 |
+| 30 | 6 | +0.063 -> +0.059 | 0.458 | 0.53 | 1.57 |
+| 1e6 | 4 | +0.063 -> +0.158 | 0.542 | 0.46 | 1.13 |
+| 1e6 | 6 | +0.063 -> +0.205 | 0.688 | **0.83** | **3.24** |
 
-`s*Delta` moves in the intended direction, so the mechanism is real, but the guidance
-is too weak at these settings. Larger `lam` is under test.
+Bit accuracy is **non-monotonic in the guidance weight**: it peaks at `lam = 3` and
+falls *below chance* at `lam = 30`. At the hard-argmax limit (`lam = 1e6`, `tau = 6`)
+the embedder rewrites 83 % of the tokens and pays 3.24 nats each, and still only
+reaches 0.688. **Guidance strength is not the binding constraint.**
 
-Two implementation bugs already found and fixed, both of which flatlined the embedder:
-dividing the guidance by `|S_j|` (putting it ~50x below the fluency term), and letting
-probe sets overlap so that ~6 probes fought over each position and cancelled out
-(fixed by a keyed *partition* of the span — `prng.partition_patterns`).
+The cause is **guidance-table staleness**. `g` is computed on the current text, then a
+third to four fifths of the tokens are rewritten at once. Every probe's conditioning
+context contains other probes' positions, so after the rewrite `g` no longer describes
+the text it is being applied to, and pushing harder makes the mismatch worse.
+
+Two earlier implementation bugs, both of which flatlined the embedder, were fixed
+before this: dividing the guidance by `|S_j|` (putting it ~50x below the fluency term),
+and letting probe sets overlap so ~6 probes fought over each position and cancelled out
+(fixed by a keyed *partition* — `prng.partition_patterns`).
+
+### BasinMark-C: removing staleness by construction (`basinmark/carrier.py`) — UNDER TEST
+
+Reserve a keyed **carrier set** `P` (a fraction of the span, partitioned into the `M`
+probe sets) and mask **all of `P`** in both arms of every probe. Each arm then conditions
+on `span \ (P u D_j^b)`, which contains no carrier position — so nothing written into
+`P` can change any arm's output. The guidance table is **exact, fixed, and computed
+once**:
+
+    2*M forwards for the whole embedding, versus 3*M per round with no guarantee.
+
+Carrier tokens are then committed progressively, low-confidence-remasking style, with a
+fresh fluency forward at each step that *does* see already-committed carriers — quality
+is refined without ever invalidating `g`. `D_j^0`/`D_j^1` stay exchangeable, so the
+exact null is unchanged.
+
+Results pending (`exp/05_carrier.py`).
 
 ---
 
@@ -140,7 +170,9 @@ exp/01_pilot_signal.py   go/no-go: null symmetry + controllability
 exp/02_sweep.py          temperature x probe_rate x tau
 exp/03_e2e.py            end-to-end embed/detect on C4 prompts
 exp/03c_lambda.py        guidance-strength sweep with before/after diagnostic
+basinmark/carrier.py     BasinMark-C: exact, staleness-free guidance (UNDER TEST)
 exp/04_attacks.py        smoothing / substitution / deletion  (WRITTEN, NOT RUN)
+exp/05_carrier.py        BasinMark-C sweep
 DESIGN.md                full derivation and the honest risk list
 logs_clean/              raw stdout of every run quoted above
 ```
