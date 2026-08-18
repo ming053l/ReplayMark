@@ -1,0 +1,15 @@
+[00] clean z +5.41 | smooth@0.05 +5.38 smooth@0.10 +4.93 smooth@0.20 +4.61 smooth@0.30 +3.24 substitute@0.05 +5.40 substitute@0.10 +4.66 substitute@0.20 +4.77 substitute@0.30 +3.65 outside@0.05 +5.41 outside@0.10 +5.20 outside@0.20 +5.13 outside@0.30 +3.39 delete@0.05 +0.41 delete@0.10 -1.03 delete@0.20 +0.30 delete@0.30 -0.01
+[01] clean z +1.32 | smooth@0.05 +1.32 smooth@0.10 +1.32 smooth@0.20 +1.13 smooth@0.30 +1.18 substitute@0.05 +1.32 substitute@0.10 +1.28 substitute@0.20 +1.32 substitute@0.30 +0.81 outside@0.05 +1.32 outside@0.10 +1.32 outside@0.20 +1.50 outside@0.30 +1.88 delete@0.05 -1.26 delete@0.10 +2.46 delete@0.20 +1.32 delete@0.30 +1.08
+[02] clean z +3.59 | smooth@0.05 +3.45 smooth@0.10 +2.08 smooth@0.20 +2.61 smooth@0.30 +2.34 substitute@0.05 +3.65 substitute@0.10 +2.62 substitute@0.20 +2.57 substitute@0.30 +2.81 outside@0.05 +2.59 outside@0.10 +3.07 outside@0.20 +3.85 outside@0.30 +2.55 delete@0.05 -1.48 delete@0.10 -1.55 delete@0.20 -0.42 delete@0.30 -1.12
+[03] clean z +5.56 | smooth@0.05 +4.99 smooth@0.10 +3.56 smooth@0.20 +0.92 smooth@0.30 +4.92 substitute@0.05 +5.31 substitute@0.10 +2.57 substitute@0.20 -0.16 substitute@0.30 +3.63 outside@0.05 +5.11 outside@0.10 +1.52 outside@0.20 +4.70 outside@0.30 +2.46 delete@0.05 +0.55 delete@0.10 -0.34 delete@0.20 +0.41 delete@0.30 -0.68
+[04] clean z +5.09 | smooth@0.05 +5.02 smooth@0.10 +3.96 smooth@0.20 +4.04 smooth@0.30 +1.03 substitute@0.05 +5.13 substitute@0.10 +4.02 substitute@0.20 +4.11 substitute@0.30 +2.65 outside@0.05 +2.65 outside@0.10 +3.06 outside@0.20 +4.68 outside@0.30 +2.81 delete@0.05 +1.04 delete@0.10 +1.38 delete@0.20 -1.54 delete@0.30 -0.70
+[05] clean z +4.86 | smooth@0.05 +4.29 smooth@0.10 +3.30 smooth@0.20 +1.77 smooth@0.30 +1.51 substitute@0.05 +0.98 substitute@0.10 +3.99 substitute@0.20 +1.94 substitute@0.30 +0.91 outside@0.05 +1.42 outside@0.10 +4.77 outside@0.20 +1.40 outside@0.30 +0.33 delete@0.05 -0.29 delete@0.10 -0.75 delete@0.20 -0.33 delete@0.30 -0.50
+[06] clean z +3.52 | smooth@0.05 +2.93 smooth@0.10 +2.38 smooth@0.20 +2.17 smooth@0.30 +2.50 substitute@0.05 +3.34 substitute@0.10 +3.13 substitute@0.20 +1.82 substitute@0.30 +2.22 outside@0.05 +3.52 outside@0.10 +2.96 outside@0.20 +3.26 outside@0.30 +3.54 delete@0.05 -0.66 delete@0.10 +2.88 delete@0.20 -1.40 delete@0.30 +1.40
+[07] clean z +5.00 | smooth@0.05 +4.93 smooth@0.10 +3.19 smooth@0.20 +1.51 smooth@0.30 +1.76 substitute@0.05 +3.32 substitute@0.10 +1.98 substitute@0.20 +1.02 substitute@0.30 +2.64 outside@0.05 +4.42 outside@0.10 +1.56 outside@0.20 +2.31 outside@0.30 -0.06 delete@0.05 +0.77 delete@0.10 +2.75 delete@0.20 -0.51 delete@0.30 -0.16
+===== ATTACKS on SharedMark (mean z; unwatermarked baseline z ~ 0) =====
+attack        rho=0.05     rho=0.10     rho=0.20     rho=0.30   
+none          +4.29
+smooth              +4.04        +3.09        +2.35        +2.31
+substitute          +3.56        +3.03        +2.17        +2.41
+outside             +3.30        +2.93        +3.35        +2.11
+delete              -0.11        +0.73        -0.27        -0.09

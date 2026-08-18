@@ -75,7 +75,7 @@ Cost: 3 forwards per probe per embedding round; 2 per probe for detection.
 | Guidance table costs 2 forwards, not \|V\| | **verified** — 0.3 s/probe on one TITAN RTX |
 | Probe positions are controllable | **partly** — depends strongly on decoding temperature and quality budget `tau` (see below) |
 | Bits can be set end-to-end | **partly** — 0.844 bit accuracy at 16 bits, z = +3.95 vs +0.05 unwatermarked, 7.7 % of tokens changed |
-| Robust to attack | **not started** — `exp/04_attacks.py` written, not run |
+| Robust to attack | **partly** — survives re-denoising (z +4.29 -> +2.31 at rho=0.30); destroyed by deletion |
 | Beats/complements baselines | **not started** |
 
 ### Controllability sweep (`exp/02_sweep.py`, `logs_clean/sweep.log`)
@@ -244,6 +244,54 @@ detection-vs-quality curve — the form the baselines are actually compared on.
 The worst sample stays around `z = +1.2-1.4` in every configuration. Per-sample variance,
 not the mean, is the remaining weakness.
 
+### Blocks vs detection power (`exp/09_blocks.py`)
+
+Same 8 continuations, entropy gate 0.6, `lam = 20`, `commit_steps = 2`.
+
+| L (patterns) | R (ablations) | blocks | z | % of `sqrt(blocks)` ceiling | bit acc | median p | detect forwards |
+|---|---|---|---|---|---|---|---|
+| 8 | 3 | 48 | +4.29 | 62 % | 0.930 | 4.4e-7 | 8 |
+| **8** | **6** | 96 | **+5.15** | 53 % | 0.938 | **5.5e-10** | **8** |
+| 16 | 6 | 96 | +5.33 | 54 % | 0.906 | 3.8e-10 | 16 |
+| 16 | 12 | 192 | +5.55 | 40 % | 0.883 | 1.9e-11 | 16 |
+
+More blocks keeps paying, but a shrinking fraction of the nominal ceiling is reached —
+blocks drawn from `L` shared patterns are correlated, exactly as expected. `L = 8, R = 6`
+is the efficient point: `p = 5.5e-10` from **8 forward passes**, and doubling `R` costs
+nothing because the patterns are reused.
+
+### The decisive attack: BasinMark survives re-denoising (`exp/10_attacks_shared.py`)
+
+The adversary owns the same dLLM, re-masks a fraction `rho` of the text and re-denoises
+it toward the model's own basin. This is the natural adversary for a watermark stored in
+reconstruction behaviour, and it was the stated go/no-go for the whole idea. Mean `z`
+over 8 samples, `L = 8, R = 3` (clean `z = +4.29`, unwatermarked `z ~ 0`):
+
+| attack | rho=0.05 | rho=0.10 | rho=0.20 | rho=0.30 |
+|---|---|---|---|---|
+| **smooth** (argmax re-denoise) | +4.04 | +3.09 | +2.35 | +2.31 |
+| **substitute** (sampled re-denoise) | +3.56 | +3.03 | +2.17 | +2.41 |
+| **outside** (edit only outside the pool) | +3.30 | +2.93 | +3.35 | +2.11 |
+| **delete** | -0.11 | +0.73 | -0.27 | -0.09 |
+
+**Smoothing degrades the watermark but does not destroy it.** Re-denoising 30 % of the
+text — with the same model, at the attacker's own quality cost — leaves `z = +2.31`
+against a null at 0. The signal is not a fragile artefact of the exact tokens chosen.
+
+The `outside` row also shows the entropy gate's desynchronisation risk is real but not
+catastrophic: perturbing only non-pool positions, which can reorder the carrier
+selection without touching a carrier token, costs about as much as attacking the carrier
+directly.
+
+**Deletion destroys it completely**, at every rate, exactly as predicted: patterns are
+derived from absolute positions, so a single deletion shifts every role. This is a design
+limitation, not a subtle robustness failure, and content-anchored patterns are the
+obvious fix — not yet implemented.
+
+Not measured: the attacker's *own* cost. An attack that rewrites 30 % of a text may
+degrade it enough that the attack is self-defeating, but no perplexity or semantic
+similarity was computed on attacked text here, so no such claim is made.
+
 ---
 
 ## Open questions — what an auditor should attack
@@ -253,11 +301,9 @@ not the mean, is the remaining weakness.
    `exp/11_tradeoff.py`; until that lands, no claim about quality is supported.
 2. **Per-sample variance.** The mean is `z = +4.06` but the worst of 8 samples is
    `+1.27`. A watermark that fails on some texts fails in deployment.
-3. **Denoising-smoothing attack.** The adversary owns the same dLLM, masks x % of the
-   text at random and re-denoises, pulling it into the model's natural basin. This is
-   the natural adversary for a *functional* watermark and none of the four prior dLLM
-   watermarks face it in this form. If BasinMark dies here, the idea dies.
-   `exp/04_attacks.py` implements it; it has not been run.
+3. **Denoising-smoothing attack — answered, and the idea survives it.** See the table
+   above: `z` falls from +4.29 to +2.31 at `rho = 0.30`, not to 0. Open follow-up: what
+   the attack costs the *attacker* in text quality, which was not measured.
 4. **Alignment under insertion/deletion.** Patterns are derived from absolute positions,
    so an insertion shifts every role. Content-anchored patterns are not implemented.
 5. **Paraphrase** will break this, as it breaks every token-level scheme.
