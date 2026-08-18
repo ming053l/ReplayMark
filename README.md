@@ -438,12 +438,29 @@ LLaDA 1.5, C4, 256 tokens, PPL under Gemma3-12B:
 | KGW (delta=3) | 7.87 | x1.87 | 99.21 % |
 | PATTERN-MARK (delta=3) | 7.69 | x1.83 | 95.96 % |
 
-**This settles the strategic question.** A dLLM watermark reaches ~92 % TPR at 1 % FPR
-for **x1.10** perplexity, and ~99 % for **x1.25**. BasinMark, post-hoc, has **no usable
+**This is a target anchor, not a matched baseline.** The local reproduction differs from
+the paper in four ways (model, PPL evaluator, sample count, beam variant — table below),
+so these numbers say what a published dLLM watermark achieves, not what dgMARK scores
+under conditions identical to BasinMark's. The local run is still required and is running.
+With that caveat: a dLLM watermark reaches ~92 % TPR at 1 % FPR for **x1.10** perplexity,
+and ~99 % for **x1.25**. BasinMark, post-hoc, has **no usable
 TPR at x1.35**, and its only configuration with any signal costs **x4.01** for
 `z = 2.84` (`p_bound = 0.051`). Even KGW — the crude baseline — buys 99 % at x1.87.
-On the quality-detection plane the current embedder is dominated by every published
-method, by about an order of magnitude. This is not a tuning gap.
+On the quality-detection plane the current embedder is behind every published method by
+roughly an order of magnitude — far too large a gap to be tuning, even allowing for the
+evaluator mismatch.
+
+**What generation time does and does not buy.** The per-token price is identical either
+way: choosing `v` over the model's preferred `v*` costs `log p(v*) - log p(v)` whether or
+not a token was previously committed there. What post-hoc additionally loses is joint
+coherence — it masks 30 % of the span and refills it in two steps, i.e. from near
+independent marginals. Generation-time keeps coherence but, because the guidance table
+requires every non-pool token to be final first, it forces an unusual schedule: all
+non-pool positions, then all pool positions. With `pool_rate = 0.5` that defers half the
+span. `exp/20_gentime.py` therefore runs a `lambda = 0` two-phase control to price that
+schedule *before* any watermark, and aborts the sweep if it already exceeds x1.35 — the
+next formulation would then be block-local (watermark inside each 32-token block, keeping
+the reference decoding order) rather than any retuning.
 
 **Why dgMARK is cheap is also the lesson.** It never modifies token probabilities: it
 changes *which masked position is unmasked next*, preferring positions whose
