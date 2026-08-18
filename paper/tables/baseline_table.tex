@@ -1,0 +1,65 @@
+% Baseline comparison for BasinMark. Style follows the C4 paper (booktabs, resizebox,
+% oursemph / failred / finalres colour macros, deltas in parentheses).
+% Requires in the preamble:
+%   \usepackage[table]{xcolor}\usepackage{booktabs}
+%   \definecolor{oursemph}{RGB}{0,90,181}
+%   \definecolor{failred}{RGB}{178,24,43}
+%   \definecolor{finalres}{RGB}{250,222,236}
+%   \definecolor{notmeasured}{RGB}{178,24,43}
+%
+% Every number below is measured locally on one TITAN RTX: GSAI-ML/LLaDA-8B-Instruct in
+% fp16, C4 realnewslike prompts truncated to 300 characters (dgMARK's published protocol),
+% 256 generated tokens, perplexity under GPT-2-large, sequences of at least 200 tokens
+% retained. TPR is reported at analytic FPR thresholds; the non-watermarked arm's measured
+% FPR at the same thresholds is given in the notes so the thresholds can be audited.
+
+\begin{table}[!t]
+\centering
+\small
+\renewcommand{\arraystretch}{0.72}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrrr}
+\toprule
+& & & & \multicolumn{3}{c}{TPR at FPR} & & \\
+\cmidrule(lr){5-7}
+Method & Setting & PPL $\downarrow$ & Ratio & $5\%$ & $1\%$ & $0.1\%$ & $z$ & Det.\ fwd.\ $\downarrow$ \\
+\midrule
+\multicolumn{9}{l}{\textit{Generation-time watermarks (the watermark is applied while the text is produced)}} \\
+\midrule
+No watermark & block dec., top-$k$ 3 & 9.94 & 1.00$\times$ & -- & -- & -- & $+0.04$ & -- \\
+dgMARK \citep{hong2026dgmark} & $k=1$ & 15.40 & 1.55$\times$ & 0.88 & 0.74 & 0.62 & $+4.35$ & \textbf{0} \\
+\rowcolor{finalres}
+dgMARK \citep{hong2026dgmark} & $+3$-beam & 12.23 & 1.23$\times$ & \textbf{0.92} & \textbf{0.86} & \textbf{0.82} & $+5.81$ & \textbf{0} \\
+\midrule
+No watermark & left-to-right & 11.61 & 1.00$\times$ & -- & -- & -- & $+0.00$ & -- \\
+KGW \citep{kirchenbauer2023watermark} & $\delta=1$ & \textcolor{notmeasured}{pending} & -- & -- & -- & -- & -- & \textbf{0} \\
+KGW \citep{kirchenbauer2023watermark} & $\delta=2$ & \textcolor{notmeasured}{pending} & -- & -- & -- & -- & -- & \textbf{0} \\
+KGW \citep{kirchenbauer2023watermark} & $\delta=3$ & \textcolor{notmeasured}{pending} & -- & -- & -- & -- & -- & \textbf{0} \\
+\midrule
+\multicolumn{9}{l}{\textit{Post-hoc watermarks (the watermark is applied to text that already exists)}} \\
+\midrule
+No watermark & $T=0.8$, full vocab & 26.21 & 1.00$\times$ & -- & -- & -- & $-0.03$ & -- \\
+\textcolor{oursemph}{BasinMark} & keyed carrier & 27.7 & 1.11$\times$ & 0.00 & 0.00 & 0.00 & $+0.73$ & 9 \\
+\textcolor{oursemph}{BasinMark} & entropy gate & 41.7 & 1.59$\times$ & 0.30 & \textcolor{failred}{0.20} & 0.10 & $+1.49$ & 9 \\
+\textcolor{oursemph}{BasinMark} & leverage, quality-first & 30.5 & 1.17$\times$ & 0.10 & \textcolor{failred}{0.10} & 0.00 & $+0.58$ & 9 \\
+\textcolor{oursemph}{BasinMark} & leverage, detection-first & 65.3 & \textcolor{failred}{2.49$\times$} & 0.62 & 0.50 & -- & $+2.94$ & 9 \\
+\textcolor{oursemph}{BasinMark} & generation-time, two-phase & 203.7 & \textcolor{failred}{7.77$\times$} & 0.12 & \textcolor{failred}{0.00} & 0.00 & $+1.14$ & 9 \\
+\bottomrule
+\end{tabular}%
+}
+\caption{\textbf{Watermark detectability against the text quality actually paid for.}
+All rows measured on LLaDA-8B-Instruct, C4 prompts (300-character truncation), 256
+generated tokens, GPT-2-large perplexity; $n=50$ for dgMARK, $n=30$ for KGW, $n=10$ for
+BasinMark. \emph{Ratio} is perplexity relative to the matching non-watermarked arm
+directly above it. Each block is compared against its own control because the decoding
+regime differs: dgMARK uses block decoding with top-$k$ 3, KGW requires strict
+left-to-right decoding (its green list is seeded by the preceding token, which
+order-agnostic decoding does not provide), and BasinMark operates on drafts sampled at
+$T=0.8$ over the full vocabulary. \emph{Det.\ fwd.} is the number of model forward passes
+a detection requires. Non-watermarked arms sit at $|z|\le0.05$ with unit standard
+deviation, so the thresholds are not inflated. \textcolor{notmeasured}{Pending} rows are
+re-running after a detector fault: scoring repeated bigrams gave a $37\%$ false-positive
+rate at $\delta=0$ under forced left-to-right decoding, and each distinct bigram is now
+scored once.}
+\label{tab:baselines}
+\end{table}
