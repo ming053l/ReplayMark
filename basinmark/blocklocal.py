@@ -93,13 +93,23 @@ class BlockMark:
 
     # ---------- challenge table for one block ----------
     @torch.no_grad()
-    def _arms(self, x, prompt_len, lo):
-        """L forwards, block fully masked. Independent of anything committed inside it."""
+    def _arms(self, x, prompt_len, lo, gen_end):
+        """L forwards, with the block AND everything after it masked.
+
+        Masking the tail is not optional. While block b is being decoded, every later block
+        is still [MASK]; a detector that recomputed the arms on the finished text would
+        condition on tokens that did not exist when the guidance was produced, and the two
+        tables would simply be different objects. The first version omitted this and
+        measured exactly what that predicts -- free quality (x0.97-1.02) and no signal at
+        all (z = -0.10). Masking [lo, gen_end) reproduces the generation-time state at
+        detection, and is a no-op during generation since those positions are masked
+        anyway.
+        """
         B, S_list, pats, pairs = block_patterns(
             self.key, prompt_len, lo, self.block_len, self.probes_per_block,
             self.n_patterns, self.n_ablations, self.ctx_frac)
         base = x.clone()
-        base[0, B] = MASK_ID
+        base[0, lo:gen_end] = MASK_ID
         batch = torch.cat([self._mask(base, d) for d in pats], 0)
         lp = self.M.logprobs_rows(batch, torch.tensor(B), chunk=2)      # [L, |B|, V]
         return B, S_list, pairs, lp
@@ -138,9 +148,10 @@ class BlockMark:
         x[:, :Pn] = prompt_ids.to(self.M.device)
         self.stats = dict(deferred=0, compatible=0, committed=0, fallback=0)
 
+        gen_end = Pn + gen_len
         for b in range(n_blocks):
             lo = Pn + b * self.block_len
-            B, S_list, pairs, lp = self._arms(x.cpu(), Pn, lo)
+            B, S_list, pairs, lp = self._arms(x.cpu(), Pn, lo, gen_end)
             off = b * self.probes_per_block
             g, owner = self._guidance(B, S_list, pairs, lp,
                                       signs[off:off + self.probes_per_block])
@@ -206,10 +217,11 @@ class BlockMark:
     @torch.no_grad()
     def deltas(self, ids, prompt_len, gen_len):
         n_blocks = max(1, gen_len // self.block_len)
+        gen_end = prompt_len + gen_len
         grid = []
         for b in range(n_blocks):
             lo = prompt_len + b * self.block_len
-            B, S_list, pairs, lp = self._arms(ids, prompt_len, lo)
+            B, S_list, pairs, lp = self._arms(ids, prompt_len, lo, gen_end)
             loc = {int(p): k for k, p in enumerate(B)}
             y = ids[0, torch.tensor(B)]
             at = lp.gather(2, y[None, :, None].expand(lp.shape[0], -1, 1)).squeeze(2)
