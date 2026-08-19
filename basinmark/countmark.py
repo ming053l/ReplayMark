@@ -140,10 +140,12 @@ class CountMark:
             m = base.clone()
             m[0, torch.tensor(d)] = MASK_ID
             batch.append(m)
-        lp = self.M.logprobs_rows(torch.cat(batch, 0), torch.tensor(B), chunk=2)
+        # float64 must be requested INSIDE log_softmax; casting afterwards recovers
+        # nothing, since the rounding that creates the ties has already happened
+        lp = self.M.logprobs_rows(torch.cat(batch, 0), torch.tensor(B), chunk=2,
+                                  dtype=torch.float64)
         u, v = pairs[0]
-        # float64: the difference of two near-zero log-probs is exactly what rounds away
-        return B, (lp[v].double() - lp[u].double())   # [|B|, V]
+        return B, (lp[v] - lp[u])                     # [|B|, V], float64
 
     def _eps(self, span):
         return orientation_bits(self.key, span)

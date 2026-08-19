@@ -25,13 +25,21 @@ class BasinModel:
 
     # ---------- core probe ----------
     @torch.no_grad()
-    def logprobs_rows(self, ids_batch, rows, chunk=2):
+    def logprobs_rows(self, ids_batch, rows, chunk=2, dtype=torch.float32):
         """ids_batch: LongTensor [B, L] already corrupted. rows: LongTensor [R] positions.
-        Returns log-softmax [B, R, V] (fp32)."""
+        Returns log-softmax [B, R, V].
+
+        `dtype=torch.float64` matters wherever two arms' log-probs are subtracted. This
+        model is confident enough that a chosen token's log-prob is often within float32's
+        resolution of zero under both arms, so the difference underflows to exactly zero
+        and the position becomes unusable. Measured: 28-34 % of positions tie in float32.
+        Converting after this function has already rounded does not help -- the precision
+        has to be kept here.
+        """
         outs = []
         for s in range(0, ids_batch.shape[0], chunk):
             logits = self.model(ids_batch[s:s + chunk].to(self.device)).logits
-            outs.append(F.log_softmax(logits[:, rows, :].float(), dim=-1).cpu())
+            outs.append(F.log_softmax(logits[:, rows, :].to(dtype), dim=-1).cpu())
             del logits
         return torch.cat(outs, 0)
 
