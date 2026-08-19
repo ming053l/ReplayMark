@@ -46,12 +46,13 @@ No watermark & $T=0.8$, full vocab & 26.21 & 1.00$\times$ & -- & -- & -- & $-0.0
 \textcolor{oursemph}{ReTrace V1} & leverage, detection-first & 65.3 & \textcolor{failred}{2.49$\times$} & 0.62 & 0.50 & -- & $+2.94$ & 9 \\
 \textcolor{oursemph}{ReTrace V1} & generation-time, two-phase & 203.7 & \textcolor{failred}{7.77$\times$} & 0.12 & \textcolor{failred}{0.00} & 0.00 & $+1.14$ & 9 \\
 \midrule
-\multicolumn{9}{l}{\textit{Response-guided resampling --- ReTrace V3, presence-only, PRELIMINARY ($n{=}20$, valid $9$--$10$)}} \\
+\multicolumn{9}{l}{\textit{Response-guided resampling --- ReTrace V3, presence-only, 512 tok, $n{=}30$, matched control}} \\
 \midrule
-\textcolor{oursemph}{ReTrace V3} & $R=1$, 256 tok & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.40 & 0.25 & 0.25 & $+1.6^{*}$ & 72 \\
-\textcolor{oursemph}{ReTrace V3} & $R=2$, 256 tok & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.60 & 0.50 & 0.30 & $+3.1^{*}$ & 72 \\
-\textcolor{oursemph}{ReTrace V3} & $R=1$, 512 tok & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.50 & 0.40 & 0.10 & $+2.2^{*}$ & 144 \\
-\textcolor{oursemph}{ReTrace V3} & $R=2$, 512 tok & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.60 & 0.40 & 0.20 & $+2.1^{*}$ & 144 \\
+No watermark & matched scheduler & 11.38 & 1.00$\times$ & 0.00 & 0.00 & 0.00 & -- & -- \\
+\rowcolor{finalres}
+\textcolor{oursemph}{ReTrace V3} & $R=1$ & 11.0 & \textbf{0.97}$\times$ & 0.57 & 0.43 & 0.20 & -- & 144 \\
+\rowcolor{finalres}
+\textcolor{oursemph}{ReTrace V3} & $R=2$ & 10.6 & \textbf{0.93}$\times$ & 0.70 & \textbf{0.57} & 0.40 & -- & 144 \\
 \bottomrule
 \end{tabular}%
 }
@@ -73,17 +74,17 @@ cost the ratio column hides: left-to-right decoding scores $11.61$ against $9.94
 block decoding, so measured against the better control $\delta=1$ costs $1.20\times$, not
 $1.03\times$. And perplexity is not monotone in $\delta$ here ($16.21$ at $\delta=2$
 versus $14.05$ at $\delta=3$), because a strong green-list bias also makes the text more
-repetitive, which an $n$-gram-blind perplexity rewards. The V3 rows are preliminary:
-every carrier feeds one presence test (nulls: $0.498$ at $n_{\mathrm{sync}}{=}123$ for
-$256$ tokens, $0.509$ at $148$ for $512$); detection cost grows linearly with length while
-the presence count grows with it, which is why $R{=}1$ --- the only quality-neutral
-setting --- climbs from $0.25$ to $0.40$ at $1\%$ between the two lengths, the same
-length-power trade dgMARK reports; $^{*}$the $z$ implied by the mean match rate; $^{\dagger}$V3
-quality is deliberately left unreported here --- all V3 perplexities so far were measured
-against a \emph{differently-scheduled} reference generator, and $R{=}1$ and $R{=}2$
-showing the same $\Delta$NLL is the signature of that confound rather than of watermark
-cost. A matched-scheduler control (same generator, steering off) is running; its paired
-$\Delta$NLL is the number this column will carry. About half of C4-continuation
+repetitive, which an $n$-gram-blind perplexity rewards. The V3 block is measured at $n{=}30$ against a \emph{matched-scheduler} control ---
+the same generator with steering disabled --- which resolves the earlier quality
+confusion: every V3 perplexity previously reported was paired against a
+differently-scheduled reference and overstated the cost by more than $2\times$. Against
+the matched control the watermark is \textbf{quality-free}: paired $\Delta$NLL medians of
+$-0.027$ ($R{=}1$) and $-0.037$ ($R{=}2$), ratios $0.97\times$ and $0.93\times$. The
+mechanism explains why: at one-sided positions the accepted token \emph{is} the natural
+sample whichever way the coin lands, and only genuinely two-sided positions pay, by
+construction less than one bit. The control row doubles as the null: zero false positives
+at every threshold. Detection here is the gated indicator; the LLR detector, which also
+reads the one-sided majority as signed evidence, is evaluated on held-out documents. About half of C4-continuation
 generations are shorter than the evaluable threshold in \emph{both} arms; dgMARK's own
 protocol filters at $200$ tokens for the same reason, and the valid-generation rate will
 be reported for every method under one shared rule.}

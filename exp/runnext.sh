@@ -16,3 +16,8 @@ echo "=== 19 exit $? ==="
 /home/ming0531/miniconda3/envs/mmada/bin/python exp/20_robust.py > logs/20_robust.log 2>&1
 echo "=== 20 exit $? ==="
 echo "=== OVERNIGHT CHAIN DONE ==="
+/home/ming0531/miniconda3/envs/mmada/bin/python exp/17_llr.py > logs/17_llr.log 2>&1
+echo "=== 17b exit $? ==="
+/home/ming0531/miniconda3/envs/mmada/bin/python exp/18_detector_ablation.py > logs/18_ablation.log 2>&1
+echo "=== 18b exit $? ==="
+echo "=== CHAIN FULLY DONE ==="

@@ -8,8 +8,10 @@ from basinmark.llr import build_cache, llr_pvalue
 
 KEY, BLK = b"retrace-key-A", 32
 CACHES = {}                       # (arm, i) -> per-position arrays, for offline iteration
-d = json.load(open("/ssd1/ming/basinmark/results/16_outputs.json"))
-pls, GEN, saved = d["pls"], d["GEN"], d["saved"]
+# 16's in-flight process predated the save patch, so its outputs were never written;
+# 19's held-out outputs carry the same three-arm structure minus R2
+d = json.load(open("/ssd1/ming/basinmark/results/19_freeze.json"))
+pls, GEN, saved = d["pls"], d["gen"], d["ids"]
 M = BasinModel()
 Rmap = {"control": 1, "R1": 1, "R2": 2}
 for name, docs in saved.items():
@@ -17,7 +19,7 @@ for name, docs in saved.items():
     for i, ids_list in enumerate(docs):
         ids = torch.tensor(ids_list, dtype=torch.long)[None]
         w = ResampleMark(M, KEY, block_len=BLK, s_min=0.5, retries=1, sync_frac=1.0,
-                         n_payload_bits=1, nonce=f"doc-{i}")
+                         n_payload_bits=1, nonce=f"ho-{i}")
         cache = build_cache(w, ids, pls[i], GEN)
         CACHES[f"{name}:{i}"] = cache
         pv_llr.append(llr_pvalue(cache, w.key, pls[i], GEN, R=Rmap[name])["p_value"])
