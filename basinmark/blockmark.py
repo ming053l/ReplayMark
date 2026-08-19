@@ -1,38 +1,28 @@
-"""CountMark: a re-denoising watermark whose statistic is a sum of bounded indicators.
+"""BasinMark V2: order is the embedding channel, behaviour is the verification channel.
 
-Why the previous statistic could not be driven, measured rather than argued
-(`exp/26_diag.py`): the per-position quantity s*g is heavy-tailed. Averaging sixteen of
-them into one Delta_j leaves the mean dominated by a few large values, so controlling the
-*sign* of the small ones -- which is all the commit-order channel can do -- barely moves
-it. On unwatermarked text the fraction of positions with s*g > 0 measured 0.18-0.52 across
-samples while the mean sat at ~0, which is exactly what a right-skewed distribution looks
-like.
+V1 embedded by *substituting* tokens, and that is what priced it out: the median position
+admits one token inside any usable fluency budget, so buying signal meant paying several
+nats for it (see `legacy/` and the analysis section of the README).
 
-dgMARK does not have this problem because its statistic is a count: every controlled
-position contributes exactly one unit, so a modest per-position bias over many positions
-becomes a large z. The fix is to adopt that *shape* while keeping the observable a keyed
-re-denoising response rather than a hash of the token identity.
+V2 never touches a token. The model proposes what it would have proposed; the watermark
+only decides **which position commits first**. A position whose model-preferred token
+already answers the keyed re-denoising challenge is committed; one that does not is
+deferred, and with more context the model may itself propose a compatible token there.
+That is the property making dgMARK nearly free, applied to a behavioural observable
+rather than a hash of the token identity.
 
-Give every position its own keyed orientation bit eps_i in {-1, +1} and define
+Decoding follows the reference LLaDA schedule -- blocks in order, diffusion within a
+block. A block's challenge table is built once with that block, and everything after it,
+masked; nothing committed inside the block can then enter the table's conditioning, and
+the detector rebuilds the identical table from the finished text.
 
-    m_i = 1[ eps_i * g_i(y_i) > 0 ],        T = sum_i m_i
+The statistic is a count, not an average:
 
-where g_i is the same challenge contrast as before. Under H0 the eps_i are independent
-fair coins, so the m_i are i.i.d. Bernoulli(1/2) and
+    m_i = 1[ eps_i * g_i(y_i) > 0 ],   T = sum_i m_i  ~  Binomial(n, 1/2) exactly
 
-    T ~ Binomial(n, 1/2)      exactly.
-
-This is stronger than what the previous design could claim: exact enumeration rather than
-Hoeffding's bound, and no resolution floor. Per-probe orientation bits could not give this
--- one bit flips every position in the probe at once, so a probe carried one bit of
-randomness no matter how many positions it held.
-
-Payload: positions are partitioned into M keyed groups and each group's count carries one
-bit, the same construction dgMARK uses.
-
-Embedding is unchanged in spirit and never alters a token: during block decoding, prefer
-committing positions whose *model-preferred* token already satisfies eps_i * g_i > 0, and
-defer the others.
+with one keyed orientation bit per position. Averaging a heavy-tailed contrast, as V1
+did, leaves sign control with no leverage; a count gives every steered position exactly
+one unit.
 """
 import hashlib, hmac
 import numpy as np, torch
@@ -40,77 +30,10 @@ import torch.nn.functional as F
 from scipy.stats import binom
 from .model import MASK_ID
 from .prng import stream
+from .challenges import orientation_bits, tie_bits, score, block_challenges
 
 
-def orientation_bits(key: bytes, positions, salt="eps"):
-    """One independent keyed coin per position -- the source of the exact binomial null."""
-    out = {}
-    for i in positions:
-        h = hmac.new(key, f"{salt}:{int(i)}".encode(), hashlib.sha256).digest()
-        out[int(i)] = 1 if (h[0] & 1) else -1
-    return out
-
-
-def tie_bits(key: bytes, positions):
-    """A second keyed coin, used only where g is exactly zero.
-
-    Ties are not rare here and ignoring them silently breaks the null. LLaDA is confident
-    enough that at many positions the emitted token has probability indistinguishable from
-    one, so log_softmax rounds to 0.0 under BOTH arms and their difference is exactly zero.
-    Scoring `eps * g > 0` then counts every such position as a miss, which drags the
-    unwatermarked match rate to P(g != 0)/2 -- measured at 0.32-0.37 rather than 0.50,
-    thirteen standard deviations off. Resolving ties by an independent keyed coin restores
-    Bernoulli(1/2) by construction; the positions stay uncontrollable during embedding, in
-    the same way dgMARK gains nothing at a position where no candidate matches its parity.
-    """
-    out = {}
-    for i in positions:
-        h = hmac.new(key, f"tie:{int(i)}".encode(), hashlib.sha256).digest()
-        out[int(i)] = 1 if (h[1] & 1) else 0
-    return out
-
-
-def score(gv, eps, tie):
-    """m_i, with exact ties broken by the keyed coin rather than counted as misses."""
-    gv = np.asarray(gv, dtype=np.float64)
-    m = (eps * gv > 0).astype(np.int64)
-    z = gv == 0.0
-    m[z] = tie[z]
-    return m, int(z.sum())
-
-
-def block_challenges(key, block_lo, block_len, n_patterns, ctx_frac=0.20, min_ctx=4,
-                     mode="random"):
-    """L ablation patterns over the already-final region, and the keyed pairing.
-
-    mode="contrast" builds the pair from opposite ends of the context instead of at
-    random: one pattern ablates the positions nearest the block, the other the furthest.
-    Recency dominates next-token prediction, so the two arms then disagree far more, which
-    widens the dynamic range of g -- the quantity `exp/21_challenge.py` measured a
-    1.8-2.2x headroom on when merely picking the best of 28 random pairs. Validity is
-    unaffected: the exact null needs the *orientation* bit to be a keyed coin, not the
-    unordered pair to be content-independent.
-    """
-    region = np.arange(0, block_lo)
-    n_d = max(min_ctx, int(round(ctx_frac * len(region))))
-    n_d = min(n_d, max(1, len(region) // 2))
-    if mode == "contrast":
-        near, far = np.sort(region[-n_d:]), np.sort(region[:n_d])
-        pats = [near, far]
-        for l in range(2, n_patterns):
-            pats.append(np.sort(stream(key, "cpat", block_lo, l)
-                                .choice(region, n_d, replace=False)))
-        pairs = [(0, 1)]
-    else:
-        pats = [np.sort(stream(key, "rpat", block_lo, l).choice(region, n_d, replace=False))
-                for l in range(n_patterns)]
-        r_ = stream(key, "rpair", block_lo)
-        u, v = r_.choice(n_patterns, 2, replace=False)
-        pairs = [(int(u), int(v))]
-    return pats, pairs
-
-
-class CountMark:
+class BlockMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=4, ctx_frac=0.20,
                  tau_conf=0.5, holes=4, n_bits=8, challenge="contrast", nonce=None):
         self.M = model

@@ -16,7 +16,7 @@ sys.path.insert(0, "/ssd1/ming/basinmark")
 import numpy as np, torch
 from basinmark.model import BasinModel
 from basinmark.data import c4_prompts
-from basinmark.countmark import CountMark
+from basinmark.blockmark import BlockMark
 
 KEY, MESSAGE = b"basinmark-key-A", 0xA5
 GEN, NS, BLK = 256, 10, 32
@@ -56,7 +56,7 @@ def main():
                  for i, x in enumerate(ref)])
         ref_ppl[steps] = float(np.exp(np.nanmean(n)))
         for ch in ("contrast", "random"):
-            zz = [CountMark(M, KEY, block_len=BLK, challenge=ch, nonce=f"doc-{i}").detect(
+            zz = [BlockMark(M, KEY, block_len=BLK, challenge=ch, nonce=f"doc-{i}").detect(
                 x, pl[i], GEN, MESSAGE) for i, x in enumerate(ref)]
             ref_stat[(steps, ch)] = (float(np.mean([d["z"] for d in zz])),
                                      float(np.mean([d["rate"] for d in zz])))
@@ -69,7 +69,7 @@ def main():
     for ch, steps, tc in GRID:
         zs, ps, rate, acc, txt, st, ties, t0 = [], [], [], [], [], [], [], time.time()
         for i, p in enumerate(prompts):
-            w = CountMark(M, KEY, block_len=BLK, n_patterns=4, tau_conf=tc, holes=4,
+            w = BlockMark(M, KEY, block_len=BLK, n_patterns=4, tau_conf=tc, holes=4,
                           n_bits=8, challenge=ch, nonce=f"doc-{i}")
             y = w.generate(p, gen_len=GEN, steps=steps, temperature=0.8,
                            message=MESSAGE, seed=3000 + i)
