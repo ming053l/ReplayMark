@@ -48,7 +48,8 @@ from .challenges import orientation_bits, tie_bits, score, block_challenges, rol
 class ResampleMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=8, ctx_frac=0.20,
                  n_payload_bits=7, sync_frac=0.5, challenge="contrast", s_min=0.5,
-                 retries=4, temperature=0.8, fallback="fresh", nonce=None):
+                 retries=4, temperature=0.8, fallback="fresh", max_carriers=None,
+                 nonce=None):
         self.M = model
         self.key = key if nonce is None else hmac.new(
             key, str(nonce).encode(), hashlib.sha256).digest()
@@ -65,6 +66,7 @@ class ResampleMark:
         # probability q_i, giving 1 - (1-q)^(R+1) rather than 1 - (1-q)^R, at no extra
         # forward pass. "last" keeps the old behaviour for the ablation.
         self.fallback = fallback
+        self.max_carriers = max_carriers   # per block; None = every S > s_min position
 
     # ------------------------------------------------------------------ table
     @torch.no_grad()
@@ -119,7 +121,15 @@ class ResampleMark:
         exhausts its retries emits a rejected draw -- a certain miss, not a coin flip -- so
         including it costs signal rather than merely adding noise.
         """
-        return S > self.s_min
+        keep = S > self.s_min
+        if self.max_carriers is not None and keep.sum() > self.max_carriers:
+            # cap by S so the ppl cost scales with the carrier budget, not the block; the
+            # rule is still computed from the block-masked conditional, so the verifier
+            # reproduces it
+            idx = np.argsort(-S)
+            keep = np.zeros_like(keep)
+            keep[idx[:self.max_carriers]] = True
+        return keep
 
     # -------------------------------------------------------------- detection
     @torch.no_grad()

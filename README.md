@@ -1,10 +1,11 @@
 # ReTrace
 
-**Model-response watermarking for diffusion language models.** Provenance is embedded by
-steering *when* model-preferred candidates are committed, and verified by re-corrupting the
-finished text with keyed challenges and reading its re-denoising response.
+**Model-response watermarking for diffusion language models.** The watermark is embedded by
+resampling: tokens are drawn from the model's own conditional until the keyed
+reconstruction response accepts (at most R guided draws, then one unconditional fallback).
+Verification re-corrupts the finished text under the key and reads the same response.
 
-    the decoding order places the watermark; the model's reconstruction response reads it back
+    resampled tokens place the watermark; the model's reconstruction response reads it back
 
 Base model `GSAI-ML/LLaDA-8B-Instruct`, fp16, one TITAN RTX (sm75). Every number below was
 measured on this machine; anything attributed to a paper says so.
@@ -24,16 +25,20 @@ measured on this machine; anything attributed to a paper says so.
 
 ## 1. The observable
 
-For a span of text, a secret key derives ablation patterns over the context. Two of them
-form a challenge pair. Reading the model's log-probability of the *observed* token under
+For a span of text, a secret key derives L ablation patterns over the context. The
+challenge pair is chosen **per position** among them, by the orientation-symmetric
+two-sided mass S = 2·min(q+, q−) computed from the block-masked conditional — so the
+choice is response-dependent but never sees the key's direction, and the verifier
+reproduces it exactly. Reading the model's log-probability of the *observed* token under
 each arm gives a contrast
 
     g_i(y_i) = log p(y_i | context minus pattern A) - log p(y_i | context minus pattern B)
 
-One keyed orientation bit per position turns this into an indicator, and the count of
-those indicators is the test statistic:
+One keyed orientation bit per position turns this into an indicator. Positions are split
+(by key) into a presence pool and 7 payload groups; presence is the exact binomial test on
+the pool alone — summing across payload groups would structurally cancel (§4):
 
-    m_i = 1[ eps_i * g_i(y_i) > 0 ]        T = sum_i m_i  ~  Binomial(n, 1/2) exactly
+    m_i = 1[ eps_i * g_i(y_i) > 0 ]        T_presence = sum_{i in pool} m_i ~ Binomial(n_pool, 1/2)
 
 The null is exact because `eps_i` is an independent fair coin per position, so under H0
 the `m_i` are i.i.d. Bernoulli(1/2). No calibration corpus, no model-specific null
@@ -67,7 +72,7 @@ Detection cost is `L` forward passes per block and is independent of the payload
 for a 256-token document at the current settings. This is the method's main structural
 disadvantage: every baseline detects with **zero** model calls.
 
-## 2. The embedder (V2, `basinmark/blockmark.py`)
+## 2. The embedder — V2 (archived; see status note for V3, `basinmark/resample.py`)
 
 Decoding follows the reference LLaDA schedule — blocks in order, diffusion within a block.
 At the start of each block the challenge table is built once, with that block *and
