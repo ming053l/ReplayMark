@@ -62,11 +62,12 @@ def main():
                                      float(np.mean([d["rate"] for d in zz])))
             print(f"[reference steps={steps} {ch}] ppl {ref_ppl[steps]:.2f}  "
                   f"z {ref_stat[(steps, ch)][0]:+.2f}  match rate "
-                  f"{ref_stat[(steps, ch)][1]:.3f}  (want 0.500)", flush=True)
+                  f"{ref_stat[(steps, ch)][1]:.3f}  (want 0.500)  ties "
+                  f"{np.mean([d['tie_frac'] for d in zz]):.3f}", flush=True)
 
     rows = []
     for ch, steps, tc in GRID:
-        zs, ps, rate, acc, txt, st, t0 = [], [], [], [], [], [], time.time()
+        zs, ps, rate, acc, txt, st, ties, t0 = [], [], [], [], [], [], [], time.time()
         for i, p in enumerate(prompts):
             w = CountMark(M, KEY, block_len=BLK, n_patterns=4, tau_conf=tc, holes=4,
                           n_bits=8, challenge=ch, nonce=f"doc-{i}")
@@ -74,7 +75,7 @@ def main():
                            message=MESSAGE, seed=3000 + i)
             d = w.detect(y, pl[i], GEN, MESSAGE)
             zs.append(d["z"]); ps.append(d["p_value"]); rate.append(d["rate"])
-            acc.append(d["bit_acc"]); st.append(w.stats)
+            acc.append(d["bit_acc"]); st.append(w.stats); ties.append(d["tie_frac"])
             txt.append(M.tok.decode(y[0, pl[i]:pl[i] + GEN], skip_special_tokens=True))
         nw = nll(txt); ps = np.array(ps)
         wm = float(np.mean([s["wm"] for s in st]))
@@ -87,12 +88,14 @@ def main():
                  ratio=float(np.exp(np.nanmean(nw)) / ref_ppl[steps]),
                  tpr05=float(np.mean(ps < 0.05)), tpr01=float(np.mean(ps < 0.01)),
                  tpr001=float(np.mean(ps < 0.001)),
-                 wm_frac=wm / max(cm, 1), n_forwards=(GEN // BLK) * 4)
+                 wm_frac=wm / max(cm, 1), tie_frac=float(np.mean(ties)),
+                 n_forwards=(GEN // BLK) * 4)
         rows.append(r)
         print(f"{ch:<9} steps={steps:<4} tau={tc:<4} | match {r['rate']:.3f} "
               f"(ref {r['rate_ref']:.3f}) | z {r['z']:+.2f} | TPR@5% {r['tpr05']:.2f} "
               f"@1% {r['tpr01']:.2f} @0.1% {r['tpr001']:.2f} | bits {r['bit_acc']:.2f} | "
-              f"ppl {r['ppl']:.2f} (x{r['ratio']:.2f}) | wm-driven {r['wm_frac']:.2f} | "
+              f"ppl {r['ppl']:.2f} (x{r['ratio']:.2f}) | wm-driven {r['wm_frac']:.2f} "
+              f"ties {r['tie_frac']:.2f} | "
               f"{(time.time()-t0)/NS:.0f}s/sample", flush=True)
         json.dump(dict(rows=rows, ref_ppl=ref_ppl,
                        ref_stat={f"{k[0]}_{k[1]}": v for k, v in ref_stat.items()}),

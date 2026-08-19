@@ -51,6 +51,34 @@ def orientation_bits(key: bytes, positions, salt="eps"):
     return out
 
 
+def tie_bits(key: bytes, positions):
+    """A second keyed coin, used only where g is exactly zero.
+
+    Ties are not rare here and ignoring them silently breaks the null. LLaDA is confident
+    enough that at many positions the emitted token has probability indistinguishable from
+    one, so log_softmax rounds to 0.0 under BOTH arms and their difference is exactly zero.
+    Scoring `eps * g > 0` then counts every such position as a miss, which drags the
+    unwatermarked match rate to P(g != 0)/2 -- measured at 0.32-0.37 rather than 0.50,
+    thirteen standard deviations off. Resolving ties by an independent keyed coin restores
+    Bernoulli(1/2) by construction; the positions stay uncontrollable during embedding, in
+    the same way dgMARK gains nothing at a position where no candidate matches its parity.
+    """
+    out = {}
+    for i in positions:
+        h = hmac.new(key, f"tie:{int(i)}".encode(), hashlib.sha256).digest()
+        out[int(i)] = 1 if (h[1] & 1) else 0
+    return out
+
+
+def score(gv, eps, tie):
+    """m_i, with exact ties broken by the keyed coin rather than counted as misses."""
+    gv = np.asarray(gv, dtype=np.float64)
+    m = (eps * gv > 0).astype(np.int64)
+    z = gv == 0.0
+    m[z] = tie[z]
+    return m, int(z.sum())
+
+
 def block_challenges(key, block_lo, block_len, n_patterns, ctx_frac=0.20, min_ctx=4,
                      mode="random"):
     """L ablation patterns over the already-final region, and the keyed pairing.
@@ -114,7 +142,8 @@ class CountMark:
             batch.append(m)
         lp = self.M.logprobs_rows(torch.cat(batch, 0), torch.tensor(B), chunk=2)
         u, v = pairs[0]
-        return B, lp[v] - lp[u]                       # [|B|, V]
+        # float64: the difference of two near-zero log-probs is exactly what rounds away
+        return B, (lp[v].double() - lp[u].double())   # [|B|, V]
 
     def _eps(self, span):
         return orientation_bits(self.key, span)
@@ -124,9 +153,11 @@ class CountMark:
     def detect(self, ids, prompt_len, gen_len, message=0):
         span = np.arange(prompt_len, prompt_len + gen_len)
         eps = self._eps(span)
+        tie = tie_bits(self.key, span)
         gen_end = prompt_len + gen_len
         hits = np.zeros(self.n_bits, dtype=np.int64)
         tot = np.zeros(self.n_bits, dtype=np.int64)
+        n_tie = 0
         grp = stream(self.key, "grp", gen_len, self.n_bits).integers(0, self.n_bits,
                                                                     size=gen_len)
         for b in range(max(1, gen_len // self.block_len)):
@@ -134,14 +165,18 @@ class CountMark:
             B, g = self._table(ids, lo, gen_end)
             y = ids[0, torch.tensor(B)]
             gv = g.gather(1, y[:, None]).squeeze(1).numpy()
+            e = np.array([eps[int(i)] for i in B], dtype=np.float64)
+            tb = np.array([tie[int(i)] for i in B], dtype=np.int64)
+            m, nz = score(gv, e, tb)
+            n_tie += nz
             for k, i in enumerate(B):
                 j = int(grp[int(i) - prompt_len])
                 tot[j] += 1
-                hits[j] += int(eps[int(i)] * gv[k] > 0)
+                hits[j] += int(m[k])
         n, h = int(tot.sum()), int(hits.sum())
         bits = (hits > tot / 2).astype(int)
         target = np.array([(message >> t) & 1 for t in range(self.n_bits)])
-        return dict(green=h, n=n, rate=h / max(n, 1),
+        return dict(green=h, n=n, rate=h / max(n, 1), tie_frac=n_tie / max(n, 1),
                     z=float((h - n / 2) / np.sqrt(n / 4)),
                     p_value=float(binom.sf(h - 1, n, 0.5)),
                     bits=bits.tolist(), bit_acc=float((bits == target).mean()),
@@ -155,6 +190,7 @@ class CountMark:
         Pn = prompt_ids.shape[1]
         span = np.arange(Pn, Pn + gen_len)
         eps = self._eps(span)
+        tie = tie_bits(self.key, span)
         grp = stream(self.key, "grp", gen_len, self.n_bits).integers(0, self.n_bits,
                                                                     size=gen_len)
         want = {int(i): (1 if ((message >> int(grp[int(i) - Pn])) & 1) else -1)
@@ -190,7 +226,9 @@ class CountMark:
                 liv, cand = live.tolist(), xh[live].tolist()
                 cf = conf[live].tolist()
                 # does the model's OWN choice already answer the challenge correctly?
-                ok = [eps[i] * want[i] * float(gmap[i][v]) > 0
+                # a tie is not steerable: its score is fixed by the keyed coin
+                ok = [(eps[i] * want[i] * float(gmap[i][v]) > 0)
+                      if float(gmap[i][v]) != 0.0 else False
                       for i, v in zip(liv, cand)]
 
                 elig = [n for n, c in enumerate(cf) if c >= self.tau_conf]
