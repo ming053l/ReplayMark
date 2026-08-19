@@ -26,7 +26,7 @@ SVG_OUT = ROOT / "fig_retrace_pipeline.svg"
 PDF_OUT = ROOT / "fig_retrace_pipeline.pdf"
 
 # Designed for a 475 pt two-column width; the smallest 11 pt label renders at ~6.9 pt.
-W, H = 760, 330
+W, H = 760, 310
 
 FONT_DIR = Path("/usr/share/fonts/truetype/liberation2")
 pdfmetrics.registerFont(TTFont("SaberTimes", str(FONT_DIR / "LiberationSerif-Regular.ttf")))
@@ -133,82 +133,104 @@ def main():
     d = Drawing(W, H)
     d.add(Rect(0, 0, W, H, fillColor=white, strokeColor=None))
 
+    # A strict column grid, shared by both rows of panel (a), so the two pipelines start
+    # and end in the same place and differ only in the middle. Every stacked element is
+    # placed at a symmetric offset from its row's centre line.
+    M = 24
+    C1, W1 = M, 96
+    C2, W2 = 140, 136
+    C3, W3 = 300, 92
+    C4, W4 = 416, 200
+    C5, W5 = 624, 112
+    YA, YB = 256, 186          # row centres, panel (a)
+    YC = 74                    # row centre, panel (b)
+    DY = 18                    # symmetric stack offset
+    OUT = 30                   # symmetric branch offset
+
     # ------------------------------------------------------------- panel (a)
-    # What the verifier reads. Prior work inspects symbols; ReTrace interrogates the
-    # model. Blue is reserved for the response path so the contrast is visible at a glance.
-    panel_title(d, 24, 306, "(a)", "What the verifier reads")
+    panel_title(d, M, 296, "(a)", "What the verifier reads")
 
-    label(d, 24, 282, "Prior work", size=11, color=PRIOR, font="SaberTimes-Bold")
-    rounded_card(d, 24, 250, 88, 26, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
-    label(d, 68, 259, "final text", size=11, color=INK, anchor="middle")
-    arrow(d, 116, 263, 150, 263, color=PRIOR)
-    rounded_card(d, 152, 250, 126, 26, fill=PRIOR_FILL, stroke=PRIOR_LINE)
-    label(d, 215, 265, "hash of token ids", size=10, color=PRIOR, anchor="middle")
-    label(d, 215, 254, "green list / parity", size=9, color=MUTED, anchor="middle")
+    # prior work: three stages, and a long arrow that carries the point -- no model call
+    label(d, M, YA + 22, "Prior work", size=10, color=PRIOR, font="SaberTimes-Bold")
+    rounded_card(d, C1, YA - 15, W1, 30, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
+    label(d, C1 + W1 / 2, YA - 4, "final text", size=11, color=INK, anchor="middle")
+    arrow(d, C1 + W1 + 4, YA, C2 - 2, YA, color=PRIOR)
+    rounded_card(d, C2, YA - 15, W2, 30, fill=PRIOR_FILL, stroke=PRIOR_LINE)
+    label(d, C2 + W2 / 2, YA + 2, "hash of token ids", size=10, color=PRIOR, anchor="middle")
+    label(d, C2 + W2 / 2, YA - 10, "green list / parity", size=9, color=MUTED, anchor="middle")
+    arrow(d, C2 + W2 + 4, YA, C5 - 2, YA, color=PRIOR)
+    label(d, (C2 + W2 + C5) / 2, YA + 6, "no model call", size=9, color=MUTED,
+          font="SaberTimes-Italic", anchor="middle")
+    rounded_card(d, C5, YA - 15, W5, 30, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
+    label(d, C5 + W5 / 2, YA - 4, "verdict", size=11, color=INK, anchor="middle")
 
-    label(d, 24, 228, "ReTrace", size=11, color=BASIN, font="SaberTimes-Bold")
-    rounded_card(d, 24, 166, 88, 48, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
-    label(d, 68, 194, "final text", size=11, color=INK, anchor="middle")
-    label(d, 68, 180, "y", size=11, color=MUTED, font="SaberTimes-Italic", anchor="middle")
+    # ReTrace: the same endpoints, with the model in the middle
+    label(d, M, YB + 28, "ReTrace", size=10, color=BASIN, font="SaberTimes-Bold")
+    rounded_card(d, C1, YB - 22, W1, 44, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
+    label(d, C1 + W1 / 2, YB + 4, "final text", size=11, color=INK, anchor="middle")
+    label(d, C1 + W1 / 2, YB - 12, "y", size=11, color=MUTED, font="SaberTimes-Italic",
+          anchor="middle")
 
-    for cy, sub in ((194, "u"), (162, "v")):
-        rounded_card(d, 130, cy - 12, 116, 24, fill=BASIN_SOFT, stroke=BASIN_LINE)
-        formula(d, 188, cy - 4,
+    for off, sub in ((+DY, "u"), (-DY, "v")):
+        cy = YB + off
+        rounded_card(d, C2, cy - 13, W2, 26, fill=BASIN_SOFT, stroke=BASIN_LINE)
+        formula(d, C2 + W2 / 2, cy - 4,
                 [("keyed corruption ", "SaberTimes", 9, 0, MUTED),
                  ("C", "SaberTimes-Italic", 10, 0, BASIN),
                  (sub, "SaberTimes-Italic", 7, -3, BASIN)], anchor="middle")
-        arrow(d, 114, 190, 128, cy, color=BASIN, width=1.2)
-        arrow(d, 248, cy, 268, 190, color=BASIN, width=1.2)
+        arrow(d, C1 + W1 + 4, YB, C2 - 2, cy, color=BASIN, width=1.2)
+        arrow(d, C2 + W2 + 4, cy, C3 - 2, YB, color=BASIN, width=1.2)
 
-    rounded_card(d, 270, 166, 78, 48, fill=BASIN_FILL, stroke=BASIN)
-    label(d, 309, 195, "diffusion LM", size=10, color=BASIN_DARK, anchor="middle")
-    label(d, 309, 181, "re-denoise", size=9, color=MUTED, anchor="middle")
+    rounded_card(d, C3, YB - 22, W3, 44, fill=BASIN_FILL, stroke=BASIN)
+    label(d, C3 + W3 / 2, YB + 5, "diffusion LM", size=10, color=BASIN_DARK, anchor="middle")
+    label(d, C3 + W3 / 2, YB - 9, "re-denoise", size=9, color=MUTED, anchor="middle")
+    arrow(d, C3 + W3 + 4, YB, C4 - 2, YB, color=BASIN)
 
-    arrow(d, 350, 190, 378, 190, color=BASIN)
-    formula(d, 384, 196,
-            [("g", "SaberTimes-Italic", 13, 0, BASIN_DARK),
+    formula(d, C4, YB + 4,
+            [("g", "SaberTimes-Italic", 12, 0, BASIN_DARK),
              ("i", "SaberTimes-Italic", 8, -3, BASIN_DARK),
-             ("(y", "SaberTimes", 12, 0, INK),
-             ("i", "SaberTimes-Italic", 8, -3, INK),
-             (") = log p (y", "SaberTimes", 12, 0, INK),
-             ("i", "SaberTimes-Italic", 8, -3, INK),
-             (" | C", "SaberTimes", 12, 0, INK),
-             ("v", "SaberTimes-Italic", 8, -3, INK),
-             (") \u2212 log p (y", "SaberTimes", 12, 0, INK),
-             ("i", "SaberTimes-Italic", 8, -3, INK),
-             (" | C", "SaberTimes", 12, 0, INK),
-             ("u", "SaberTimes-Italic", 8, -3, INK),
-             (")", "SaberTimes", 12, 0, INK)])
-    label(d, 384, 178, "the evidence is the model's response, not the symbols",
-          size=9, color=MUTED)
+             (" = log p (y", "SaberTimes", 11, 0, INK),
+             ("i", "SaberTimes-Italic", 7, -3, INK),
+             (" | C", "SaberTimes", 11, 0, INK),
+             ("v", "SaberTimes-Italic", 7, -3, INK),
+             (") \u2212 log p (y", "SaberTimes", 11, 0, INK),
+             ("i", "SaberTimes-Italic", 7, -3, INK),
+             (" | C", "SaberTimes", 11, 0, INK),
+             ("u", "SaberTimes-Italic", 7, -3, INK),
+             (")", "SaberTimes", 11, 0, INK)])
+    label(d, C4, YB - 12, "the model's response, not the symbols", size=9, color=MUTED)
+    arrow(d, C4 + W4 - 8, YB, C5 - 2, YB, color=BASIN)
+    rounded_card(d, C5, YB - 15, W5, 30, fill=BASIN_FILL, stroke=BASIN)
+    label(d, C5 + W5 / 2, YB - 4, "verdict", size=11, color=BASIN_DARK, anchor="middle")
 
-    d.add(Line(24, 148, W - 24, 148, strokeColor=HAIRLINE, strokeWidth=1))
+    d.add(Line(M, 148, W - M, 148, strokeColor=HAIRLINE, strokeWidth=1))
 
     # ------------------------------------------------------------- panel (b)
-    # How it is placed. The proposal is never replaced; the key only orders commits.
-    panel_title(d, 24, 128, "(b)", "How the watermark is placed")
-    label(d, 236, 128, "the model proposes; the key only chooses what commits now",
+    panel_title(d, M, 128, "(b)", "How the watermark is placed")
+    label(d, 250, 128, "the model proposes; the key only chooses what commits now",
           size=10, color=MUTED)
 
-    label(d, 24, 104, "block being decoded", size=9, color=MUTED)
+    label(d, M, YC + 32, "block being decoded", size=9, color=MUTED)
     cells = [("The", NEUTRAL_FILL, NEUTRAL_LINE, INK),
              ("model", NEUTRAL_FILL, NEUTRAL_LINE, INK),
              ("[M]", MASK_FILL, NEUTRAL_LINE, MUTED),
              ("[M]", MASK_FILL, NEUTRAL_LINE, MUTED),
              ("[M]", MASK_FILL, NEUTRAL_LINE, MUTED)]
-    token_row(d, 24, 74, cells)
+    end = token_row(d, M, YC - 8, cells)
 
-    arrow(d, 172, 82, 196, 82, color=MUTED)
-    rounded_card(d, 200, 66, 106, 32, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
-    label(d, 253, 86, "model proposal", size=10, color=INK, anchor="middle")
-    formula(d, 253, 72,
+    arrow(d, end + 6, YC, 196, YC, color=MUTED)
+    rounded_card(d, 200, YC - 16, 106, 32, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
+    label(d, 253, YC + 5, "model proposal", size=10, color=INK, anchor="middle")
+    formula(d, 253, YC - 9,
             [("x", "SaberTimes-Italic", 11, 0, MUTED),
              ("i", "SaberTimes-Italic", 7, -3, MUTED),
              ("  unchanged", "SaberTimes", 9, 0, MUTED)], anchor="middle")
+    label(d, 253, YC - 28, "no token is ever substituted", size=9, color=BASIN_DARK,
+          font="SaberTimes-Italic", anchor="middle")
 
-    arrow(d, 310, 82, 332, 82, color=MUTED)
-    rounded_card(d, 336, 64, 156, 36, fill=BASIN_SOFT, stroke=BASIN_LINE)
-    formula(d, 414, 84,
+    arrow(d, 310, YC, 332, YC, color=MUTED)
+    rounded_card(d, 336, YC - 18, 156, 36, fill=BASIN_SOFT, stroke=BASIN_LINE)
+    formula(d, 414, YC + 3,
             [("w", "SaberTimes-Italic", 11, 0, BASIN_DARK),
              ("i", "SaberTimes-Italic", 7, -3, BASIN_DARK),
              (" \u03b5", "SaberTimes-Italic", 11, 0, BASIN_DARK),
@@ -218,25 +240,25 @@ def main():
              ("(x", "SaberTimes", 11, 0, INK),
              ("i", "SaberTimes-Italic", 7, -3, INK),
              (") > 0 ?", "SaberTimes", 11, 0, INK)], anchor="middle")
-    label(d, 414, 70, "answered by the model's own token", size=8, color=MUTED,
+    label(d, 414, YC - 12, "answered by the model's own token", size=8, color=MUTED,
           anchor="middle")
 
-    arrow(d, 496, 88, 516, 106, color=BASIN, width=1.3)
-    arrow(d, 496, 76, 516, 46, color=DEFER, width=1.3)
+    # the two outcomes sit at symmetric offsets from the decision card's centre line
+    arrow(d, 496, YC + 6, 516, YC + OUT, color=BASIN, width=1.3)
+    arrow(d, 496, YC - 6, 516, YC - OUT, color=DEFER, width=1.3)
 
-    rounded_card(d, 520, 94, 118, 28, fill=BASIN_FILL, stroke=BASIN)
-    badge(d, 536, 108, color=BASIN, fill=white, mark="check")
-    label(d, 550, 104, "commit now", size=11, color=BASIN_DARK)
+    rounded_card(d, 520, YC + OUT - 14, 118, 28, fill=BASIN_FILL, stroke=BASIN)
+    badge(d, 536, YC + OUT, color=BASIN, fill=white, mark="check")
+    label(d, 550, YC + OUT - 4, "commit now", size=11, color=BASIN_DARK)
 
-    rounded_card(d, 520, 32, 118, 28, fill=DEFER_FILL, stroke=DEFER_LINE)
-    badge(d, 536, 46, color=DEFER, fill=white, mark="cross")
-    label(d, 550, 42, "defer", size=11, color=DEFER)
+    rounded_card(d, 520, YC - OUT - 14, 118, 28, fill=DEFER_FILL, stroke=DEFER_LINE)
+    badge(d, 536, YC - OUT, color=DEFER, fill=white, mark="cross")
+    label(d, 550, YC - OUT - 4, "defer", size=11, color=DEFER)
 
-    # the two notes sit under the objects they qualify, not in the margin, so nothing
-    # collides with the outcome cards
-    label(d, 253, 54, "no token is ever substituted", size=9, color=BASIN_DARK,
-          font="SaberTimes-Italic", anchor="middle")
-    label(d, 579, 22, "re-proposed next step", size=9, color=MUTED, anchor="middle")
+    label(d, 648, YC + OUT - 4, "keeps the key's", size=9, color=MUTED)
+    label(d, 648, YC + OUT - 15, "evidence", size=9, color=MUTED)
+    label(d, 648, YC - OUT - 4, "re-proposed", size=9, color=MUTED)
+    label(d, 648, YC - OUT - 15, "next step", size=9, color=MUTED)
 
     renderSVG.drawToFile(d, str(SVG_OUT))
     svg = SVG_OUT.read_text(encoding="utf-8")
