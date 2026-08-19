@@ -13,3 +13,6 @@ echo "=== 17 exit $? ==="
 echo "=== 18 exit $? ==="
 /home/ming0531/miniconda3/envs/mmada/bin/python exp/19_freeze.py > logs/19_freeze.log 2>&1
 echo "=== 19 exit $? ==="
+/home/ming0531/miniconda3/envs/mmada/bin/python exp/20_robust.py > logs/20_robust.log 2>&1
+echo "=== 20 exit $? ==="
+echo "=== OVERNIGHT CHAIN DONE ==="
