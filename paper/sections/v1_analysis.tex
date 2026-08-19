@@ -1,0 +1,39 @@
+\section{Why Post-hoc Substitution Fails}
+\label{sec:v1}
+
+The first version of BasinMark embedded by substitution: at keyed carrier positions,
+replace the model's token with an admissible alternative whose contrast points the right
+way, subject to a per-token fluency budget $\tau$ (a substitution is admissible iff
+$p(w)/p(w^\star) \geq e^{-\tau}$). It does not work, and the reason generalises beyond our
+implementation.
+
+\paragraph{There is nothing to substitute.}
+Across $36$ configurations spanning three carrier-selection rules, three budgets and two
+guidance weights, the median carrier position admits \emph{exactly one} token at
+$\tau = 3$, i.e.\ $p(w)/p(w^\star) \geq 0.05$, with no truncation of the candidate slate.
+The best configuration inside a $1.35\times$ perplexity budget reaches
+$\mathrm{TPR}@1\% = 0.10$; matched local dgMARK reaches $0.86$ at $1.23\times$.
+
+\paragraph{Better generation makes it worse.}
+Our harness initially ranked positions for low-confidence remasking by the maximum of the
+Gumbel-perturbed logits rather than by $p(x_0)$ under the clean softmax. Repairing it to
+match the reference sampler moved draft perplexity from $22.2$ to $9.5$ --- and halved the
+denoiser's entropy, from $0.655$ to $0.319$, shrinking the admissible set by $34$--$60\,\%$
+($|A(3)|$: $2.5 \to 1.6$; $|A(6)|$: $14.1 \to 5.6$). Part of the early design's apparent
+strength came from a degraded generator. \important{Improving a diffusion language model's
+generation quality reduces its post-hoc watermarkability}, because both quantities are
+governed by the sharpness of the same conditionals.
+
+\paragraph{Moving to generation time does not rescue substitution.}
+A guidance table valid during generation requires every non-carrier token to be final
+before it is computed, which forces an unusual schedule: all non-carrier positions, then
+all carrier positions. Priced with the watermark switched off, that schedule alone costs
+$1.98\times$ perplexity --- more than dgMARK's entire watermark. The lesson is not that
+generation-time embedding is wrong but that a \emph{global} carrier is: making the carrier
+block-local reduces the isolated region from half the sequence to one block, and lets the
+reference schedule stand.
+
+\paragraph{What this rules in.}
+Substitution buys evidence with fluency at a fixed exchange rate set by the model's
+conditionals, and that rate is unfavourable and worsening. Any viable embedding must
+therefore avoid overriding the model's choice --- which is what \S\ref{sec:embedding} does.

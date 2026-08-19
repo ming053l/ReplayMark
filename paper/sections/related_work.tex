@@ -1,0 +1,31 @@
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Watermarks for autoregressive models.}
+\citet{kirchenbauer2023watermark} partition the vocabulary into green and red lists seeded
+by the preceding token and add a bias $\delta$ to green logits; detection counts green
+tokens against a $\mathrm{Binomial}(n,\gamma)$ null. The construction assumes a left-to-right
+prefix, which order-agnostic decoding does not provide --- a point we return to when using
+it as a baseline (\S\ref{sec:baselines}).
+
+\paragraph{Watermarks for diffusion language models.}
+Recent work exploits the freedoms a dLLM exposes: biasing tokens in expectation over
+unresolved context, keyed Gumbel-max sampling at each denoising step, statistics of the
+whole sequence, and the unmasking order. dgMARK~\citep{hong2026dgmark} is the closest to
+our embedding channel: it never reweights the learned probabilities, and instead prefers to
+unmask positions whose already-preferred token satisfies a keyed parity condition. That
+choice is what makes it inexpensive, and we adopt the same discipline.
+
+The distinction we draw is not embedding but \emph{verification}. In all of the above the
+detector reads a function of the token identities: a parity, a green-list membership, a
+rank. BasinMark's detector runs the diffusion model on keyed corruptions of the finished
+text and reads how it reconstructs. The cost of that choice is real and we report it
+prominently: those detectors need zero model calls, ours needs a fixed number of sequence
+evaluations independent of payload size.
+
+\paragraph{Decoding schedules for diffusion language models.}
+Our embedder inherits its commit discipline from work on accelerating dLLM decoding, where
+committing a confident token whose left context is still unresolved is known to damage
+coherence; the remedy is to admit only a frontier-anchored prefix of the eligible set and
+to confirm what was withheld one step later. We reuse that rule unchanged, so the watermark
+rides on the reference schedule rather than replacing it.

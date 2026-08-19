@@ -1,0 +1,106 @@
+\section{BasinMark}
+\label{sec:method}
+
+\subsection{The observable}
+\label{sec:observable}
+
+Let $y$ be a generated span and $K$ a secret key. For a block $B$ of $y$, the key derives
+$L$ \emph{ablation patterns} $D_1,\dots,D_L$ over the context preceding $B$, and a pair
+$(u,v)$ among them. Writing $\mathcal{C}_\ell$ for the context with $B$, everything after
+$B$, and $D_\ell$ masked, the \emph{challenge contrast} at position $i\in B$ is
+\begin{equation}
+g_i(w) \;=\; \log p_\theta\!\left(w \mid \mathcal{C}_v\right) - \log p_\theta\!\left(w \mid \mathcal{C}_u\right),
+\qquad w \in \mathcal{V}.
+\label{eq:g}
+\end{equation}
+
+Two properties of $\mathcal{C}_\ell$ matter and neither is optional.
+
+\important{The block and its future are masked in every arm.} While $B$ is being decoded,
+every later block is still \texttt{[MASK]}. If the verifier recomputed
+Eq.~\eqref{eq:g} on the finished text without re-masking that tail, it would condition on
+tokens that did not exist when the guidance was produced, and the two sides would be
+reading different functions. Masking $B$ and everything after it makes the table identical
+at both times; masking $B$ itself additionally makes it \emph{invariant} to whatever is
+committed inside $B$, so a single table serves the block's entire decoding.
+
+\important{The ablations are drawn from the already-final region.} $D_\ell \subset$
+prompt $\cup\, B_{<b}$, which the verifier has verbatim. We use a \emph{contrast} pair ---
+one pattern ablating the context nearest the block, the other the furthest --- because
+recency dominates next-token prediction, so the two arms disagree far more than two random
+ablations do, widening the dynamic range of $g$.
+
+\subsection{The statistic}
+\label{sec:theory}
+
+Each position carries an independent keyed orientation bit $\epsilon_i\in\{\pm1\}$ and a
+target $w_i\in\{\pm1\}$, and contributes a bounded indicator
+\begin{equation}
+m_i \;=\; \mathbf{1}\!\left[\,w_i\,\epsilon_i\,g_i(y_i) > 0\,\right],
+\qquad
+T \;=\; \sum_{i\in P} m_i .
+\label{eq:m}
+\end{equation}
+
+\begin{proposition}[Exact null]
+\label{prop:null}
+Fix a text $y$, the carrier set $P$, and the challenge magnitudes. Under the ideal-PRF
+randomization model, in which the domain-separated orientation bits derived from a key
+independent of $y$ behave as independent Rademacher variables, the $m_i$ are i.i.d.
+$\mathrm{Bernoulli}(\tfrac12)$ and $T \sim \mathrm{Binomial}(|P|, \tfrac12)$ exactly.
+\end{proposition}
+
+The proposition needs no calibration corpus and no model-specific null estimate, and it is
+finite-sample rather than asymptotic. Three implementation details are load-bearing.
+
+\emph{Ties must be resolved, not dropped.} The model is confident enough that at a large
+fraction of positions the emitted token's log-probability rounds to $0$ under \emph{both}
+arms in single precision, so their difference vanishes. Scoring $g_i = 0$ as a miss makes
+$\Pr[m_i=1] = (1-\Pr[g_i=0])/2$; we measured an unwatermarked match rate of $0.32$--$0.37$
+against $0.50$. We compute Eq.~\eqref{eq:g} in double precision inside the softmax, which
+removes the ties entirely, and break any residual tie with a second keyed coin.
+
+\emph{Counting, not averaging.} An earlier design averaged $g$ over the positions of a
+probe. The per-position contrast is heavy-tailed, so the mean is dominated by a few large
+values and controlling the \emph{sign} of the small ones --- all a commit-order channel can
+do --- has almost no leverage on it. A count gives every steered position exactly one unit.
+
+\emph{Presence, verification and payload are separate tests.} Summing hits across payload
+groups cancels: with a balanced message, half the groups are driven toward $m_i=1$ and half
+toward $m_i=0$, so a \emph{perfect} watermark still sums to $|P|/2$. We therefore reserve a
+presence pool with $w_i \equiv +1$, whose count tests \emph{is this a BasinMark text} with
+no claimed message, and which also avoids decoding a message from the data and then testing
+significance against the message just decoded. Verification of a claimed message aligns
+every group to its claimed bit and uses all carriers; payload decoding thresholds each
+group separately.
+
+\subsection{Embedding by commit order}
+\label{sec:embedding}
+
+Generation follows the reference schedule of the base model: blocks in order, diffusion
+within a block. At each step the model proposes candidates $\hat{x}_i$ with confidences
+$c_i$ exactly as it would without a watermark. \important{No proposal is ever replaced.}
+The watermark decides only which position is committed:
+\begin{equation}
+w_i\,\epsilon_i\,g_i(\hat{x}_i) > 0 \;\Rightarrow\; \text{commit}, \qquad\text{otherwise}\;\Rightarrow\; \text{defer}.
+\label{eq:rule}
+\end{equation}
+A deferred position is re-proposed at the next step with more of the block resolved, and
+may then be compatible.
+
+Commit safety follows the frontier-anchored rule of \S\ref{sec:related}: a position is
+eligible when $c_i \geq \tau$, and only the eligible run surviving at most $H$
+still-masked-but-ineligible positions to its left may be committed; a scheduled top-$k$
+branch guarantees the block finishes on time.
+
+\paragraph{Only steerable positions are carriers.}
+Committing compatible positions first is \emph{zero-sum} unless deferral changes what the
+model proposes, because every position is eventually committed and the residual is
+precisely the incompatible ones. We measured this exactly: the positions the watermark
+drove matched their target at $107/107$, $133/133$ and $112/112$, while the leftovers
+matched at $0.06$--$0.15$, summing to $0.50$. The statistic must therefore count only
+positions the channel can move. We define these by the top-2 log-probability gap under the
+block-masked conditional --- a context containing none of the block's own tokens, so the
+verifier reconstructs the identical carrier set from the finished text --- and spend forced
+commits on non-carrier positions first, so a steerable position keeps its chance to be
+re-proposed compatibly.

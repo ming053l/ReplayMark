@@ -79,7 +79,7 @@ def block_challenges(key, block_lo, block_len, n_patterns, ctx_frac=0.20, min_ct
     return pats, pairs
 
 
-def steerable_carrier(base_lp, gap_nats=1.0, min_frac=0.10):
+def steerable_carrier(base_lp, gap_nats=1.0, min_frac=0.0):
     """Which block positions can the commit-order channel actually move?
 
     Order steering is exactly zero-sum unless deferring a position changes the token the
@@ -100,8 +100,29 @@ def steerable_carrier(base_lp, gap_nats=1.0, min_frac=0.10):
     top2 = base_lp.topk(2, dim=1).values
     gap = (top2[:, 0] - top2[:, 1]).numpy()
     mask = gap < gap_nats
-    if mask.mean() < min_frac:            # never let a block contribute nothing
+    # min_frac > 0 would force the lowest-gap positions in when a block has none above
+    # threshold, which keeps coverage up but makes "only genuinely steerable positions are
+    # counted" untrue. It defaults off: a block with nothing steerable contributes nothing,
+    # so the mechanism question is answered before the coverage question.
+    if min_frac > 0 and mask.mean() < min_frac:
         keep = np.argsort(gap)[:max(1, int(min_frac * len(gap)))]
         mask = np.zeros_like(mask)
         mask[keep] = True
     return mask
+
+
+def roles(key: bytes, span, n_payload_bits, sync_frac=0.5):
+    """Split carriers into a presence pool and payload groups.
+
+    Presence cannot be a 1-of-n_groups slice. With ~50 steerable carriers in a document,
+    an eighth of them is ~6, and 6/6 perfect hits give p = 2^-6 = 0.0156 -- so TPR at a 1 %
+    threshold would be unreachable no matter how well the channel works. Half the carriers
+    go to presence instead, where ~19/25 already clears the 1 % tail.
+
+    Returns position -> -1 for the presence pool, else the payload group index.
+    """
+    r = stream(key, "role", len(span), n_payload_bits, sync_frac)
+    u = r.random(len(span))
+    grp = r.integers(0, max(1, n_payload_bits), size=len(span))
+    return {int(i): (-1 if u[k] < sync_frac else int(grp[k]))
+            for k, i in enumerate(span)}

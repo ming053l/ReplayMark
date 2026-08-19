@@ -20,7 +20,7 @@ from basinmark.blockmark import BlockMark
 
 KEY, MESSAGE = b"basinmark-key-A", 0xA5
 GEN, NS, BLK = 256, 10, 32
-GRID = list(itertools.product(["contrast"], [128, 256], [0.3], [0.5, 1.0, 2.0]))
+GRID = [("contrast", 256, 0.3, 1.0)]   # one diagnostic point first
 
 
 class Nll:
@@ -56,9 +56,14 @@ def main():
                  for i, x in enumerate(ref)])
         ref_ppl[steps] = float(np.exp(np.nanmean(n)))
         for ch in ("contrast", "random"):
-            zz = [BlockMark(M, KEY, block_len=BLK, challenge=ch, gap_nats=1.0,
+            zz = [BlockMark(M, KEY, block_len=BLK, n_payload_bits=7, sync_frac=0.5,
+                            challenge=ch, gap_nats=1.0,
                             nonce=f"doc-{i}").detect(x, pl[i], GEN, MESSAGE)
                   for i, x in enumerate(ref)]
+            print(f"           null: sync rate {np.mean([d['rate_sync'] for d in zz]):.3f} "
+                  f"aligned {np.mean([d['rate_aligned'] for d in zz]):.3f}  "
+                  f"n_sync {np.mean([d['n_sync'] for d in zz]):.0f} "
+                  f"n_payload {np.mean([d['n_payload'] for d in zz]):.0f}", flush=True)
             ref_stat[(steps, ch)] = (float(np.mean([d["z"] for d in zz])),
                                      float(np.mean([d["rate_sync"] for d in zz])))
             print(f"[reference steps={steps} {ch}] ppl {ref_ppl[steps]:.2f}  "
@@ -68,17 +73,20 @@ def main():
 
     rows = []
     for ch, steps, tc, gn in GRID:
-        zs, ps, rate, acc, txt, st, ties, pal, nn, t0 = ([], [], [], [], [], [], [],
-                                                          [], [], time.time())
+        zs, ps, rate, acc, txt, st, ties, pal, nn, det, t0 = ([], [], [], [], [], [],
+                                                               [], [], [], [],
+                                                               time.time())
         for i, p in enumerate(prompts):
             w = BlockMark(M, KEY, block_len=BLK, n_patterns=4, tau_conf=tc, holes=4,
-                          n_bits=8, challenge=ch, gap_nats=gn, nonce=f"doc-{i}")
+                          n_payload_bits=7, sync_frac=0.5, challenge=ch, gap_nats=gn,
+                          nonce=f"doc-{i}")
             y = w.generate(p, gen_len=GEN, steps=steps, temperature=0.8,
                            message=MESSAGE, seed=3000 + i)
             d = w.detect(y, pl[i], GEN, MESSAGE)
             zs.append(d["z"]); ps.append(d["p_value"]); rate.append(d["rate_sync"])
             acc.append(d["bit_acc"]); st.append(w.stats); ties.append(d["tie_frac"])
             pal.append(d["p_aligned"]); nn.append(d["n_sync"])
+            det.append(d)
             txt.append(M.tok.decode(y[0, pl[i]:pl[i] + GEN], skip_special_tokens=True))
         nw = nll(txt); ps = np.array(ps)
         wm = float(np.mean([s["wm"] for s in st]))
@@ -96,6 +104,14 @@ def main():
                  wm_frac=wm / max(cm, 1), tie_frac=float(np.mean(ties)),
                  n_seqs=(GEN // BLK) * 5)
         rows.append(r)
+        print(f"  carriers/doc {np.mean([d['n'] for d in det]):.0f} "
+              f"(sync {np.mean([d['n_sync'] for d in det]):.0f} "
+              f"payload {np.mean([d['n_payload'] for d in det]):.0f})   "
+              f"carrier commits: wm {np.mean([s2['carrier_wm'] for s2 in st]):.0f} "
+              f"fallback {np.mean([s2['carrier_fb'] for s2 in st]):.0f}   "
+              f"non-carrier {np.mean([s2['noncarrier'] for s2 in st]):.0f}", flush=True)
+        print(f"  sync rate {np.mean([d['rate_sync'] for d in det]):.3f}   "
+              f"aligned rate {np.mean([d['rate_aligned'] for d in det]):.3f}", flush=True)
         print(f"{ch:<9} steps={steps:<4} gap={gn:<4} | n {int(np.mean([d for d in [0]]))if False else ''}match {r['rate']:.3f} "
               f"(ref {r['rate_ref']:.3f}) | z {r['z']:+.2f} | TPR@5% {r['tpr05']:.2f} "
               f"@1% {r['tpr01']:.2f} | aligned@1% {r['tpr01_aligned']:.2f} | "

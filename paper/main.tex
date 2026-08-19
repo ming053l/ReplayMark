@@ -11,6 +11,9 @@
 \usepackage{caption}
 \captionsetup{labelfont=bf,skip=4pt}
 \usepackage[section]{placeins}
+\usepackage{enumitem}
+\usepackage{amsthm}
+\newtheorem{proposition}{Proposition}
 \usepackage[T1]{fontenc}
 % newtx is what the C4 paper uses and what Overleaf has; this machine's TeX Live 2019 does
 % not ship it, so fall back to mathptmx (also Times-like, in every base install) rather than
@@ -29,87 +32,52 @@
 \usepackage[breaklinks,colorlinks,linkcolor=failred,citecolor=oursemph,urlcolor=oursemph]{hyperref}
 \usepackage{url}
 
-\title{BasinMark: Watermarking Diffusion Language Models\\via Keyed Re-denoising Contrast}
-\author{Working draft --- baseline table}
+\title{BasinMark: Behavioral Watermarking for Diffusion\\Language Models via Keyed Re-Denoising}
+\author{Anonymous}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Working draft. This document exists to typeset and check the baseline comparison while the
-experiments are still running; the prose is deliberately minimal. Every number is measured
-on one TITAN RTX unless a row says otherwise, and rows that have not been measured are
-marked \textcolor{notmeasured}{pending} rather than left blank or filled in from a paper.
+Existing language-model watermarks encode provenance in \emph{what tokens are produced}.
+We ask whether provenance can instead be encoded in \emph{how a diffusion language model
+reconstructs them}. Because such a model is trained to recover masked tokens from arbitrary
+surviving context, a finished text can be pushed back through the operator that produced
+it: corrupted with a secret key, re-denoised, and its response read. BasinMark places a
+watermark in that response. A keyed pair of context ablations induces a per-position
+log-likelihood contrast, and the watermark asks the sign of that contrast to agree with a
+keyed orientation, giving a test statistic that is a sum of bounded indicators with a
+finite-sample exact $\mathrm{Binomial}(n,\tfrac12)$ null. Embedding never overrides the
+model: decoding follows the reference block schedule, and the watermark only decides
+whether a model-preferred proposal is committed now or deferred. We also report the
+negative result that motivated this design --- post-hoc token substitution is priced out on
+a well-trained diffusion language model, and, because both are governed by the sharpness of
+the same conditionals, \emph{improving generation quality reduces post-hoc
+watermarkability}.
 \end{abstract}
 
-\section{Baseline comparison}
-\label{sec:baselines}
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/method}
+\input{sections/v1_analysis}
+\input{sections/experiments}
 
-Table~\ref{tab:baselines} reports watermark detectability against the text quality
-actually paid for. The axis that matters is not the largest achievable $z$: an earlier
-revision of this work tuned an operating point to $z\approx5$ and only afterwards measured
-that it cost $4.8\times$ perplexity. Detection is therefore reported as the true positive
-rate at a controlled false positive rate, and quality as perplexity relative to a
-non-watermarked control produced under the same decoding regime.
+\section{Results}
+\label{sec:results}
 
-Two properties of the comparison are worth stating before the numbers.
-\important{First, each block of the table has its own non-watermarked control.} The three
-methods require different decoding regimes --- dgMARK uses block decoding with top-$k$
-sampling, KGW requires strict left-to-right decoding because its green list is seeded by
-the preceding token, and BasinMark operates post-hoc on drafts sampled at temperature
-$0.8$ over the full vocabulary --- so a single shared baseline would charge the cost of a
-decoding regime to whichever watermark happened to use it.
-\important{Second, detection cost is a column, not a footnote.} dgMARK and KGW detect by
-hashing token identities and need zero model forward passes; BasinMark's detector must run
-the diffusion model itself. Collapsing the comparison to detectability alone would hide
-the method's main structural disadvantage.
+\textcolor{notmeasured}{Pending: the corrected detector with steerable carriers is running.
+This section is deliberately left unwritten rather than filled with the numbers the earlier,
+structurally cancelling aggregate produced.}
 
-\input{tables/baseline_table}
+\section{Conclusion}
+\label{sec:conclusion}
 
-\paragraph{Reading the table.}
-The strongest baseline is KGW at $\delta=1$: $0.93$ TPR at $1\%$ FPR for $1.03\times$
-perplexity against its own control, or $1.20\times$ if the cost of the left-to-right regime
-it requires is charged to it. dgMARK with $3$-beam lookahead reaches $0.86$ at
-$1.23\times$ without needing that regime. BasinMark's best configuration inside a comparable quality
-budget reaches $0.10$, and its best configuration at any quality reaches $0.50$ while
-paying $2.49\times$. The gap is close to an order of magnitude in detectability at matched
-quality, which is far too large to attribute to hyperparameter search.
-
-The measured cause is capacity rather than tuning. Across all $36$ BasinMark
-configurations the median carrier position admits exactly \emph{one} token within the
-fluency budget, and the candidate slate never truncates, so a watermark defined on
-\emph{which tokens are present} has almost no freedom to spend. This also explains why
-moving the watermark to generation time made things worse rather than better: the schedule
-it forces --- all non-carrier positions, then all carrier positions --- costs $1.98\times$
-perplexity on its own, before any watermark is applied.
-
-\section{Detector validity}
-\label{sec:validity}
-
-The detector's $p$-value carries no calibration corpus and no model-specific null estimate:
-exchangeability of the two arms of each challenge makes every per-probe contrast
-independently symmetric about zero, so conditional on the magnitudes the null is a
-Rademacher mixture. Exact enumeration is affordable only up to $20$ blocks, and every
-configuration here has $48$ or more, so the reported value is Hoeffding's bound
-$\exp(-z^2/2)$ --- a finite-sample upper bound with no distributional assumption and no
-resolution floor. A Monte-Carlo randomization estimate is also computed, but it cannot
-resolve below $1/(1+n)$ and is never used for tail claims.
-
-Table~\ref{tab:validity} checks the guarantee in the form deployment needs. Each document
-receives its own key $K_d=\mathrm{HMAC}(K,\text{nonce}_d)$, and false positive rates are
-reported per key and at the worst key rather than averaged over keys.
-
-\input{tables/validity_table}
-
-\paragraph{What is settled and what is not.}
-The statistical side of BasinMark holds: the null is valid at the worst key, detection cost
-is $L$ forward passes independent of payload size, and the challenge-response signal is
-present. The embedding channel is what fails. A watermark defined on \emph{which tokens
-are present} can only be driven by changing tokens, and on this model the median carrier
-position admits one token inside the fluency budget, so the channel is priced out. Whether
-steering commit \emph{order} instead --- never changing a candidate token, the property
-that makes dgMARK nearly free --- can carry the same statistic is the open question, and
-the block-local formulation testing it is running.
+BasinMark separates the two roles a watermark usually conflates. The decoding trajectory is
+where provenance is \emph{placed}, cheaply, by choosing when a model-preferred token is
+committed. The model's keyed reconstruction behaviour is where provenance is
+\emph{recovered}, from the finished text alone. Whether that separation converts enough
+steerable positions into detection power at a fixed quality budget is the question the
+remaining experiments answer.
 
 \bibliographystyle{iclr2025_conference}
 \bibliography{main}

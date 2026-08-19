@@ -1,0 +1,76 @@
+\section{Introduction}
+\label{sec:intro}
+
+Existing language-model watermarks encode provenance in \emph{what tokens are produced}.
+Red--green schemes bias the token distribution toward a keyed vocabulary
+partition~\citep{kirchenbauer2023watermark}; distortion-free schemes fix the sampling
+randomness with a keyed pseudorandom sequence; and the watermarks designed for diffusion
+language models exploit the extra freedom those models expose --- unresolved context,
+per-step sampling randomness, global sequence statistics, or the order in which positions
+are unmasked~\citep{hong2026dgmark}. Different as they are, every one of them leaves the
+verifier reading a \emph{surface signature}: a hash of token identities, a frequency, a
+rank. We ask a different question.
+
+\important{Can provenance be encoded in how a diffusion language model \emph{reconstructs}
+a text, rather than in which tokens the text contains?}
+
+A diffusion language model makes this question answerable in a way an autoregressive model
+does not. Its training objective is to recover masked tokens from arbitrary surviving
+context, so any finished text can be pushed \emph{back} through the operator that produced
+it: corrupt it, re-denoise it, and observe the response. That response is a property of the
+text's relationship to the model, not of its symbols, and it is available to anyone holding
+the model --- but only interpretable by someone holding the key that chose the corruption.
+
+We call the resulting scheme \textbf{BasinMark}. A secret key derives two corruption
+patterns over the context of a span. Reading the model's log-probability of each
+\emph{observed} token under both corruptions gives a contrast
+\begin{equation}
+g_i(y_i) \;=\; \log p_\theta\!\left(y_i \mid C^1_i(y)\right) - \log p_\theta\!\left(y_i \mid C^0_i(y)\right),
+\label{eq:contrast}
+\end{equation}
+and the watermark asks not that $y_i$ belong to a keyed vocabulary subset, but that the
+sign of $g_i(y_i)$ agree with a keyed orientation. The evidence lives in the model's
+behaviour.
+
+Getting the embedding right took one full negative result, which we report because it is
+the reason the final design looks the way it does. The obvious way to place such a
+watermark is to \emph{substitute} tokens: at keyed positions, replace the model's choice
+with an admissible alternative whose contrast points the right way. On a well-trained
+diffusion language model this does not work, and the reason is a property of the model
+rather than of the algorithm. Under reference decoding the denoiser's conditionals are
+sharp enough that the median position admits exactly one token inside any usable fluency
+budget, so every unit of watermark evidence must be bought with a unit of fluency. Worse,
+the effect strengthens as generation improves: repairing a sampler bug in our own harness
+lowered draft perplexity from $22.2$ to $9.5$ and simultaneously halved the denoiser's
+entropy and shrank the admissible set by $34\text{--}60\,\%$. We state this as a finding in
+its own right --- \important{better diffusion-model generation reduces post-hoc
+watermarkability} --- and it rules out an entire family of designs.
+
+What survives is to stop changing \emph{which} token is produced and change only
+\emph{when} a model-preferred token is committed. Decoding a block, the model proposes what
+it would have proposed anyway; a position whose proposal already answers the keyed
+challenge is committed first, and one that does not is deferred. No token is ever
+overridden, which is why this costs almost nothing --- the same reason decoding-order
+watermarks are cheap~\citep{hong2026dgmark}. The difference is what the verifier reads:
+order is only the \emph{embedding} channel here, while the evidence recovered at
+verification time is the model's keyed reconstruction behaviour.
+
+\important{BasinMark embeds through the denoising trajectory but verifies through the
+model's keyed reconstruction behaviour.}
+
+\paragraph{Contributions.}
+\begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt]
+\item A provenance signal that is behavioural rather than lexical: the response of a
+finished text to keyed re-denoising, readable from the text, the model and the key alone,
+with no access to the generation trajectory (\S\ref{sec:method}).
+\item A test statistic that is a sum of bounded indicators with one keyed orientation bit
+per position, giving a finite-sample exact $\mathrm{Binomial}(n,\tfrac12)$ null under the
+ideal-PRF randomization model, with presence, claimed-message verification and payload
+decoding kept separate (\S\ref{sec:theory}). False-positive control is verified per key and
+at the worst key, not averaged over keys.
+\item An embedding rule that never substitutes a token, steering only the commit order
+inside each block of the reference decoding schedule (\S\ref{sec:embedding}).
+\item A negative result with a mechanism: post-hoc substitution is priced out on modern
+diffusion language models, and improving generation quality makes it worse
+(\S\ref{sec:v1}).
+\end{itemize}

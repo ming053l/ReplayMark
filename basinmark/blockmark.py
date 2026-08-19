@@ -31,22 +31,21 @@ from scipy.stats import binom
 from .model import MASK_ID
 from .prng import stream
 from .challenges import (orientation_bits, tie_bits, score, block_challenges,
-                         steerable_carrier)
-
-# group 0 carries no payload: its target is fixed at +1 so presence can be tested without
-# reference to any claimed message, and without decoding a message and then testing it
-SYNC = 0
+                         steerable_carrier, roles)
 
 
 class BlockMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=4, ctx_frac=0.20,
-                 tau_conf=0.5, holes=4, n_bits=8, challenge="contrast", gap_nats=1.0,
-                 nonce=None):
+                 tau_conf=0.5, holes=4, n_payload_bits=7, sync_frac=0.5,
+                 challenge="contrast", gap_nats=1.0, nonce=None):
         self.M = model
         self.key = key if nonce is None else hmac.new(
             key, str(nonce).encode(), hashlib.sha256).digest()
         self.block_len, self.n_patterns, self.ctx_frac = block_len, n_patterns, ctx_frac
-        self.tau_conf, self.holes, self.n_bits = tau_conf, holes, n_bits
+        self.tau_conf, self.holes = tau_conf, holes
+        # n_payload_bits counts PAYLOAD bits only; the presence pool is separate, so the
+        # two are never the same number and cannot silently disagree
+        self.n_payload_bits, self.sync_frac = n_payload_bits, sync_frac
         self.challenge, self.gap_nats = challenge, gap_nats
 
     # ---------- challenge table for one block ----------
@@ -88,11 +87,10 @@ class BlockMark:
         eps = self._eps(span)
         tie = tie_bits(self.key, span)
         gen_end = prompt_len + gen_len
-        hits = np.zeros(self.n_bits, dtype=np.int64)
-        tot = np.zeros(self.n_bits, dtype=np.int64)
-        n_tie = 0
-        grp = stream(self.key, "grp", gen_len, self.n_bits).integers(0, self.n_bits,
-                                                                    size=gen_len)
+        role = roles(self.key, span, self.n_payload_bits, self.sync_frac)
+        hits = np.zeros(self.n_payload_bits, dtype=np.int64)
+        tot = np.zeros(self.n_payload_bits, dtype=np.int64)
+        hs = ns = n_tie = 0
         for b in range(max(1, gen_len // self.block_len)):
             lo = prompt_len + b * self.block_len
             B, g, car = self._table(ids, lo, gen_end)
@@ -105,9 +103,11 @@ class BlockMark:
             for k, i in enumerate(B):
                 if not car[k]:            # never steerable: counting it only adds noise
                     continue
-                j = int(grp[int(i) - prompt_len])
-                tot[j] += 1
-                hits[j] += int(m[k])
+                j = role[int(i)]
+                if j < 0:
+                    ns += 1; hs += int(m[k])
+                else:
+                    tot[j] += 1; hits[j] += int(m[k])
         # ---- presence: the sync group, whose target is always +1 ----
         # Presence must not be read off the payload groups. With a balanced message the
         # payload groups cancel: half are driven towards m=1 and half towards m=0, so a
@@ -115,15 +115,13 @@ class BlockMark:
         # That, not a dead channel, is what the earlier aggregate reported. Testing
         # presence on a group whose target is fixed also avoids decoding a message from
         # the data and then testing significance against the message just decoded.
-        ns, hs = int(tot[SYNC]), int(hits[SYNC])
-        pay = [j for j in range(self.n_bits) if j != SYNC]
-        bits = np.array([int(hits[j] > tot[j] / 2) for j in pay])
-        target = np.array([(message >> t) & 1 for t in range(len(pay))])
+        bits = np.array([int(hits[j] > tot[j] / 2) for j in range(self.n_payload_bits)])
+        target = np.array([(message >> t) & 1 for t in range(self.n_payload_bits)])
 
         # ---- verification of a CLAIMED message: align each group to its claimed bit ----
-        na = int(tot.sum())
-        ha = hs + sum(int(hits[j]) if ((message >> t) & 1) else int(tot[j] - hits[j])
-                      for t, j in enumerate(pay))
+        na = int(ns + tot.sum())
+        ha = hs + sum(int(hits[j]) if ((message >> j) & 1) else int(tot[j] - hits[j])
+                      for j in range(self.n_payload_bits))
         return dict(n_sync=ns, hits_sync=hs, rate_sync=hs / max(ns, 1),
                     z=float((hs - ns / 2) / np.sqrt(max(ns, 1) / 4)),
                     p_value=float(binom.sf(hs - 1, ns, 0.5)) if ns else 1.0,
@@ -132,7 +130,8 @@ class BlockMark:
                     p_aligned=float(binom.sf(ha - 1, na, 0.5)) if na else 1.0,
                     tie_frac=n_tie / max(na, 1),
                     bits=bits.tolist(),
-                    bit_acc=float((bits == target).mean()) if len(pay) else 0.0,
+                    bit_acc=float((bits == target).mean()),
+                    n_payload=int(tot.sum()),
                     # one model invocation per ablation plus one unablated pass, per block
                     n_seqs=int(max(1, gen_len // self.block_len) * (self.n_patterns + 1)))
 
@@ -145,20 +144,17 @@ class BlockMark:
         span = np.arange(Pn, Pn + gen_len)
         eps = self._eps(span)
         tie = tie_bits(self.key, span)
-        grp = stream(self.key, "grp", gen_len, self.n_bits).integers(0, self.n_bits,
-                                                                    size=gen_len)
-        want = {}
-        for i in span:
-            j = int(grp[int(i) - Pn])
-            want[int(i)] = 1 if j == SYNC else (
-                1 if ((message >> (j - 1)) & 1) else -1)
+        role = roles(self.key, span, self.n_payload_bits, self.sync_frac)
+        want = {int(i): (1 if role[int(i)] < 0 else
+                         (1 if ((message >> role[int(i)]) & 1) else -1)) for i in span}
         n_blocks = max(1, gen_len // self.block_len)
         steps_pb = max(1, steps // n_blocks)
         gen_end = Pn + gen_len
 
         x = torch.full((1, Pn + gen_len), MASK_ID, dtype=torch.long, device=self.M.device)
         x[:, :Pn] = prompt_ids.to(self.M.device)
-        self.stats = dict(committed=0, wm=0, fallback=0, flipped=0)
+        self.stats = dict(committed=0, wm=0, fallback=0,
+                          carrier_wm=0, carrier_fb=0, noncarrier=0)
 
         for b in range(n_blocks):
             lo = Pn + b * self.block_len
@@ -195,8 +191,11 @@ class BlockMark:
                 safe = [n for n in elig
                         if sum(1 for jj in liv if jj < liv[n] and jj not in eset)
                         <= self.holes]
-                pick = [n for n in safe if ok[n]][:k]
+                # steer ONLY on carriers: the detector counts nothing else, so spending
+                # commit order on a non-carrier position buys no signal
+                pick = [n for n in safe if cmask[n] and ok[n]][:k]
                 self.stats["wm"] += len(pick)
+                self.stats["carrier_wm"] += len(pick)
                 if len(pick) < k:
                     # The fallback must exist -- a block has to finish -- but letting it
                     # take the highest-confidence position makes the channel zero-sum: the
@@ -204,11 +203,19 @@ class BlockMark:
                     # test, and they landed at 0.06-0.15 while the driven ones landed at
                     # 1.00. Spend the forced commits on NON-carrier positions first, so a
                     # steerable one keeps its chance to be re-proposed compatibly.
+                    self.stats["_nd"] = len(pick)
                     rest = sorted((n for n in range(len(liv)) if n not in pick),
                                   key=lambda n: (cmask[n], -cf[n]))[:k - len(pick)]
                     self.stats["fallback"] += len(rest)
                     pick += rest
-                for n in pick:
+                else:
+                    self.stats["_nd"] = len(pick)
+                for idx, n in enumerate(pick):
                     x[0, liv[n]] = cand[n]
+                    if cmask[n]:
+                        if idx >= self.stats["_nd"]:
+                            self.stats["carrier_fb"] += 1
+                    else:
+                        self.stats["noncarrier"] += 1
                 self.stats["committed"] += len(pick)
         return x.cpu()

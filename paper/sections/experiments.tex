@@ -1,0 +1,30 @@
+\section{Experimental Setup}
+\label{sec:baselines}
+
+All numbers are measured on one NVIDIA TITAN RTX with
+\texttt{GSAI-ML/LLaDA-8B-Instruct} in fp16. Prompts are C4 \texttt{realnewslike}
+documents truncated to $300$ characters, which is dgMARK's published protocol; every method
+in this paper uses the same construction, the same checkpoint and $256$ generated tokens.
+Text quality is GPT-2-large perplexity, reported as a ratio against a non-watermarked
+control \emph{produced under the same decoding regime}, since the three methods require
+different regimes and a single shared baseline would charge the cost of a regime to
+whichever watermark used it. Detectability is reported as the true positive rate at a
+controlled false positive rate, never as a raw $z$.
+
+\input{tables/baseline_table}
+
+Two observations about the baselines. Locally reproduced dgMARK is weaker than its
+published table ($1.25\times$ for $99.4\,\%$), which is why the reproduction was worth
+running rather than citing. And KGW's apparent $1.03\times$ is against its own
+left-to-right control; charged against block decoding it is $1.20\times$, and under forced
+left-to-right decoding this model repeats about a third of its bigrams, so its detector
+must score each distinct bigram once --- an un-deduplicated detector measured a $37\,\%$
+false positive rate on non-watermarked text.
+
+\input{tables/validity_table}
+
+\paragraph{Held-out evaluation.}
+The documents used while developing and debugging the method are not a test set. Final
+numbers are reported on fresh documents with per-document nonces
+$K_d = \mathrm{HMAC}(K, \mathrm{nonce}_d)$, so each document is an independent key draw and
+the guarantee of Proposition~\ref{prop:null} applies per document.
