@@ -48,7 +48,7 @@ from .challenges import orientation_bits, tie_bits, score, block_challenges, rol
 class ResampleMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=8, ctx_frac=0.20,
                  n_payload_bits=7, sync_frac=0.5, challenge="contrast", s_min=0.5,
-                 retries=4, temperature=0.8, nonce=None):
+                 retries=4, temperature=0.8, fallback="fresh", nonce=None):
         self.M = model
         self.key = key if nonce is None else hmac.new(
             key, str(nonce).encode(), hashlib.sha256).digest()
@@ -184,6 +184,7 @@ class ResampleMark:
                           # assumed equal
                           draw_hits=0, draw_tot=0, s_sum=0.0,
                           qbase_sum=0.0, qgen_sum=0.0)
+        self.qpairs = []                    # per-carrier (q_base_target, q_gen_target)
 
         for b in range(n_blocks):
             lo = Pn + b * self.block_len
@@ -217,9 +218,11 @@ class ResampleMark:
                         tgt = eps[i] * want[i]
                         # what the block-masked conditional predicts for THIS position's
                         # target side, and what the live decoder state actually offers
-                        self.stats["qbase_sum"] += qpm[i][0] if tgt > 0 else qpm[i][1]
-                        self.stats["qgen_sum"] += float(
-                            (row * ((tgt * gi.to(row.device)) > 0)).sum())
+                        qb = qpm[i][0] if tgt > 0 else qpm[i][1]
+                        qg = float((row * ((tgt * gi.to(row.device)) > 0)).sum())
+                        self.stats["qbase_sum"] += qb
+                        self.stats["qgen_sum"] += qg
+                        self.qpairs.append((qb, qg))
                         # R is the number of GUIDED proposals, counting the first draw.
                         # Redrawing after the final check would waste a sample, since that
                         # draw is never examined; the single unconditional fallback below

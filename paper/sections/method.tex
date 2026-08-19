@@ -44,11 +44,22 @@ T \;=\; \sum_{i\in P} m_i .
 
 \begin{proposition}[Exact null]
 \label{prop:null}
-Fix a text $y$, the carrier set $P$, and the challenge magnitudes. Under the ideal-PRF
-randomization model, in which the domain-separated orientation bits derived from a key
-independent of $y$ behave as independent Rademacher variables, the $m_i$ are i.i.d.
-$\mathrm{Bernoulli}(\tfrac12)$ and $T \sim \mathrm{Binomial}(|P|, \tfrac12)$ exactly.
+Let the challenge patterns, the per-position pair selection, the carrier set, the group
+assignment, the tie coins and the orientation bits each be derived from the key under
+\emph{separate PRF domains}. Fix a text $y$ independent of the key, and condition on the
+carrier set, the selected pairs, and the challenge magnitudes --- all of which are functions
+of $y$ and the non-orientation domains only. Under the ideal-PRF model the orientation bits
+are then independent Rademacher variables independent of everything conditioned on, so the
+$m_i$ are i.i.d.\ $\mathrm{Bernoulli}(\tfrac12)$ and
+$T \sim \mathrm{Binomial}(|P|, \tfrac12)$ exactly.
 \end{proposition}
+
+The domain separation is load-bearing, not stylistic: the challenge patterns and the
+per-position pair selection are themselves keyed, so if they shared PRF output with the
+orientation bits, the conditioning event would carry information about the bits and the
+independence step would fail. Pair selection additionally uses only
+$S_i = 2\min(q_i^+, q_i^-)$, which is invariant under swapping the pair's arms, so it is
+orientation-symmetric by construction.
 
 The proposition needs no calibration corpus and no model-specific null estimate, and it is
 finite-sample rather than asymptotic. Three implementation details are load-bearing.

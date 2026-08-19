@@ -92,14 +92,14 @@ def main():
 
     rows = []
     for R in RETRIES:
-        ps, rates, accs, txt, st, t0 = [], [], [], [], [], time.time()
+        ps, rates, accs, txt, st, pairs, t0 = [], [], [], [], [], [], time.time()
         for i, p in enumerate(prompts):
             w = ResampleMark(M, KEY, block_len=BLK, s_min=SMIN, retries=R,
                              nonce=f"doc-{i}")
             y = w.generate(p, gen_len=GEN, steps=STEPS, message=MESSAGE, seed=3000 + i)
             d = w.detect(y, pls[i], GEN, MESSAGE)
             ps.append(d["p_value"]); rates.append(d["rate_sync"]); accs.append(d["bit_acc"])
-            st.append(w.stats)
+            st.append(w.stats); pairs.extend(w.qpairs)
             txt.append(M.tok.decode(y[0, pls[i]:pls[i] + GEN], skip_special_tokens=True))
         nw = ppl.nll(txt); ps = np.array(ps)
         d2, d3, rep = diversity(M.tok, txt)
@@ -112,6 +112,14 @@ def main():
         q_base = float(np.mean([s["qbase_sum"] / max(s["carrier"], 1) for s in st]))
         q_gen = float(np.mean([s["qgen_sum"] / max(s["carrier"], 1) for s in st]))
         s_half = float(np.mean([s["s_sum"] / max(s["carrier"], 1) / 2 for s in st]))
+        # Per-position calibration. The pooled draw-hit rate is draw-weighted (early
+        # stopping makes easy positions contribute fewer draws), so pooled empirical vs
+        # mean q_gen is NOT the check; the check is whether the block-masked prediction
+        # tracks the live mass position by position.
+        qb_arr = np.array([a for a, _ in pairs]); qg_arr = np.array([b for _, b in pairs])
+        cal_mae = float(np.mean(np.abs(qb_arr - qg_arr))) if len(pairs) else float("nan")
+        cal_corr = (float(np.corrcoef(qb_arr, qg_arr)[0, 1])
+                    if len(pairs) > 2 else float("nan"))
         dr = float(np.mean([s["draws"] / max(s["committed"], 1) for s in st]))
         r = dict(R=R, rate=float(np.mean(rates)),
                  rate_ref=float(np.mean([d["rate_sync"] for d in nulls])),
@@ -120,7 +128,7 @@ def main():
                  ppl=float(np.exp(np.nanmean(nw))),
                  ratio=float(np.exp(np.nanmean(nw)) / ppl0),
                  accept=acc, q_observed=q_obs, q_base_target=q_base,
-                 q_gen_target=q_gen, s_half=s_half,
+                 q_gen_target=q_gen, s_half=s_half, cal_mae=cal_mae, cal_corr=cal_corr,
                  draws_per_token=dr, d2=d2, d3=d3, rep=rep,
                  gen_forwards=STEPS, det_seqs=int((GEN // BLK) * 9),
                  secs=(time.time() - t0) / len(prompts))
@@ -129,7 +137,7 @@ def main():
               f"TPR@5% {r['tpr05']:.2f} @1% {r['tpr01']:.2f} @0.1% {r['tpr001']:.2f} | "
               f"bits {r['bit_acc']:.2f} | ppl {r['ppl']:.2f} (x{r['ratio']:.2f}) | "
               f"accepted {r['accept']:.2f} | q base {q_base:.3f} live {q_gen:.3f} "
-              f"empirical {q_obs:.3f} (S/2 {s_half:.3f}) | "
+              f"emp {q_obs:.3f} | calib MAE {cal_mae:.3f} corr {cal_corr:.2f} | "
               f"draws/token {r['draws_per_token']:.2f} | "
               f"d2 {d2:.3f} rep {rep:.3f} | {r['secs']:.0f}s/sample", flush=True)
         json.dump(dict(rows=rows, ppl_ref=ppl0, d2_ref=rd2, d3_ref=rd3, rep_ref=rrep),

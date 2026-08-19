@@ -11,10 +11,14 @@ measured on this machine; anything attributed to a paper says so.
 
 > **Status, stated plainly.** The verification side is finished and validated: the null is
 > exact, false-positive control holds at the worst key, and detection costs a fixed number
-> of forward passes independent of payload. The embedding side is **not** working yet —
-> the current order-steering embedder measures at chance, and the reason is an open
-> discrepancy under active diagnosis (§4), not a missing implementation. V1's substitution
-> embedder is archived in `legacy/` as a negative result, not as an alternative.
+> of sequence evaluations independent of payload. On the embedding side, two families are
+> retired by measurement — V1 substitution (nothing to substitute: the median position
+> admits one token in budget) and V2 commit-order steering (zero-sum: order changes which
+> position commits, not which tokens exist; deferral's capacity turned out to come from
+> redrawing, not from context). The live formulation is **V3, response-guided resampling**
+> (`basinmark/resample.py`): draw from the model's own conditional until the reconstruction
+> response agrees with the keyed target, at most R guided draws plus one unconditional
+> fallback. End-to-end numbers for V3 are running and not yet reported.
 
 ---
 
@@ -107,14 +111,20 @@ block decoding it is x1.20, and under forced left-to-right LLaDA repeats about a
 its bigrams — its detector must score each distinct bigram once or the null breaks (an
 un-deduplicated detector measured a 37 % false-positive rate at delta=0).
 
-## 4. Open: the embedder measures at chance and should not
+## 4. Resolved: why order steering measured at chance
 
-44 % of commits are made *because* the model's preferred token satisfied the challenge, yet
-the final agreement with the intended direction is 0.50. These cannot both hold unless the
-value read at commit time and the value recomputed at detection differ for the same
-(position, token). `exp/03_table_agreement.py` logs `g` at every commit, recomputes it at
-detection, and prints the disagreement and sign-flip counts. Six candidate causes were
-checked by inspection and eliminated; the remaining step is measurement.
+The discrepancy was resolved by three measurements, none of which was the suspected table
+mismatch (`exp/03`: generation and detection agree on `g` at 256/256 positions, zero sign
+flips). First, the aggregate statistic was structurally cancelling — with a balanced
+message half the payload groups are driven toward `m=1` and half toward `m=0`, so a
+*perfect* watermark sums to `n/2`; presence is now tested on a sync pool whose target is
+fixed. Second, order is zero-sum: watermark-driven commits land `107/107, 133/133,
+112/112`, but the leftovers are exactly the incompatible residue and land at `0.06–0.15`,
+cancelling to `0.50`. Third, the capacity that deferral appeared to provide comes from
+*redrawing*, not context: with the same context and fresh noise, an incompatible proposal
+becomes compatible `0.475/0.625/0.738/0.812/0.875` within `R = 1/2/4/8/16` draws, while
+committing other positions instead moves it only `0.062 → 0.113` (`exp/07`). That
+measurement is what V3 is built on.
 
 ## 5. Why V1 failed — kept as a negative result
 
