@@ -60,7 +60,7 @@ def main():
                             nonce=f"doc-{i}").detect(x, pl[i], GEN, MESSAGE)
                   for i, x in enumerate(ref)]
             ref_stat[(steps, ch)] = (float(np.mean([d["z"] for d in zz])),
-                                     float(np.mean([d["rate"] for d in zz])))
+                                     float(np.mean([d["rate_sync"] for d in zz])))
             print(f"[reference steps={steps} {ch}] ppl {ref_ppl[steps]:.2f}  "
                   f"z {ref_stat[(steps, ch)][0]:+.2f}  match rate "
                   f"{ref_stat[(steps, ch)][1]:.3f}  (want 0.500)  ties "
@@ -68,15 +68,17 @@ def main():
 
     rows = []
     for ch, steps, tc, gn in GRID:
-        zs, ps, rate, acc, txt, st, ties, t0 = [], [], [], [], [], [], [], time.time()
+        zs, ps, rate, acc, txt, st, ties, pal, nn, t0 = ([], [], [], [], [], [], [],
+                                                          [], [], time.time())
         for i, p in enumerate(prompts):
             w = BlockMark(M, KEY, block_len=BLK, n_patterns=4, tau_conf=tc, holes=4,
                           n_bits=8, challenge=ch, gap_nats=gn, nonce=f"doc-{i}")
             y = w.generate(p, gen_len=GEN, steps=steps, temperature=0.8,
                            message=MESSAGE, seed=3000 + i)
             d = w.detect(y, pl[i], GEN, MESSAGE)
-            zs.append(d["z"]); ps.append(d["p_value"]); rate.append(d["rate"])
+            zs.append(d["z"]); ps.append(d["p_value"]); rate.append(d["rate_sync"])
             acc.append(d["bit_acc"]); st.append(w.stats); ties.append(d["tie_frac"])
+            pal.append(d["p_aligned"]); nn.append(d["n_sync"])
             txt.append(M.tok.decode(y[0, pl[i]:pl[i] + GEN], skip_special_tokens=True))
         nw = nll(txt); ps = np.array(ps)
         wm = float(np.mean([s["wm"] for s in st]))
@@ -89,12 +91,15 @@ def main():
                  ratio=float(np.exp(np.nanmean(nw)) / ref_ppl[steps]),
                  tpr05=float(np.mean(ps < 0.05)), tpr01=float(np.mean(ps < 0.01)),
                  tpr001=float(np.mean(ps < 0.001)),
+                 tpr01_aligned=float(np.mean(np.array(pal) < 0.01)),
+                 n_sync=float(np.mean(nn)),
                  wm_frac=wm / max(cm, 1), tie_frac=float(np.mean(ties)),
-                 n_forwards=(GEN // BLK) * 4)
+                 n_seqs=(GEN // BLK) * 5)
         rows.append(r)
         print(f"{ch:<9} steps={steps:<4} gap={gn:<4} | n {int(np.mean([d for d in [0]]))if False else ''}match {r['rate']:.3f} "
               f"(ref {r['rate_ref']:.3f}) | z {r['z']:+.2f} | TPR@5% {r['tpr05']:.2f} "
-              f"@1% {r['tpr01']:.2f} @0.1% {r['tpr001']:.2f} | bits {r['bit_acc']:.2f} | "
+              f"@1% {r['tpr01']:.2f} | aligned@1% {r['tpr01_aligned']:.2f} | "
+              f"bits {r['bit_acc']:.2f} n_sync {r['n_sync']:.0f} | "
               f"ppl {r['ppl']:.2f} (x{r['ratio']:.2f}) | wm-driven {r['wm_frac']:.2f} "
               f"ties {r['tie_frac']:.2f} | "
               f"{(time.time()-t0)/NS:.0f}s/sample", flush=True)
@@ -107,7 +112,7 @@ def main():
           f"{'ppl':>9}{'fwd':>6}")
     for r in rows:
         print(f"{r['challenge']:<10}{r['steps']:<7}{r['tau_conf']:<6}{r['rate']:>8.3f}"
-              f"{r['z']:>+8.2f}{r['tpr01']:>9.2f}{r['ratio']:>9.2f}{r['n_forwards']:>6}")
+              f"{r['z']:>+8.2f}{r['tpr01']:>9.2f}{r['ratio']:>9.2f}{r['n_seqs']:>6}")
     ok = [r for r in rows if r["ratio"] <= 1.20]
     if ok:
         b = max(ok, key=lambda r: r["tpr01"])

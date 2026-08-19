@@ -33,6 +33,10 @@ from .prng import stream
 from .challenges import (orientation_bits, tie_bits, score, block_challenges,
                          steerable_carrier)
 
+# group 0 carries no payload: its target is fixed at +1 so presence can be tested without
+# reference to any claimed message, and without decoding a message and then testing it
+SYNC = 0
+
 
 class BlockMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=4, ctx_frac=0.20,
@@ -104,14 +108,33 @@ class BlockMark:
                 j = int(grp[int(i) - prompt_len])
                 tot[j] += 1
                 hits[j] += int(m[k])
-        n, h = int(tot.sum()), int(hits.sum())
-        bits = (hits > tot / 2).astype(int)
-        target = np.array([(message >> t) & 1 for t in range(self.n_bits)])
-        return dict(green=h, n=n, rate=h / max(n, 1), tie_frac=n_tie / max(n, 1),
-                    z=float((h - n / 2) / np.sqrt(n / 4)),
-                    p_value=float(binom.sf(h - 1, n, 0.5)),
-                    bits=bits.tolist(), bit_acc=float((bits == target).mean()),
-                    n_forwards=int(max(1, gen_len // self.block_len) * self.n_patterns))
+        # ---- presence: the sync group, whose target is always +1 ----
+        # Presence must not be read off the payload groups. With a balanced message the
+        # payload groups cancel: half are driven towards m=1 and half towards m=0, so a
+        # PERFECT watermark still sums to n/2 and the aggregate z is ~0 by construction.
+        # That, not a dead channel, is what the earlier aggregate reported. Testing
+        # presence on a group whose target is fixed also avoids decoding a message from
+        # the data and then testing significance against the message just decoded.
+        ns, hs = int(tot[SYNC]), int(hits[SYNC])
+        pay = [j for j in range(self.n_bits) if j != SYNC]
+        bits = np.array([int(hits[j] > tot[j] / 2) for j in pay])
+        target = np.array([(message >> t) & 1 for t in range(len(pay))])
+
+        # ---- verification of a CLAIMED message: align each group to its claimed bit ----
+        na = int(tot.sum())
+        ha = hs + sum(int(hits[j]) if ((message >> t) & 1) else int(tot[j] - hits[j])
+                      for t, j in enumerate(pay))
+        return dict(n_sync=ns, hits_sync=hs, rate_sync=hs / max(ns, 1),
+                    z=float((hs - ns / 2) / np.sqrt(max(ns, 1) / 4)),
+                    p_value=float(binom.sf(hs - 1, ns, 0.5)) if ns else 1.0,
+                    n=na, hits_aligned=ha, rate_aligned=ha / max(na, 1),
+                    z_aligned=float((ha - na / 2) / np.sqrt(max(na, 1) / 4)),
+                    p_aligned=float(binom.sf(ha - 1, na, 0.5)) if na else 1.0,
+                    tie_frac=n_tie / max(na, 1),
+                    bits=bits.tolist(),
+                    bit_acc=float((bits == target).mean()) if len(pay) else 0.0,
+                    # one model invocation per ablation plus one unablated pass, per block
+                    n_seqs=int(max(1, gen_len // self.block_len) * (self.n_patterns + 1)))
 
     # ---------- generation ----------
     @torch.no_grad()
@@ -124,8 +147,11 @@ class BlockMark:
         tie = tie_bits(self.key, span)
         grp = stream(self.key, "grp", gen_len, self.n_bits).integers(0, self.n_bits,
                                                                     size=gen_len)
-        want = {int(i): (1 if ((message >> int(grp[int(i) - Pn])) & 1) else -1)
-                for i in span}
+        want = {}
+        for i in span:
+            j = int(grp[int(i) - Pn])
+            want[int(i)] = 1 if j == SYNC else (
+                1 if ((message >> (j - 1)) & 1) else -1)
         n_blocks = max(1, gen_len // self.block_len)
         steps_pb = max(1, steps // n_blocks)
         gen_end = Pn + gen_len
