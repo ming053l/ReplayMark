@@ -20,7 +20,7 @@ from basinmark.blockmark import BlockMark
 
 KEY, MESSAGE = b"basinmark-key-A", 0xA5
 GEN, NS, BLK = 256, 10, 32
-GRID = list(itertools.product(["contrast", "random"], [128, 256], [0.3, 0.7]))
+GRID = list(itertools.product(["contrast"], [128, 256], [0.3], [0.5, 1.0, 2.0]))
 
 
 class Nll:
@@ -49,15 +49,16 @@ def main():
     pl = [p.shape[1] for p in prompts]
 
     ref_ppl, ref_stat = {}, {}
-    for steps in sorted(set(s for _, s, _ in GRID)):
+    for steps in sorted(set(s for _, s, _, _ in GRID)):
         ref = [M.generate(p, gen_len=GEN, steps=steps, block_len=BLK, temperature=0.8,
                           seed=3000 + i).cpu() for i, p in enumerate(prompts)]
         n = nll([M.tok.decode(x[0, pl[i]:pl[i] + GEN], skip_special_tokens=True)
                  for i, x in enumerate(ref)])
         ref_ppl[steps] = float(np.exp(np.nanmean(n)))
         for ch in ("contrast", "random"):
-            zz = [BlockMark(M, KEY, block_len=BLK, challenge=ch, nonce=f"doc-{i}").detect(
-                x, pl[i], GEN, MESSAGE) for i, x in enumerate(ref)]
+            zz = [BlockMark(M, KEY, block_len=BLK, challenge=ch, gap_nats=1.0,
+                            nonce=f"doc-{i}").detect(x, pl[i], GEN, MESSAGE)
+                  for i, x in enumerate(ref)]
             ref_stat[(steps, ch)] = (float(np.mean([d["z"] for d in zz])),
                                      float(np.mean([d["rate"] for d in zz])))
             print(f"[reference steps={steps} {ch}] ppl {ref_ppl[steps]:.2f}  "
@@ -66,11 +67,11 @@ def main():
                   f"{np.mean([d['tie_frac'] for d in zz]):.3f}", flush=True)
 
     rows = []
-    for ch, steps, tc in GRID:
+    for ch, steps, tc, gn in GRID:
         zs, ps, rate, acc, txt, st, ties, t0 = [], [], [], [], [], [], [], time.time()
         for i, p in enumerate(prompts):
             w = BlockMark(M, KEY, block_len=BLK, n_patterns=4, tau_conf=tc, holes=4,
-                          n_bits=8, challenge=ch, nonce=f"doc-{i}")
+                          n_bits=8, challenge=ch, gap_nats=gn, nonce=f"doc-{i}")
             y = w.generate(p, gen_len=GEN, steps=steps, temperature=0.8,
                            message=MESSAGE, seed=3000 + i)
             d = w.detect(y, pl[i], GEN, MESSAGE)
@@ -80,7 +81,7 @@ def main():
         nw = nll(txt); ps = np.array(ps)
         wm = float(np.mean([s["wm"] for s in st]))
         cm = float(np.mean([s["committed"] for s in st]))
-        r = dict(challenge=ch, steps=steps, tau_conf=tc,
+        r = dict(challenge=ch, steps=steps, tau_conf=tc, gap_nats=gn,
                  z=float(np.mean(zs)), z_ref=ref_stat[(steps, ch)][0],
                  rate=float(np.mean(rate)), rate_ref=ref_stat[(steps, ch)][1],
                  bit_acc=float(np.mean(acc)),
@@ -91,7 +92,7 @@ def main():
                  wm_frac=wm / max(cm, 1), tie_frac=float(np.mean(ties)),
                  n_forwards=(GEN // BLK) * 4)
         rows.append(r)
-        print(f"{ch:<9} steps={steps:<4} tau={tc:<4} | match {r['rate']:.3f} "
+        print(f"{ch:<9} steps={steps:<4} gap={gn:<4} | n {int(np.mean([d for d in [0]]))if False else ''}match {r['rate']:.3f} "
               f"(ref {r['rate_ref']:.3f}) | z {r['z']:+.2f} | TPR@5% {r['tpr05']:.2f} "
               f"@1% {r['tpr01']:.2f} @0.1% {r['tpr001']:.2f} | bits {r['bit_acc']:.2f} | "
               f"ppl {r['ppl']:.2f} (x{r['ratio']:.2f}) | wm-driven {r['wm_frac']:.2f} "

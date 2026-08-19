@@ -77,3 +77,31 @@ def block_challenges(key, block_lo, block_len, n_patterns, ctx_frac=0.20, min_ct
         u, v = r_.choice(n_patterns, 2, replace=False)
         pairs = [(int(u), int(v))]
     return pats, pairs
+
+
+def steerable_carrier(base_lp, gap_nats=1.0, min_frac=0.10):
+    """Which block positions can the commit-order channel actually move?
+
+    Order steering is exactly zero-sum unless deferring a position changes the token the
+    model proposes there. Measured on this model it usually does not: watermark-driven
+    commits land 107/107, 133/133, 112/112 -- perfectly -- while the positions left over
+    land at 0.06-0.15, because the leftovers are precisely the ones that failed the
+    compatibility test and every position must be committed eventually. The counts cancel
+    to 0.50 by construction.
+
+    So the statistic must not count positions that were never steerable. A position is
+    steerable when the model is genuinely undecided there, measured as the top-2 log-prob
+    gap under the block-masked context. That context contains none of the block's own
+    tokens, so the detector recomputes the identical set from the finished text -- the
+    same isolation argument the challenge table relies on.
+
+    Returns a boolean mask over the block's positions.
+    """
+    top2 = base_lp.topk(2, dim=1).values
+    gap = (top2[:, 0] - top2[:, 1]).numpy()
+    mask = gap < gap_nats
+    if mask.mean() < min_frac:            # never let a block contribute nothing
+        keep = np.argsort(gap)[:max(1, int(min_frac * len(gap)))]
+        mask = np.zeros_like(mask)
+        mask[keep] = True
+    return mask

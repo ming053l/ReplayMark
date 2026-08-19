@@ -30,18 +30,20 @@ import torch.nn.functional as F
 from scipy.stats import binom
 from .model import MASK_ID
 from .prng import stream
-from .challenges import orientation_bits, tie_bits, score, block_challenges
+from .challenges import (orientation_bits, tie_bits, score, block_challenges,
+                         steerable_carrier)
 
 
 class BlockMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=4, ctx_frac=0.20,
-                 tau_conf=0.5, holes=4, n_bits=8, challenge="contrast", nonce=None):
+                 tau_conf=0.5, holes=4, n_bits=8, challenge="contrast", gap_nats=1.0,
+                 nonce=None):
         self.M = model
         self.key = key if nonce is None else hmac.new(
             key, str(nonce).encode(), hashlib.sha256).digest()
         self.block_len, self.n_patterns, self.ctx_frac = block_len, n_patterns, ctx_frac
         self.tau_conf, self.holes, self.n_bits = tau_conf, holes, n_bits
-        self.challenge = challenge
+        self.challenge, self.gap_nats = challenge, gap_nats
 
     # ---------- challenge table for one block ----------
     @torch.no_grad()
@@ -65,10 +67,12 @@ class BlockMark:
             batch.append(m)
         # float64 must be requested INSIDE log_softmax; casting afterwards recovers
         # nothing, since the rounding that creates the ties has already happened
+        batch.append(base)                            # unablated: the clean conditional
         lp = self.M.logprobs_rows(torch.cat(batch, 0), torch.tensor(B), chunk=2,
                                   dtype=torch.float64)
         u, v = pairs[0]
-        return B, (lp[v] - lp[u])                     # [|B|, V], float64
+        carrier = steerable_carrier(lp[-1], self.gap_nats)
+        return B, (lp[v] - lp[u]), carrier            # [|B|, V] float64, [|B|] bool
 
     def _eps(self, span):
         return orientation_bits(self.key, span)
@@ -87,7 +91,7 @@ class BlockMark:
                                                                     size=gen_len)
         for b in range(max(1, gen_len // self.block_len)):
             lo = prompt_len + b * self.block_len
-            B, g = self._table(ids, lo, gen_end)
+            B, g, car = self._table(ids, lo, gen_end)
             y = ids[0, torch.tensor(B)]
             gv = g.gather(1, y[:, None]).squeeze(1).numpy()
             e = np.array([eps[int(i)] for i in B], dtype=np.float64)
@@ -95,6 +99,8 @@ class BlockMark:
             m, nz = score(gv, e, tb)
             n_tie += nz
             for k, i in enumerate(B):
+                if not car[k]:            # never steerable: counting it only adds noise
+                    continue
                 j = int(grp[int(i) - prompt_len])
                 tot[j] += 1
                 hits[j] += int(m[k])
@@ -130,7 +136,7 @@ class BlockMark:
 
         for b in range(n_blocks):
             lo = Pn + b * self.block_len
-            B, g = self._table(x.cpu(), lo, gen_end)
+            B, g, car = self._table(x.cpu(), lo, gen_end)
             gmap = {int(p): g[k] for k, p in enumerate(B)}
             Bt = torch.tensor(B, device=x.device)
             for t in range(steps_pb):
@@ -150,6 +156,8 @@ class BlockMark:
                 del logits
                 liv, cand = live.tolist(), xh[live].tolist()
                 cf = conf[live].tolist()
+                cpos = {int(q): bool(car[kk]) for kk, q in enumerate(B)}
+                cmask = [cpos[i] for i in liv]
                 # does the model's OWN choice already answer the challenge correctly?
                 # a tie is not steerable: its score is fixed by the keyed coin
                 ok = [(eps[i] * want[i] * float(gmap[i][v]) > 0)
@@ -164,8 +172,14 @@ class BlockMark:
                 pick = [n for n in safe if ok[n]][:k]
                 self.stats["wm"] += len(pick)
                 if len(pick) < k:
+                    # The fallback must exist -- a block has to finish -- but letting it
+                    # take the highest-confidence position makes the channel zero-sum: the
+                    # leftovers are exactly the positions that failed the compatibility
+                    # test, and they landed at 0.06-0.15 while the driven ones landed at
+                    # 1.00. Spend the forced commits on NON-carrier positions first, so a
+                    # steerable one keeps its chance to be re-proposed compatibly.
                     rest = sorted((n for n in range(len(liv)) if n not in pick),
-                                  key=lambda n: -cf[n])[:k - len(pick)]
+                                  key=lambda n: (cmask[n], -cf[n]))[:k - len(pick)]
                     self.stats["fallback"] += len(rest)
                     pick += rest
                 for n in pick:
