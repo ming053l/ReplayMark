@@ -35,7 +35,7 @@ BASE = dict(block_len=BLK, sync_frac=1.0, n_payload_bits=1)
 ARMS = [("control", dict(s_min=2.0, retries=1)),       # same generator, steering off
         ("R1", dict(s_min=0.5, retries=1)),
         ("R2", dict(s_min=0.5, retries=2))]
-out = {}
+out, saved = {}, {}
 for name, kw in ARMS:
     txts, ps, rates, t0 = [], [], [], time.time()
     for i, p in enumerate(prompts):
@@ -46,6 +46,7 @@ for name, kw in ARMS:
                          retries=1).detect(y, pls[i], GEN, 0)
         ps.append(d["p_value"]); rates.append(d["rate_sync"])
         txts.append(M.tok.decode(y[0, pls[i]:pls[i] + GEN], skip_special_tokens=True))
+        saved.setdefault(name, []).append(y[0].tolist())   # ids, for offline detector work
         if (i + 1) % 10 == 0:
             print(f"  [{name}] {i+1}/{NS}  {(time.time()-t0)/(i+1):.0f}s/doc", flush=True)
     out[name] = dict(nll=[nll1(t) for t in txts], p=np.array(ps), rate=np.array(rates))
@@ -62,5 +63,8 @@ for name, _ in ARMS[1:]:
     print(f"{name}: dNLL vs matched control  median {np.median(dn):+.3f}  "
           f"q25 {np.quantile(dn,.25):+.3f} q75 {np.quantile(dn,.75):+.3f}  "
           f"ratio(exp-mean) {np.exp(dn.mean()):.2f}")
+import json as _j
+_j.dump(dict(saved=saved, pls=pls, GEN=GEN),
+        open("/ssd1/ming/basinmark/results/16_outputs.json", "w"))
 print(f"control absolute ppl {np.exp(np.nanmean([v[0] for v in ctl['nll']])):.2f}   "
       f"null check: control TPR@1% should be ~0.01: {np.mean(ctl['p']<.01):.2f}")

@@ -7,3 +7,5 @@ echo "=== 14 exit $? ==="
 echo "=== 15 exit $? ==="
 /home/ming0531/miniconda3/envs/mmada/bin/python exp/16_decisive.py > logs/16_decisive.log 2>&1
 echo "=== 16 exit $? ==="
+/home/ming0531/miniconda3/envs/mmada/bin/python exp/17_llr.py > logs/17_llr.log 2>&1
+echo "=== 17 exit $? ==="
