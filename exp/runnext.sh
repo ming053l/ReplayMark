@@ -5,3 +5,5 @@ while nvidia-smi --query-compute-apps=pid --format=csv,noheader | grep -q .; do 
 echo "=== 14 exit $? ==="
 /home/ming0531/miniconda3/envs/mmada/bin/python exp/15_length.py > logs/15_length.log 2>&1
 echo "=== 15 exit $? ==="
+/home/ming0531/miniconda3/envs/mmada/bin/python exp/16_decisive.py > logs/16_decisive.log 2>&1
+echo "=== 16 exit $? ==="

@@ -46,9 +46,10 @@ No watermark & $T=0.8$, full vocab & 26.21 & 1.00$\times$ & -- & -- & -- & $-0.0
 \textcolor{oursemph}{ReTrace V1} & leverage, detection-first & 65.3 & \textcolor{failred}{2.49$\times$} & 0.62 & 0.50 & -- & $+2.94$ & 9 \\
 \textcolor{oursemph}{ReTrace V1} & generation-time, two-phase & 203.7 & \textcolor{failred}{7.77$\times$} & 0.12 & \textcolor{failred}{0.00} & 0.00 & $+1.14$ & 9 \\
 \midrule
-\multicolumn{9}{l}{\textit{Response-guided resampling --- ReTrace V3 (\S\ref{sec:embedding})}} \\
+\multicolumn{9}{l}{\textit{Response-guided resampling --- ReTrace V3, presence-only, PRELIMINARY ($n{=}20$, valid $9$--$10$)}} \\
 \midrule
-\textcolor{oursemph}{ReTrace V3} & $R=1\ldots16$ & \multicolumn{6}{l}{\textcolor{notmeasured}{running; no end-to-end numbers yet}} & 72 \\
+\textcolor{oursemph}{ReTrace V3} & $R=1$ & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.40 & 0.25 & 0.25 & $+1.6^{*}$ & 72 \\
+\textcolor{oursemph}{ReTrace V3} & $R=2$ & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.60 & 0.50 & 0.30 & $+3.1^{*}$ & 72 \\
 \bottomrule
 \end{tabular}%
 }
@@ -70,6 +71,16 @@ cost the ratio column hides: left-to-right decoding scores $11.61$ against $9.94
 block decoding, so measured against the better control $\delta=1$ costs $1.20\times$, not
 $1.03\times$. And perplexity is not monotone in $\delta$ here ($16.21$ at $\delta=2$
 versus $14.05$ at $\delta=3$), because a strong green-list bias also makes the text more
-repetitive, which an $n$-gram-blind perplexity rewards.}
+repetitive, which an $n$-gram-blind perplexity rewards. The V3 rows are preliminary:
+$256$-token documents, every carrier feeding one presence test (null measured at $0.498$,
+$n_{\mathrm{sync}}{=}123$); $^{*}$the $z$ implied by the mean match rate; $^{\dagger}$V3
+quality is deliberately left unreported here --- all V3 perplexities so far were measured
+against a \emph{differently-scheduled} reference generator, and $R{=}1$ and $R{=}2$
+showing the same $\Delta$NLL is the signature of that confound rather than of watermark
+cost. A matched-scheduler control (same generator, steering off) is running; its paired
+$\Delta$NLL is the number this column will carry. About half of C4-continuation
+generations are shorter than the evaluable threshold in \emph{both} arms; dgMARK's own
+protocol filters at $200$ tokens for the same reason, and the valid-generation rate will
+be reported for every method under one shared rule.}
 \label{tab:baselines}
 \end{table}

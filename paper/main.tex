@@ -65,9 +65,25 @@ watermarkability}.
 \section{Results}
 \label{sec:results}
 
-\textcolor{notmeasured}{Pending: the corrected detector with steerable carriers is running.
-This section is deliberately left unwritten rather than filled with the numbers the earlier,
-structurally cancelling aggregate produced.}
+\paragraph{Preliminary detection (presence-only, $256$ tokens, $n{=}20$).}
+With every carrier feeding a single presence test, the unwatermarked null sits at a match
+rate of $0.498$ ($n_{\mathrm{sync}}{=}123$ per document), and the watermarked arms reach
+$\mathrm{TPR}@1\% = 0.25$ at $R{=}1$ and $0.50$ at $R{=}2$, doubling with the retry budget
+exactly as the per-position acceptance analysis predicts. Two things this section still
+withholds, deliberately. \emph{Quality:} every perplexity so far was measured against a
+differently-scheduled reference generator, and the watermarked arms at $R{=}1$ and $R{=}2$
+showing the same $\Delta$NLL is the signature of that confound; a matched-scheduler
+control is running and its paired $\Delta$NLL is the number that will be reported.
+\emph{Scale:} these are $n{=}20$ documents of which about half clear the evaluable-length
+threshold in both arms --- the freeze decision uses $n{\geq}30$ valid documents at $512$
+tokens, where the presence count doubles again.
+
+The mechanism study that led here is summarised by three measurements: the per-position
+acceptance mass under the live decoder is bimodal (quartiles $0.021/0.601/0.982$), a third
+of carriers hold under $0.1$ mass on the side the key requests, and truncating the live
+row to top-$p\,0.9$ leaves a median two-sided mass of $0.000$ --- inside the model's
+plausible set the reconstruction response is nearly deterministic, so match rate is bought
+in the tail of the distribution, which is exactly where text quality is paid.
 
 \section{Conclusion}
 \label{sec:conclusion}
