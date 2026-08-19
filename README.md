@@ -132,9 +132,18 @@ model, and the reason is a property of the model rather than of the schedule:
   second phase costs **x1.98** perplexity before any watermark is applied — more than
   dgMARK's entire cost.
 
-The same peakedness has now been the binding constraint four times: nothing to substitute,
-deferral redrawing the same token, log-probabilities saturating so the contrast underflowed
-in float32, and the commit channel converting poorly.
+The same peakedness has been the binding constraint three times: nothing to substitute,
+log-probabilities saturating so the contrast underflowed in float32, and the commit channel
+converting poorly.
+
+**Correction.** An earlier revision listed a fourth: that deferring a position returns the
+same token. That was an inference from watermarked and reference outputs being identical,
+which they were because the commit order had barely changed (only 11 % of commits were
+watermark-driven) -- not because deferral has no effect. Measured directly
+(`exp/06_deferral_effect.py`), deferral changes the model's proposal 38-51 % of the time,
+rising monotonically with the wait: 0.20 after 1-2 steps, 0.35 after 3-5, 0.49 after 6-10,
+0.57 after 11 or more. The channel is alive; what was missing was step budget, since a
+position needs roughly six steps of waiting before a fresh draw is likely.
 
 ## 6. Layout
 

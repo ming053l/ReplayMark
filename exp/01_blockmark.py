@@ -20,7 +20,11 @@ from basinmark.blockmark import BlockMark
 
 KEY, MESSAGE = b"basinmark-key-A", 0xA5
 GEN, NS, BLK = 256, 10, 32
-GRID = [("contrast", 256, 0.3, 1.0)]   # one diagnostic point first
+# exp/06 measured that a deferred position needs ~6 steps of waiting before a fresh draw
+# is likely (change rate 0.20 at 1-2 steps, 0.49 at 6-10, 0.57 at 11+). A 32-position block
+# given only 32 steps finishes before that can pay, so the step budget is the axis to sweep.
+GRID = [("contrast", 512, 0.3, 1.0), ("contrast", 512, 0.3, 2.0),
+        ("contrast", 768, 0.3, 1.0), ("contrast", 768, 0.3, 2.0)]
 
 
 class Nll:

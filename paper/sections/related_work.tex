@@ -1,31 +1,64 @@
 \section{Related Work}
 \label{sec:related}
 
+\paragraph{Diffusion language models.}
+Continuous diffusion~\citep{ho2020ddpm} was carried to discrete data by structured
+corruption processes~\citep{austin2021d3pm} and by score-ratio and masked-diffusion
+formulations~\citep{lou2024sedd,sahoo2024mdlm,shi2024simplified,ou2025radd}. Instruction-following
+models at language-model scale followed --- LLaDA and its successors~\citep{nie2025llada,zhu2025llada15},
+Dream~\citep{ye2025dream} --- alongside industrial systems built on the same
+paradigm~\citep{labs2025mercury}. The property we exploit is the training objective itself:
+these models predict masked tokens from arbitrary surviving context, so they can be applied
+to a \emph{finished} text and not only used to produce one.
+
+Two further findings from this literature shape our design. First, practical dLLMs are
+\emph{not} order-invariant even though an ideal conditional predictor would be, and the
+choice of unmasking order measurably changes what is generated~\citep{kim2025ordering}.
+Second, decoding is in practice semi-autoregressive: blocks are filled in sequence and
+diffusion happens within a block~\citep{arriola2025blockdiffusion}, and work on accelerating
+that loop shows that committing a confident token whose left context is still unresolved
+damages coherence~\citep{wu2026fastdllm,wei2026slowfast,benhamu2025entropy}. Our embedder
+inherits both: it steers only \emph{within} the reference block schedule, and it borrows the
+frontier-anchored commit rule rather than inventing a schedule of its own.
+
 \paragraph{Watermarks for autoregressive models.}
-\citet{kirchenbauer2023watermark} partition the vocabulary into green and red lists seeded
-by the preceding token and add a bias $\delta$ to green logits; detection counts green
-tokens against a $\mathrm{Binomial}(n,\gamma)$ null. The construction assumes a left-to-right
-prefix, which order-agnostic decoding does not provide --- a point we return to when using
-it as a baseline (\S\ref{sec:baselines}).
+The dominant family biases token probabilities. \citet{kirchenbauer2023watermark} seed a
+green/red vocabulary partition on the preceding token and add a logit bias; detection counts
+green tokens against a binomial null, and the scheme's reliability and robustness have been
+studied extensively~\citep{kirchenbauer2024reliability,zhao2023invisible,zhao2024provable}.
+A second family avoids distortion by fixing the sampling randomness with a keyed
+pseudorandom sequence, either through the Gumbel-max
+trick~\citep{aaronson2023gpt,fu2024gumbelsoft} or with explicit distortion-freeness and
+undetectability guarantees~\citep{kuditipudi2024distortionfree,christ2024undetectable};
+others place the signature in model parameters rather than in
+sampling~\citep{block2025gaussmark}. Surveys cover the
+space~\citep{petitcolas1999hiding,liang2026survey}, and the threat model is
+correspondingly well studied, from paraphrase attacks~\citep{krishna2023paraphrasing} to
+extraction of the key itself~\citep{jovanovic2024stealing}. What every one of these has in
+common is the \emph{verification} step: the detector computes a function of the token
+identities.
 
-\paragraph{Watermarks for diffusion language models.}
-Recent work exploits the freedoms a dLLM exposes: biasing tokens in expectation over
-unresolved context, keyed Gumbel-max sampling at each denoising step, statistics of the
-whole sequence, and the unmasking order. dgMARK~\citep{hong2026dgmark} is the closest to
-our embedding channel: it never reweights the learned probabilities, and instead prefers to
-unmask positions whose already-preferred token satisfies a keyed parity condition. That
-choice is what makes it inexpensive, and we adopt the same discipline.
+\paragraph{Watermarks beyond left-to-right generation.}
+Because the green list is seeded by a prefix that order-agnostic decoding does not provide,
+transferring the autoregressive constructions to dLLMs requires care.
+\citet{chen2025orderagnostic} give a watermark for order-agnostic models by biasing token
+selection in a way that does not assume a prefix. For diffusion language models
+specifically, \citet{gloaguen2026watermarking} apply a red--green bias \emph{in expectation}
+over unresolved context and additionally prefer tokens that make other positions green;
+\citet{bagchi2025discrete} use keyed Gumbel-max sampling at each denoising step while
+preserving the sampling distribution; \citet{wu2025dmark} and \citet{raban2026lrdwm} target
+the same setting with order-agnostic and efficiency-oriented constructions. Closest to our
+embedding channel is dgMARK~\citep{hong2026dgmark}, which leaves the learned conditionals
+untouched and instead prefers to unmask positions whose already-preferred token satisfies a
+keyed parity condition; that discipline is precisely why it is inexpensive, and we adopt it.
 
-The distinction we draw is not embedding but \emph{verification}. In all of the above the
-detector reads a function of the token identities: a parity, a green-list membership, a
-rank. ReTrace's detector runs the diffusion model on keyed corruptions of the finished
-text and reads how it reconstructs. The cost of that choice is real and we report it
-prominently: those detectors need zero model calls, ours needs a fixed number of sequence
-evaluations independent of payload size.
-
-\paragraph{Decoding schedules for diffusion language models.}
-Our embedder inherits its commit discipline from work on accelerating dLLM decoding, where
-committing a confident token whose left context is still unresolved is known to damage
-coherence; the remedy is to admit only a frontier-anchored prefix of the eligible set and
-to confirm what was withheld one step later. We reuse that rule unchanged, so the watermark
-rides on the reference schedule rather than replacing it.
+\paragraph{What is new here.}
+All of the above differ in \emph{where the watermark is placed} --- token probabilities,
+sampling randomness, decoding order --- while agreeing on \emph{what the verifier reads}: a
+function of the emitted symbols. ReTrace changes the second. The verifier masks part of the
+finished text under the key, has the model reconstruct it, and compares the reconstructions;
+the evidence is the model's response, which no token-level statistic can express. The price
+is equally clear and we report it in every table: those detectors need no model calls, ours
+needs a fixed number of sequence evaluations. To our knowledge no prior watermark for
+language models --- autoregressive or diffusion --- uses the generator itself as the
+verification oracle in this way.

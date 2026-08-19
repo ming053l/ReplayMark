@@ -77,8 +77,24 @@ group separately.
 \subsection{Embedding by commit order}
 \label{sec:embedding}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_retrace_mechanism.pdf}
+\caption{\textbf{The two lanes see the same model proposals; only the order of commitment
+differs.} Reference decoding commits whichever eligible position it is most confident about.
+ReTrace commits a position whose \emph{already-preferred} token answers the keyed challenge
+and defers one whose does not --- the deferred position is not overwritten, it is re-proposed
+at the next step with more of the block resolved, and may then be compatible. Because no
+token is ever replaced, the price of the watermark is not paid in fluency. The strip below
+shows why the trajectory need not be recorded: the verifier re-masks the finished text under
+the key, reads one bounded indicator per position it can score, and counts. Positions the
+channel cannot steer contribute nothing and are excluded rather than counted as misses,
+which is what keeps the count's null exact.}
+\label{fig:mechanism}
+\end{figure}
+
 Generation follows the reference schedule of the base model: blocks in order, diffusion
-within a block. At each step the model proposes candidates $\hat{x}_i$ with confidences
+within a block (Figure~\ref{fig:mechanism}). At each step the model proposes candidates $\hat{x}_i$ with confidences
 $c_i$ exactly as it would without a watermark. \important{No proposal is ever replaced.}
 The watermark decides only which position is committed:
 \begin{equation}

@@ -33,6 +33,15 @@ generation-time embedding is wrong but that a \emph{global} carrier is: making t
 block-local reduces the isolated region from half the sequence to one block, and lets the
 reference schedule stand.
 
+\paragraph{Deferral, by contrast, does change the proposal.}
+The commit-order channel rests on one assumption: that a position which is deferred returns
+a \emph{different} token later. It does. Measured over full decoding runs, a deferred
+position's proposal changes $38$--$51\,\%$ of the time, and monotonically in how long it
+waits --- $0.20$ after one or two steps, $0.35$ after three to five, $0.49$ after six to ten,
+$0.57$ after eleven or more. The channel therefore needs step budget rather than a stronger
+push: a position must wait roughly six steps before a fresh draw is likely, so a schedule
+that gives a $32$-position block only $32$ steps finishes before long deferrals can pay.
+
 \paragraph{What this rules in.}
 Substitution buys evidence with fluency at a fixed exchange rate set by the model's
 conditionals, and that rate is unfavourable and worsening. Any viable embedding must
