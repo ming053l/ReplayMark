@@ -104,10 +104,14 @@ def main():
         nw = ppl.nll(txt); ps = np.array(ps)
         d2, d3, rep = diversity(M.tok, txt)
         acc = float(np.mean([s["accepted"] / max(s["carrier"], 1) for s in st]))
-        # calibration: does S from the block-masked conditional predict the acceptance
-        # actually seen when sampling under the live decoder state?
+        # Calibration, on the mass that actually matters. S/2 is only a worst-orientation
+        # lower bound; what predicts acceptance at a position is the mass on the side the
+        # key asks for. Compare the block-masked prediction, the live decoder's own mass,
+        # and the hit rate the guided draws actually achieved.
         q_obs = float(np.mean([s["draw_hits"] / max(s["draw_tot"], 1) for s in st]))
-        s_pred = float(np.mean([s["s_sum"] / max(s["carrier"], 1) / 2 for s in st]))
+        q_base = float(np.mean([s["qbase_sum"] / max(s["carrier"], 1) for s in st]))
+        q_gen = float(np.mean([s["qgen_sum"] / max(s["carrier"], 1) for s in st]))
+        s_half = float(np.mean([s["s_sum"] / max(s["carrier"], 1) / 2 for s in st]))
         dr = float(np.mean([s["draws"] / max(s["committed"], 1) for s in st]))
         r = dict(R=R, rate=float(np.mean(rates)),
                  rate_ref=float(np.mean([d["rate_sync"] for d in nulls])),
@@ -115,7 +119,8 @@ def main():
                  tpr001=float(np.mean(ps < 0.001)), bit_acc=float(np.mean(accs)),
                  ppl=float(np.exp(np.nanmean(nw))),
                  ratio=float(np.exp(np.nanmean(nw)) / ppl0),
-                 accept=acc, q_observed=q_obs, q_predicted=s_pred,
+                 accept=acc, q_observed=q_obs, q_base_target=q_base,
+                 q_gen_target=q_gen, s_half=s_half,
                  draws_per_token=dr, d2=d2, d3=d3, rep=rep,
                  gen_forwards=STEPS, det_seqs=int((GEN // BLK) * 9),
                  secs=(time.time() - t0) / len(prompts))
@@ -123,7 +128,8 @@ def main():
         print(f"R={R:<3} | sync {r['rate']:.3f} (ref {r['rate_ref']:.3f}) | "
               f"TPR@5% {r['tpr05']:.2f} @1% {r['tpr01']:.2f} @0.1% {r['tpr001']:.2f} | "
               f"bits {r['bit_acc']:.2f} | ppl {r['ppl']:.2f} (x{r['ratio']:.2f}) | "
-              f"accepted {r['accept']:.2f} | q obs {q_obs:.3f} vs pred {s_pred:.3f} | "
+              f"accepted {r['accept']:.2f} | q base {q_base:.3f} live {q_gen:.3f} "
+              f"empirical {q_obs:.3f} (S/2 {s_half:.3f}) | "
               f"draws/token {r['draws_per_token']:.2f} | "
               f"d2 {d2:.3f} rep {rep:.3f} | {r['secs']:.0f}s/sample", flush=True)
         json.dump(dict(rows=rows, ppl_ref=ppl0, d2_ref=rd2, d3_ref=rd3, rep_ref=rrep),

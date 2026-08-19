@@ -103,7 +103,12 @@ class ResampleMark:
                 bestUV[better] = (u, v)
         g = torch.stack([lp[int(bestUV[k, 1]), k] - lp[int(bestUV[k, 0]), k]
                          for k in range(len(B))])
-        return B, g, bestS, None, None
+        # the chosen pair's masses on each side, under the block-masked conditional. S is
+        # 2*min of these and is only a worst-orientation lower bound; the mass that
+        # actually predicts acceptance is whichever side the key ends up asking for.
+        qp = (p * (g > 0)).sum(1).numpy()
+        qm = (p * (g < 0)).sum(1).numpy()
+        return B, g, bestS, qp, qm
 
     def _carrier(self, S):
         """Positions whose acceptance mass is two-sided enough to be worth counting.
@@ -177,15 +182,17 @@ class ResampleMark:
                           # under the current decoder state; log the acceptance actually
                           # observed per draw so the two can be calibrated rather than
                           # assumed equal
-                          draw_hits=0, draw_tot=0, s_sum=0.0)
+                          draw_hits=0, draw_tot=0, s_sum=0.0,
+                          qbase_sum=0.0, qgen_sum=0.0)
 
         for b in range(n_blocks):
             lo = Pn + b * self.block_len
-            B, g, S, _, _ = self._table(x.cpu(), lo, gen_end)
+            B, g, S, qp, qm = self._table(x.cpu(), lo, gen_end)
             car = self._carrier(S)
             gmap = {int(q): g[k] for k, q in enumerate(B)}
             cmask = {int(q): bool(car[k]) for k, q in enumerate(B)}
             smap = {int(q): float(S[k]) for k, q in enumerate(B)}
+            qpm = {int(q): (float(qp[k]), float(qm[k])) for k, q in enumerate(B)}
             Bt = torch.tensor(B, device=x.device)
             for t in range(steps_pb):
                 live = Bt[x[0, Bt] == MASK_ID]
@@ -208,17 +215,27 @@ class ResampleMark:
                         self.stats["s_sum"] += smap[i]
                         gi = gmap[i]
                         tgt = eps[i] * want[i]
+                        # what the block-masked conditional predicts for THIS position's
+                        # target side, and what the live decoder state actually offers
+                        self.stats["qbase_sum"] += qpm[i][0] if tgt > 0 else qpm[i][1]
+                        self.stats["qgen_sum"] += float(
+                            (row * ((tgt * gi.to(row.device)) > 0)).sum())
+                        # R is the number of GUIDED proposals, counting the first draw.
+                        # Redrawing after the final check would waste a sample, since that
+                        # draw is never examined; the single unconditional fallback below
+                        # is what R+1 in the hit probability refers to.
                         hit = False
-                        for _ in range(self.retries):
+                        for r in range(self.retries):
                             gv = float(gi[tok])
                             self.stats["draw_tot"] += 1
                             if gv != 0.0 and tgt * gv > 0:
                                 self.stats["draw_hits"] += 1
                                 hit = True
                                 break
-                            # a retry costs nothing: the logits row is unchanged
-                            tok = int(torch.multinomial(row, 1, generator=gen))
-                            self.stats["draws"] += 1
+                            if r < self.retries - 1:
+                                # a retry costs nothing: the logits row is unchanged
+                                tok = int(torch.multinomial(row, 1, generator=gen))
+                                self.stats["draws"] += 1
                         if hit:
                             self.stats["accepted"] += 1
                         else:
