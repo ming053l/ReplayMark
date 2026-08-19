@@ -81,7 +81,9 @@ def run_config(M, ppl, prompts, pls, *, steps, gap, carrier_gap_only=False,
     """One (steps, gap) point. Returns a row dict, or None on failure."""
     prompts = prompts[:ns] if ns else prompts
     pls = pls[:len(prompts)]
-    if steps not in ref_cache:
+    ck = (steps, gap, n_patterns, tau)     # the carrier set depends on ALL of these,
+    if ck not in ref_cache:                # so a null measured at one gap does not
+                                           # describe another
         ref = [M.generate(p, gen_len=GEN, steps=steps, block_len=BLK, temperature=0.8,
                           seed=3000 + i).cpu() for i, p in enumerate(prompts)]
         txt = [M.tok.decode(x[0, pls[i]:pls[i] + GEN], skip_special_tokens=True)
@@ -93,13 +95,13 @@ def run_config(M, ppl, prompts, pls, *, steps, gap, carrier_gap_only=False,
                           holes=4, n_payload_bits=7, sync_frac=0.5, challenge="contrast",
                           gap_nats=gap, nonce=f"doc-{i}")
             nulls.append(w.detect(x, pls[i], GEN, MESSAGE))
-        ref_cache[steps] = dict(ppl=float(np.exp(np.nanmean(n0))),
+        ref_cache[ck] = dict(ppl=float(np.exp(np.nanmean(n0))),
                                 rate=float(np.mean([d["rate_sync"] for d in nulls])),
                                 n=float(np.mean([d["n_sync"] for d in nulls])))
-        log(f"reference steps={steps}: ppl {ref_cache[steps]['ppl']:.2f}, "
-            f"null sync rate {ref_cache[steps]['rate']:.3f} (want 0.500), "
-            f"n_sync {ref_cache[steps]['n']:.0f}")
-    r0 = ref_cache[steps]
+        log(f"reference steps={steps} gap={gap} pat={n_patterns}: "
+            f"ppl {ref_cache[ck]['ppl']:.2f}, null sync rate "
+            f"{ref_cache[ck]['rate']:.3f} (want 0.500), n_sync {ref_cache[ck]['n']:.0f}")
+    r0 = ref_cache[ck]
 
     ps, rates, accs, txt, st = [], [], [], [], []
     for i, p in enumerate(prompts):

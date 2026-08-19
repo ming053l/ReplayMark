@@ -155,6 +155,7 @@ class BlockMark:
         x[:, :Pn] = prompt_ids.to(self.M.device)
         self.stats = dict(committed=0, wm=0, fallback=0, waited=0,
                           carrier_wm=0, carrier_fb=0, noncarrier=0)
+        self.provenance = {}
 
         for b in range(n_blocks):
             lo = Pn + b * self.block_len
@@ -216,8 +217,13 @@ class BlockMark:
                 for idx, n in enumerate(pick):
                     x[0, liv[n]] = cand[n]
                     if cmask[n]:
-                        if idx >= self.stats["_nd"]:
+                        driven = idx < self.stats["_nd"]
+                        if not driven:
                             self.stats["carrier_fb"] += 1
+                        # record provenance per position so a later accounting can use a
+                        # single denominator; mixing sync-only rates with all-carrier
+                        # counts is what invalidated the previous estimate
+                        self.provenance[int(liv[n])] = "wm" if driven else "fb"
                     else:
                         self.stats["noncarrier"] += 1
                 self.stats["committed"] += len(pick)
