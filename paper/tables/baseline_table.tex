@@ -48,8 +48,10 @@ No watermark & $T=0.8$, full vocab & 26.21 & 1.00$\times$ & -- & -- & -- & $-0.0
 \midrule
 \multicolumn{9}{l}{\textit{Response-guided resampling --- ReTrace V3, presence-only, PRELIMINARY ($n{=}20$, valid $9$--$10$)}} \\
 \midrule
-\textcolor{oursemph}{ReTrace V3} & $R=1$ & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.40 & 0.25 & 0.25 & $+1.6^{*}$ & 72 \\
-\textcolor{oursemph}{ReTrace V3} & $R=2$ & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.60 & 0.50 & 0.30 & $+3.1^{*}$ & 72 \\
+\textcolor{oursemph}{ReTrace V3} & $R=1$, 256 tok & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.40 & 0.25 & 0.25 & $+1.6^{*}$ & 72 \\
+\textcolor{oursemph}{ReTrace V3} & $R=2$, 256 tok & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.60 & 0.50 & 0.30 & $+3.1^{*}$ & 72 \\
+\textcolor{oursemph}{ReTrace V3} & $R=1$, 512 tok & \textcolor{notmeasured}{pending$^{\dagger}$} & -- & 0.50 & 0.40 & 0.10 & $+2.2^{*}$ & 144 \\
+\textcolor{oursemph}{ReTrace V3} & $R=2$, 512 tok & \multicolumn{6}{l}{\textcolor{notmeasured}{running}} & 144 \\
 \bottomrule
 \end{tabular}%
 }
@@ -72,8 +74,11 @@ block decoding, so measured against the better control $\delta=1$ costs $1.20\ti
 $1.03\times$. And perplexity is not monotone in $\delta$ here ($16.21$ at $\delta=2$
 versus $14.05$ at $\delta=3$), because a strong green-list bias also makes the text more
 repetitive, which an $n$-gram-blind perplexity rewards. The V3 rows are preliminary:
-$256$-token documents, every carrier feeding one presence test (null measured at $0.498$,
-$n_{\mathrm{sync}}{=}123$); $^{*}$the $z$ implied by the mean match rate; $^{\dagger}$V3
+every carrier feeds one presence test (nulls: $0.498$ at $n_{\mathrm{sync}}{=}123$ for
+$256$ tokens, $0.509$ at $148$ for $512$); detection cost grows linearly with length while
+the presence count grows with it, which is why $R{=}1$ --- the only quality-neutral
+setting --- climbs from $0.25$ to $0.40$ at $1\%$ between the two lengths, the same
+length-power trade dgMARK reports; $^{*}$the $z$ implied by the mean match rate; $^{\dagger}$V3
 quality is deliberately left unreported here --- all V3 perplexities so far were measured
 against a \emph{differently-scheduled} reference generator, and $R{=}1$ and $R{=}2$
 showing the same $\Delta$NLL is the signature of that confound rather than of watermark
