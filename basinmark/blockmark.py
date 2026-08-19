@@ -153,7 +153,7 @@ class BlockMark:
 
         x = torch.full((1, Pn + gen_len), MASK_ID, dtype=torch.long, device=self.M.device)
         x[:, :Pn] = prompt_ids.to(self.M.device)
-        self.stats = dict(committed=0, wm=0, fallback=0,
+        self.stats = dict(committed=0, wm=0, fallback=0, waited=0,
                           carrier_wm=0, carrier_fb=0, noncarrier=0)
 
         for b in range(n_blocks):
@@ -165,7 +165,15 @@ class BlockMark:
                 live = Bt[x[0, Bt] == MASK_ID]
                 if live.numel() == 0:
                     break
-                k = int(np.ceil(live.numel() / (steps_pb - t)))
+                # A step budget larger than the block only helps if a step is allowed
+                # to commit NOTHING. exp/06 measured that a deferred position's proposal
+                # changes 0.20 of the time after 1-2 steps but 0.57 after 11+, so the
+                # channel converts waiting into fresh draws -- and the old schedule never
+                # waited, because ceil(live / steps_left) is at least one. Commit only when
+                # something is compatible, and force progress only once the remaining steps
+                # are needed to finish the block.
+                slack = (steps_pb - t) - int(live.numel())
+                k = max(1, int(np.ceil(live.numel() / max(1, steps_pb - t))))
                 logits = self.M.model(x).logits[0]
                 if temperature > 0:
                     u = torch.rand(logits.shape, device=logits.device,
@@ -180,7 +188,6 @@ class BlockMark:
                 cf = conf[live].tolist()
                 cpos = {int(q): bool(car[kk]) for kk, q in enumerate(B)}
                 cmask = [cpos[i] for i in liv]
-                # does the model's OWN choice already answer the challenge correctly?
                 # a tie is not steerable: its score is fixed by the keyed coin
                 ok = [(eps[i] * want[i] * float(gmap[i][v]) > 0)
                       if float(gmap[i][v]) != 0.0 else False
@@ -191,21 +198,17 @@ class BlockMark:
                 safe = [n for n in elig
                         if sum(1 for jj in liv if jj < liv[n] and jj not in eset)
                         <= self.holes]
-                # steer ONLY on carriers: the detector counts nothing else, so spending
-                # commit order on a non-carrier position buys no signal
+                # steer ONLY on carriers: the detector counts nothing else
                 pick = [n for n in safe if cmask[n] and ok[n]][:k]
                 self.stats["wm"] += len(pick)
                 self.stats["carrier_wm"] += len(pick)
+                if not pick and slack > 0:
+                    self.stats["waited"] += 1
+                    continue                      # spend a spare step waiting instead
                 if len(pick) < k:
-                    # The fallback must exist -- a block has to finish -- but letting it
-                    # take the highest-confidence position makes the channel zero-sum: the
-                    # leftovers are exactly the positions that failed the compatibility
-                    # test, and they landed at 0.06-0.15 while the driven ones landed at
-                    # 1.00. Spend the forced commits on NON-carrier positions first, so a
-                    # steerable one keeps its chance to be re-proposed compatibly.
                     self.stats["_nd"] = len(pick)
                     rest = sorted((n for n in range(len(liv)) if n not in pick),
-                                  key=lambda n: (cmask[n], -cf[n]))[:k - len(pick)]
+                                  key=lambda n: -cf[n])[:k - len(pick)]
                     self.stats["fallback"] += len(rest)
                     pick += rest
                 else:
