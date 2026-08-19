@@ -37,14 +37,18 @@ KGW \citep{kirchenbauer2023watermark} & $\delta=1$ & 11.96 & \textbf{1.03}$\time
 KGW \citep{kirchenbauer2023watermark} & $\delta=2$ & 16.21 & 1.40$\times$ & 1.00 & 1.00 & 1.00 & $+6.93$ & \textbf{0} \\
 KGW \citep{kirchenbauer2023watermark} & $\delta=3$ & 14.05 & 1.21$\times$ & 1.00 & 1.00 & 1.00 & $+8.92$ & \textbf{0} \\
 \midrule
-\multicolumn{9}{l}{\textit{Post-hoc watermarks (the watermark is applied to text that already exists)}} \\
+\multicolumn{9}{l}{\textit{Post-hoc substitution --- ReTrace V1, archived (\S\ref{sec:v1})}} \\
 \midrule
 No watermark & $T=0.8$, full vocab & 26.21 & 1.00$\times$ & -- & -- & -- & $-0.03$ & -- \\
-\textcolor{oursemph}{ReTrace} & keyed carrier & 27.7 & 1.11$\times$ & 0.00 & 0.00 & 0.00 & $+0.73$ & 9 \\
-\textcolor{oursemph}{ReTrace} & entropy gate & 41.7 & 1.59$\times$ & 0.30 & \textcolor{failred}{0.20} & 0.10 & $+1.49$ & 9 \\
-\textcolor{oursemph}{ReTrace} & leverage, quality-first & 30.5 & 1.17$\times$ & 0.10 & \textcolor{failred}{0.10} & 0.00 & $+0.58$ & 9 \\
-\textcolor{oursemph}{ReTrace} & leverage, detection-first & 65.3 & \textcolor{failred}{2.49$\times$} & 0.62 & 0.50 & -- & $+2.94$ & 9 \\
-\textcolor{oursemph}{ReTrace} & generation-time, two-phase & 203.7 & \textcolor{failred}{7.77$\times$} & 0.12 & \textcolor{failred}{0.00} & 0.00 & $+1.14$ & 9 \\
+\textcolor{oursemph}{ReTrace V1} & keyed carrier & 27.7 & 1.11$\times$ & 0.00 & 0.00 & 0.00 & $+0.73$ & 9 \\
+\textcolor{oursemph}{ReTrace V1} & entropy gate & 41.7 & 1.59$\times$ & 0.30 & \textcolor{failred}{0.20} & 0.10 & $+1.49$ & 9 \\
+\textcolor{oursemph}{ReTrace V1} & leverage, quality-first & 30.5 & 1.17$\times$ & 0.10 & \textcolor{failred}{0.10} & 0.00 & $+0.58$ & 9 \\
+\textcolor{oursemph}{ReTrace V1} & leverage, detection-first & 65.3 & \textcolor{failred}{2.49$\times$} & 0.62 & 0.50 & -- & $+2.94$ & 9 \\
+\textcolor{oursemph}{ReTrace V1} & generation-time, two-phase & 203.7 & \textcolor{failred}{7.77$\times$} & 0.12 & \textcolor{failred}{0.00} & 0.00 & $+1.14$ & 9 \\
+\midrule
+\multicolumn{9}{l}{\textit{Response-guided resampling --- ReTrace V3 (\S\ref{sec:embedding})}} \\
+\midrule
+\textcolor{oursemph}{ReTrace V3} & $R=1\ldots16$ & \multicolumn{6}{l}{\textcolor{notmeasured}{running; no end-to-end numbers yet}} & 72 \\
 \bottomrule
 \end{tabular}%
 }

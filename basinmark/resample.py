@@ -59,6 +59,12 @@ class ResampleMark:
         # once retries are exhausted, which drags the rate below its own null.
         self.challenge, self.s_min = challenge, s_min
         self.retries, self.temperature = retries, temperature
+        # On exhaustion, emitting the last REJECTED draw makes the position a certain miss,
+        # so the statistic would need acceptance > 0.5 merely to beat its own null. One more
+        # unconditional draw removes that: the position then hits with its natural
+        # probability q_i, giving 1 - (1-q)^(R+1) rather than 1 - (1-q)^R, at no extra
+        # forward pass. "last" keeps the old behaviour for the ablation.
+        self.fallback = fallback
 
     # ------------------------------------------------------------------ table
     @torch.no_grad()
@@ -166,7 +172,12 @@ class ResampleMark:
         gen_end = Pn + gen_len
         x = torch.full((1, Pn + gen_len), MASK_ID, dtype=torch.long, device=self.M.device)
         x[:, :Pn] = prompt_ids.to(self.M.device)
-        self.stats = dict(committed=0, carrier=0, accepted=0, draws=0, exhausted=0)
+        self.stats = dict(committed=0, carrier=0, accepted=0, draws=0, exhausted=0,
+                          # S comes from the block-masked conditional, but sampling happens
+                          # under the current decoder state; log the acceptance actually
+                          # observed per draw so the two can be calibrated rather than
+                          # assumed equal
+                          draw_hits=0, draw_tot=0, s_sum=0.0)
 
         for b in range(n_blocks):
             lo = Pn + b * self.block_len
@@ -174,6 +185,7 @@ class ResampleMark:
             car = self._carrier(S)
             gmap = {int(q): g[k] for k, q in enumerate(B)}
             cmask = {int(q): bool(car[k]) for k, q in enumerate(B)}
+            smap = {int(q): float(S[k]) for k, q in enumerate(B)}
             Bt = torch.tensor(B, device=x.device)
             for t in range(steps_pb):
                 live = Bt[x[0, Bt] == MASK_ID]
@@ -193,20 +205,27 @@ class ResampleMark:
                     self.stats["draws"] += 1
                     if cmask[i]:
                         self.stats["carrier"] += 1
+                        self.stats["s_sum"] += smap[i]
                         gi = gmap[i]
                         tgt = eps[i] * want[i]
-                        for _ in range(self.retries - 1):
+                        hit = False
+                        for _ in range(self.retries):
                             gv = float(gi[tok])
+                            self.stats["draw_tot"] += 1
                             if gv != 0.0 and tgt * gv > 0:
+                                self.stats["draw_hits"] += 1
+                                hit = True
                                 break
                             # a retry costs nothing: the logits row is unchanged
                             tok = int(torch.multinomial(row, 1, generator=gen))
                             self.stats["draws"] += 1
-                        gv = float(gi[tok])
-                        if gv != 0.0 and tgt * gv > 0:
+                        if hit:
                             self.stats["accepted"] += 1
                         else:
                             self.stats["exhausted"] += 1
+                            if self.fallback == "fresh":
+                                tok = int(torch.multinomial(row, 1, generator=gen))
+                                self.stats["draws"] += 1
                     x[0, i] = tok
                     self.stats["committed"] += 1
         return x.cpu()

@@ -19,7 +19,7 @@ from basinmark.data import c4_prompts
 from basinmark.resample import ResampleMark
 
 KEY, MESSAGE = b"retrace-key-A", 0xA5
-GEN, BLK, STEPS, NS = 256, 32, 128, 12
+GEN, BLK, STEPS, NS = 256, 32, 256, 12   # steps = gen_length, as dgMARK does
 RETRIES = (1, 2, 4, 8, 16)
 SMIN = 0.5
 
@@ -104,6 +104,10 @@ def main():
         nw = ppl.nll(txt); ps = np.array(ps)
         d2, d3, rep = diversity(M.tok, txt)
         acc = float(np.mean([s["accepted"] / max(s["carrier"], 1) for s in st]))
+        # calibration: does S from the block-masked conditional predict the acceptance
+        # actually seen when sampling under the live decoder state?
+        q_obs = float(np.mean([s["draw_hits"] / max(s["draw_tot"], 1) for s in st]))
+        s_pred = float(np.mean([s["s_sum"] / max(s["carrier"], 1) / 2 for s in st]))
         dr = float(np.mean([s["draws"] / max(s["committed"], 1) for s in st]))
         r = dict(R=R, rate=float(np.mean(rates)),
                  rate_ref=float(np.mean([d["rate_sync"] for d in nulls])),
@@ -111,14 +115,16 @@ def main():
                  tpr001=float(np.mean(ps < 0.001)), bit_acc=float(np.mean(accs)),
                  ppl=float(np.exp(np.nanmean(nw))),
                  ratio=float(np.exp(np.nanmean(nw)) / ppl0),
-                 accept=acc, draws_per_token=dr, d2=d2, d3=d3, rep=rep,
+                 accept=acc, q_observed=q_obs, q_predicted=s_pred,
+                 draws_per_token=dr, d2=d2, d3=d3, rep=rep,
                  gen_forwards=STEPS, det_seqs=int((GEN // BLK) * 9),
                  secs=(time.time() - t0) / len(prompts))
         rows.append(r)
         print(f"R={R:<3} | sync {r['rate']:.3f} (ref {r['rate_ref']:.3f}) | "
               f"TPR@5% {r['tpr05']:.2f} @1% {r['tpr01']:.2f} @0.1% {r['tpr001']:.2f} | "
               f"bits {r['bit_acc']:.2f} | ppl {r['ppl']:.2f} (x{r['ratio']:.2f}) | "
-              f"accepted {r['accept']:.2f} | draws/token {r['draws_per_token']:.2f} | "
+              f"accepted {r['accept']:.2f} | q obs {q_obs:.3f} vs pred {s_pred:.3f} | "
+              f"draws/token {r['draws_per_token']:.2f} | "
               f"d2 {d2:.3f} rep {rep:.3f} | {r['secs']:.0f}s/sample", flush=True)
         json.dump(dict(rows=rows, ppl_ref=ppl0, d2_ref=rd2, d3_ref=rd3, rep_ref=rrep),
                   open("/ssd1/ming/basinmark/results/resample_mvp.json", "w"), indent=1)
