@@ -46,15 +46,18 @@ from .challenges import orientation_bits, tie_bits, score, block_challenges, rol
 
 
 class ResampleMark:
-    def __init__(self, model, key: bytes, block_len=32, n_patterns=4, ctx_frac=0.20,
-                 n_payload_bits=7, sync_frac=0.5, challenge="contrast", carrier_frac=0.5,
+    def __init__(self, model, key: bytes, block_len=32, n_patterns=8, ctx_frac=0.20,
+                 n_payload_bits=7, sync_frac=0.5, challenge="contrast", s_min=0.5,
                  retries=4, temperature=0.8, nonce=None):
         self.M = model
         self.key = key if nonce is None else hmac.new(
             key, str(nonce).encode(), hashlib.sha256).digest()
         self.block_len, self.n_patterns, self.ctx_frac = block_len, n_patterns, ctx_frac
         self.n_payload_bits, self.sync_frac = n_payload_bits, sync_frac
-        self.challenge, self.carrier_frac = challenge, carrier_frac
+        # an ABSOLUTE threshold, not a rank. Taking the top half by S swept in the ~50 %
+        # of positions whose acceptance mass is one-sided, and those score a certain miss
+        # once retries are exhausted, which drags the rate below its own null.
+        self.challenge, self.s_min = challenge, s_min
         self.retries, self.temperature = retries, temperature
 
     # ------------------------------------------------------------------ table
@@ -73,21 +76,39 @@ class ResampleMark:
         batch.append(base)
         lp = self.M.logprobs_rows(torch.cat(batch, 0), torch.tensor(B), chunk=2,
                                   dtype=torch.float64)
-        u, v = pairs[0]
-        g = lp[v] - lp[u]                                   # [|B|, V]
         # the sampling distribution the generator will actually draw from, at temperature
         p = torch.softmax(lp[-1] / self.temperature, dim=-1)
-        qp = (p * (g > 0)).sum(1).numpy()
-        qm = (p * (g < 0)).sum(1).numpy()
-        S = 2.0 * np.minimum(qp, qm)                        # orientation-symmetric
-        return B, g, S, qp, qm
+        # Choose the challenge pair PER POSITION, by two-sided acceptance mass. A fixed
+        # near/far pair leaves mean S at 0.283; the best available pair raises it to 0.454
+        # (exp/09). The choice is orientation-symmetric -- S is invariant under swapping the
+        # pair -- and is computed from the block-masked conditional, so it never sees the
+        # key's direction or the message and the verifier reproduces it exactly.
+        L = len(pats)
+        bestS = np.full(len(B), -1.0)
+        bestUV = np.zeros((len(B), 2), dtype=np.int64)
+        for u in range(L):
+            for v in range(u + 1, L):
+                gg = lp[v] - lp[u]
+                qp = (p * (gg > 0)).sum(1).numpy()
+                qm = (p * (gg < 0)).sum(1).numpy()
+                ss = 2.0 * np.minimum(qp, qm)
+                better = ss > bestS
+                bestS[better] = ss[better]
+                bestUV[better] = (u, v)
+        g = torch.stack([lp[int(bestUV[k, 1]), k] - lp[int(bestUV[k, 0]), k]
+                         for k in range(len(B))])
+        return B, g, bestS, None, None
 
     def _carrier(self, S):
-        """Keep the positions with the most two-sided acceptance mass."""
-        n = max(1, int(round(self.carrier_frac * len(S))))
-        keep = np.zeros(len(S), dtype=bool)
-        keep[np.argsort(-S)[:n]] = True
-        return keep
+        """Positions whose acceptance mass is two-sided enough to be worth counting.
+
+        With S_i = 2 min(q+, q-), a single draw is accepted with probability at least
+        S_i / 2 whichever side the key asks for, so R retries succeed with probability
+        1 - (1 - S_i/2)^R. Below the threshold that stays under 0.5, and a position that
+        exhausts its retries emits a rejected draw -- a certain miss, not a coin flip -- so
+        including it costs signal rather than merely adding noise.
+        """
+        return S > self.s_min
 
     # -------------------------------------------------------------- detection
     @torch.no_grad()

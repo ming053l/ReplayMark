@@ -20,8 +20,8 @@ from basinmark.resample import ResampleMark
 
 KEY, MESSAGE = b"retrace-key-A", 0xA5
 GEN, BLK, STEPS, NS = 256, 32, 128, 12
-RETRIES = (1, 2, 3, 4, 8)
-CARRIER = 0.5
+RETRIES = (1, 2, 4, 8, 16)
+SMIN = 0.5
 
 
 class Ppl:
@@ -73,12 +73,12 @@ def main():
 
     nulls, qs = [], []
     for i, x in enumerate(ref):
-        w = ResampleMark(M, KEY, block_len=BLK, carrier_frac=CARRIER, retries=1,
+        w = ResampleMark(M, KEY, block_len=BLK, s_min=SMIN, retries=1,
                          nonce=f"doc-{i}")
         nulls.append(w.detect(x, pls[i], GEN, MESSAGE))
         for b in range(GEN // BLK):
             _, _, S, _, _ = w._table(x, pls[i] + b * BLK, pls[i] + GEN)
-            qs.append(np.sort(S)[-int(CARRIER * BLK):])
+            qs.append(S[S > SMIN])
     q = np.concatenate(qs)
     print(f"[reference] ppl {ppl0:.2f}  distinct-2 {rd2:.3f}  distinct-3 {rd3:.3f}  "
           f"repeat {rrep:.3f}", flush=True)
@@ -94,7 +94,7 @@ def main():
     for R in RETRIES:
         ps, rates, accs, txt, st, t0 = [], [], [], [], [], time.time()
         for i, p in enumerate(prompts):
-            w = ResampleMark(M, KEY, block_len=BLK, carrier_frac=CARRIER, retries=R,
+            w = ResampleMark(M, KEY, block_len=BLK, s_min=SMIN, retries=R,
                              nonce=f"doc-{i}")
             y = w.generate(p, gen_len=GEN, steps=STEPS, message=MESSAGE, seed=3000 + i)
             d = w.detect(y, pls[i], GEN, MESSAGE)
@@ -112,7 +112,7 @@ def main():
                  ppl=float(np.exp(np.nanmean(nw))),
                  ratio=float(np.exp(np.nanmean(nw)) / ppl0),
                  accept=acc, draws_per_token=dr, d2=d2, d3=d3, rep=rep,
-                 gen_forwards=STEPS, det_seqs=int((GEN // BLK) * 5),
+                 gen_forwards=STEPS, det_seqs=int((GEN // BLK) * 9),
                  secs=(time.time() - t0) / len(prompts))
         rows.append(r)
         print(f"R={R:<3} | sync {r['rate']:.3f} (ref {r['rate_ref']:.3f}) | "
