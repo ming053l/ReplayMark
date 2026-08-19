@@ -32,18 +32,18 @@
 \usepackage[breaklinks,colorlinks,linkcolor=failred,citecolor=oursemph,urlcolor=oursemph]{hyperref}
 \usepackage{url}
 
-\title{BasinMark: Behavioral Watermarking for Diffusion\\Language Models via Keyed Re-Denoising}
+\title{ReTrace: Model-Response Watermarking\\for Diffusion Language Models}
 \author{Anonymous}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Existing language-model watermarks encode provenance in \emph{what tokens are produced}.
-We ask whether provenance can instead be encoded in \emph{how a diffusion language model
-reconstructs them}. Because such a model is trained to recover masked tokens from arbitrary
+Existing language-model watermarks are detected from token patterns. We detect ours from
+\emph{how a diffusion language model responds when the generated text is partially masked
+and reconstructed}. Because such a model is trained to recover masked tokens from arbitrary
 surviving context, a finished text can be pushed back through the operator that produced
-it: corrupted with a secret key, re-denoised, and its response read. BasinMark places a
+it: corrupted with a secret key, re-denoised, and its response read. ReTrace places a
 watermark in that response. A keyed pair of context ablations induces a per-position
 log-likelihood contrast, and the watermark asks the sign of that contrast to agree with a
 keyed orientation, giving a test statistic that is a sum of bounded indicators with a
@@ -72,10 +72,10 @@ structurally cancelling aggregate produced.}
 \section{Conclusion}
 \label{sec:conclusion}
 
-BasinMark separates the two roles a watermark usually conflates. The decoding trajectory is
-where provenance is \emph{placed}, cheaply, by choosing when a model-preferred token is
-committed. The model's keyed reconstruction behaviour is where provenance is
-\emph{recovered}, from the finished text alone. Whether that separation converts enough
+ReTrace separates the two roles a watermark usually conflates. The decoding order is where
+the watermark is \emph{placed}, cheaply, by choosing when a model-preferred token is
+committed. The model's reconstruction response is where it is \emph{read back}, from the
+finished text alone. Whether that separation converts enough
 steerable positions into detection power at a fixed quality budget is the question the
 remaining experiments answer.
 

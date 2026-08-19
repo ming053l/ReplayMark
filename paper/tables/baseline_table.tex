@@ -1,4 +1,4 @@
-% Baseline comparison for BasinMark. Style follows the C4 paper (booktabs, resizebox,
+% Baseline comparison for ReTrace. Style follows the C4 paper (booktabs, resizebox,
 % oursemph / failred / finalres colour macros, deltas in parentheses).
 % Requires in the preamble:
 %   \usepackage[table]{xcolor}\usepackage{booktabs}
@@ -40,22 +40,22 @@ KGW \citep{kirchenbauer2023watermark} & $\delta=3$ & 14.05 & 1.21$\times$ & 1.00
 \multicolumn{9}{l}{\textit{Post-hoc watermarks (the watermark is applied to text that already exists)}} \\
 \midrule
 No watermark & $T=0.8$, full vocab & 26.21 & 1.00$\times$ & -- & -- & -- & $-0.03$ & -- \\
-\textcolor{oursemph}{BasinMark} & keyed carrier & 27.7 & 1.11$\times$ & 0.00 & 0.00 & 0.00 & $+0.73$ & 9 \\
-\textcolor{oursemph}{BasinMark} & entropy gate & 41.7 & 1.59$\times$ & 0.30 & \textcolor{failred}{0.20} & 0.10 & $+1.49$ & 9 \\
-\textcolor{oursemph}{BasinMark} & leverage, quality-first & 30.5 & 1.17$\times$ & 0.10 & \textcolor{failred}{0.10} & 0.00 & $+0.58$ & 9 \\
-\textcolor{oursemph}{BasinMark} & leverage, detection-first & 65.3 & \textcolor{failred}{2.49$\times$} & 0.62 & 0.50 & -- & $+2.94$ & 9 \\
-\textcolor{oursemph}{BasinMark} & generation-time, two-phase & 203.7 & \textcolor{failred}{7.77$\times$} & 0.12 & \textcolor{failred}{0.00} & 0.00 & $+1.14$ & 9 \\
+\textcolor{oursemph}{ReTrace} & keyed carrier & 27.7 & 1.11$\times$ & 0.00 & 0.00 & 0.00 & $+0.73$ & 9 \\
+\textcolor{oursemph}{ReTrace} & entropy gate & 41.7 & 1.59$\times$ & 0.30 & \textcolor{failred}{0.20} & 0.10 & $+1.49$ & 9 \\
+\textcolor{oursemph}{ReTrace} & leverage, quality-first & 30.5 & 1.17$\times$ & 0.10 & \textcolor{failred}{0.10} & 0.00 & $+0.58$ & 9 \\
+\textcolor{oursemph}{ReTrace} & leverage, detection-first & 65.3 & \textcolor{failred}{2.49$\times$} & 0.62 & 0.50 & -- & $+2.94$ & 9 \\
+\textcolor{oursemph}{ReTrace} & generation-time, two-phase & 203.7 & \textcolor{failred}{7.77$\times$} & 0.12 & \textcolor{failred}{0.00} & 0.00 & $+1.14$ & 9 \\
 \bottomrule
 \end{tabular}%
 }
 \caption{\textbf{Watermark detectability against the text quality actually paid for.}
 All rows measured on LLaDA-8B-Instruct, C4 prompts (300-character truncation), 256
 generated tokens, GPT-2-large perplexity; $n=50$ for dgMARK, $n=30$ for KGW, $n=10$ for
-BasinMark. \emph{Ratio} is perplexity relative to the matching non-watermarked arm
+ReTrace. \emph{Ratio} is perplexity relative to the matching non-watermarked arm
 directly above it. Each block is compared against its own control because the decoding
 regime differs: dgMARK uses block decoding with top-$k$ 3, KGW requires strict
 left-to-right decoding (its green list is seeded by the preceding token, which
-order-agnostic decoding does not provide), and BasinMark operates on drafts sampled at
+order-agnostic decoding does not provide), and ReTrace operates on drafts sampled at
 $T=0.8$ over the full vocabulary. \emph{Det.\ fwd.} is the number of model forward passes
 a detection requires. Non-watermarked arms sit at $|z|\le0.25$, so the thresholds are not inflated. KGW is scored on
 each \emph{distinct} bigram: its green list is seeded by the preceding token, and under

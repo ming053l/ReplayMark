@@ -12,10 +12,10 @@ Two deliberate choices worth keeping:
    because they need different decoding regimes (block + top-k 3, strict left-to-right,
    full-vocabulary temperature sampling). Reporting one shared baseline would silently
    attribute the decoding regime's cost to whichever watermark used it.
-2. **A detection-cost column.** dgMARK and KGW detect with zero model forwards; BasinMark
+2. **A detection-cost column.** dgMARK and KGW detect with zero model forwards; ReTrace
    needs `L+1 = 9`. Collapsing the comparison to TPR alone hides the method's main
    structural disadvantage.
 
 Pending: KGW rows (re-running with bigram deduplication), and a shared-sampler variant so
-the BasinMark block can be compared to the generation-time block directly rather than only
+the ReTrace block can be compared to the generation-time block directly rather than only
 through per-block ratios.

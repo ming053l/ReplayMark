@@ -1,4 +1,4 @@
-\section{BasinMark}
+\section{ReTrace}
 \label{sec:method}
 
 \subsection{The observable}
@@ -68,7 +68,7 @@ do --- has almost no leverage on it. A count gives every steered position exactl
 \emph{Presence, verification and payload are separate tests.} Summing hits across payload
 groups cancels: with a balanced message, half the groups are driven toward $m_i=1$ and half
 toward $m_i=0$, so a \emph{perfect} watermark still sums to $|P|/2$. We therefore reserve a
-presence pool with $w_i \equiv +1$, whose count tests \emph{is this a BasinMark text} with
+presence pool with $w_i \equiv +1$, whose count tests \emph{is this a ReTrace text} with
 no claimed message, and which also avoids decoding a message from the data and then testing
 significance against the message just decoded. Verification of a claimed message aligns
 every group to its claimed bit and uses all carriers; payload decoding thresholds each

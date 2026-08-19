@@ -18,7 +18,7 @@ choice is what makes it inexpensive, and we adopt the same discipline.
 
 The distinction we draw is not embedding but \emph{verification}. In all of the above the
 detector reads a function of the token identities: a parity, a green-list membership, a
-rank. BasinMark's detector runs the diffusion model on keyed corruptions of the finished
+rank. ReTrace's detector runs the diffusion model on keyed corruptions of the finished
 text and reads how it reconstructs. The cost of that choice is real and we report it
 prominently: those detectors need zero model calls, ours needs a fixed number of sequence
 evaluations independent of payload size.

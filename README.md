@@ -1,10 +1,10 @@
-# BasinMark
+# ReTrace
 
-**A behavioural watermark for diffusion language models.** Provenance is embedded by
+**Model-response watermarking for diffusion language models.** Provenance is embedded by
 steering *when* model-preferred candidates are committed, and verified by re-corrupting the
 finished text with keyed challenges and reading its re-denoising response.
 
-    order is the embedding channel        behaviour is the verification channel
+    the decoding order places the watermark; the model's reconstruction response reads it back
 
 Base model `GSAI-ML/LLaDA-8B-Instruct`, fp16, one TITAN RTX (sm75). Every number below was
 measured on this machine; anything attributed to a paper says so.
@@ -36,9 +36,13 @@ the `m_i` are i.i.d. Bernoulli(1/2). No calibration corpus, no model-specific nu
 estimate, no distributional approximation.
 
 **This is what makes the method different.** dgMARK, KGW, Unigram, AAR and KTH all read a
-*hash of the token identity*. BasinMark reads how the text *behaves* when the diffusion
-operator is applied to it under a secret corruption — a property of the text's
+*hash of the token identity*. ReTrace reads what the model *does* with the text: mask part
+of it under a secret key, reconstruct, and compare. That is a property of the text's
 relationship to the model, not of its symbols.
+
+Note on names: the method was called BasinMark while the embedding was still a
+reconstruction-energy argument. The Python package directory and the repository URL keep
+that name so the audit link stays valid; everything else, including the paper, is ReTrace.
 
 ### Validity, measured
 

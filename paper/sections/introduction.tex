@@ -11,8 +11,8 @@ are unmasked~\citep{hong2026dgmark}. Different as they are, every one of them le
 verifier reading a \emph{surface signature}: a hash of token identities, a frequency, a
 rank. We ask a different question.
 
-\important{Can provenance be encoded in how a diffusion language model \emph{reconstructs}
-a text, rather than in which tokens the text contains?}
+\important{Can a watermark be detected from how the model reconstructs a text, rather than
+from the tokens the text contains?}
 
 A diffusion language model makes this question answerable in a way an autoregressive model
 does not. Its training objective is to recover masked tokens from arbitrary surviving
@@ -21,7 +21,7 @@ it: corrupt it, re-denoise it, and observe the response. That response is a prop
 text's relationship to the model, not of its symbols, and it is available to anyone holding
 the model --- but only interpretable by someone holding the key that chose the corruption.
 
-We call the resulting scheme \textbf{BasinMark}. A secret key derives two corruption
+We call the resulting scheme \textbf{ReTrace}. A secret key derives two corruption
 patterns over the context of a span. Reading the model's log-probability of each
 \emph{observed} token under both corruptions gives a contrast
 \begin{equation}
@@ -53,14 +53,31 @@ challenge is committed first, and one that does not is deferred. No token is eve
 overridden, which is why this costs almost nothing --- the same reason decoding-order
 watermarks are cheap~\citep{hong2026dgmark}. The difference is what the verifier reads:
 order is only the \emph{embedding} channel here, while the evidence recovered at
-verification time is the model's keyed reconstruction behaviour.
+verification time is the model's response to a keyed reconstruction.
 
-\important{BasinMark embeds through the denoising trajectory but verifies through the
-model's keyed reconstruction behaviour.}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_retrace_pipeline.pdf}
+\caption{\textbf{ReTrace embeds through the denoising trajectory but verifies through the
+model's response to a keyed reconstruction.} \textbf{(a)} Prior watermarks hand the verifier a
+function of the token identities --- a green-list membership, a parity, a hash. ReTrace
+hands it the model: the finished text is corrupted twice under the key and re-denoised, and
+the contrast between the two reconstructions of the \emph{observed} token is the evidence.
+The signal is therefore a property of the text's relationship to the model rather than of
+its symbols, and it is recoverable from the text, the model and the key alone, with no
+access to the generation trajectory. \textbf{(b)} Placing it costs almost nothing because
+nothing is overridden. Decoding follows the reference block schedule and the model proposes
+what it would have proposed; the key decides only whether a proposal is committed now or
+deferred to a later step, when more of the block has resolved.}
+\label{fig:pipeline}
+\end{figure}
+
+\important{ReTrace places the watermark in the decoding order and reads it back from the
+model's reconstruction response} (Figure~\ref{fig:pipeline}).
 
 \paragraph{Contributions.}
 \begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt]
-\item A provenance signal that is behavioural rather than lexical: the response of a
+\item A watermark read from the model's response rather than from token patterns: the response of a
 finished text to keyed re-denoising, readable from the text, the model and the key alone,
 with no access to the generation trajectory (\S\ref{sec:method}).
 \item A test statistic that is a sum of bounded indicators with one keyed orientation bit
