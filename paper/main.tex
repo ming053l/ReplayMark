@@ -65,7 +65,44 @@ watermarkability}.
 \section{Results}
 \label{sec:results}
 
-\paragraph{Preliminary detection (presence-only, $256$ tokens, $n{=}20$).}
+\begin{figure}[t]
+\centering
+\includegraphics[width=.72\linewidth]{figures/fig_retrace_rcurve.pdf}
+\caption{\textbf{Retries buy detection without model forwards.} A retry redraws from the
+same conditional row, so $R$ costs arithmetic rather than compute, and the quality pairing
+against the matched control measured $0.97\times$--$0.98\times$ at $R{=}1$--$2$ on two
+independent prompt sets. Reference lines are the local reproductions of dgMARK and KGW at
+their own quality costs.}
+\label{fig:rcurve}
+\end{figure}
+
+\paragraph{The retry curve reaches the baselines' detection range.}
+On held-out prompts ($n{=}30$, $512$ tokens, per-document nonces), raising the retry
+budget moves the presence rate from $0.617$ to $0.674$ between $R{=}2$ and $R{=}4$, and
+$\mathrm{TPR}@1\%$ from $0.73$ to $\mathbf{0.83}$ --- level with locally reproduced dgMARK
+($0.86$ at $1.23\times$ perplexity). The matched-control quality pairing for these arms is
+printing as this draft is written; at $R{=}1$ and $R{=}2$ it measured $0.97\times$--$0.98\times$
+across two independent prompt sets, and the mechanism predicts the cost stays sub-bit per
+two-sided carrier independent of $R$.
+
+\paragraph{Detector choice settles on the simplest.}
+On identical held-out caches, the gated count, the gated LLR and the all-position LLR are
+indistinguishable at $R{=}1$ ($0.38$ at $1\%$ each; ungated counting is strictly worse at
+$0.33$), and every variant holds its null on the control arm. The deployed detector is
+therefore the gated indicator with its exact binomial null; the likelihood machinery adds
+nothing where the per-position evidence is weak, because negative evidence at one-sided
+positions only materialises once the embedder has visibly tried and failed --- which takes
+retries.
+
+\paragraph{Robustness is the weak axis, and the mechanism says why.}
+Under same-model re-denoising of $10\%$ of positions, $R{=}1$ detection falls from $0.35$
+to $0.05$ at $1\%$ (deletion: likewise), while the attacked control stays at $\alpha$ ---
+the attack does not trigger the detector, it erases the evidence. The fragility is
+structural: the challenge context of every block includes all earlier blocks, so an edit
+anywhere perturbs the contrast of every later position. Whether the higher rates at
+$R{=}4$--$8$ buy usable attack headroom is measured on the saved held-out outputs.
+
+\paragraph{Superseded preliminary numbers (presence-only, $256$ tokens, $n{=}20$).}
 With every carrier feeding a single presence test, the unwatermarked null sits at a match
 rate of $0.498$ ($n_{\mathrm{sync}}{=}123$ per document), and the watermarked arms reach
 $\mathrm{TPR}@1\% = 0.25$ at $R{=}1$ and $0.50$ at $R{=}2$, doubling with the retry budget

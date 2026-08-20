@@ -20,7 +20,7 @@ d = json.load(open("/ssd1/ming/basinmark/results/17_caches.json"))
 pls, GEN = d["pls"], d["GEN"]
 
 def doc_key(i):
-    return hmac.new(KEY, f"doc-{i}".encode(), hashlib.sha256).digest()
+    return hmac.new(KEY, f"ho-{i}".encode(), hashlib.sha256).digest()
 
 def indicator(cache, key, pl, gate):
     span = np.arange(pl, pl + GEN)
