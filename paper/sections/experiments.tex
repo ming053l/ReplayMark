@@ -1,30 +1,72 @@
-\section{Experimental Setup}
+\section{Experiments}
 \label{sec:baselines}
-
-All numbers are measured on one NVIDIA TITAN RTX with
-\texttt{GSAI-ML/LLaDA-8B-Instruct} in fp16. Prompts are C4 \texttt{realnewslike}
-documents truncated to $300$ characters, which is dgMARK's published protocol; every method
-in this paper uses the same construction, the same checkpoint and $256$ generated tokens.
-Text quality is GPT-2-large perplexity, reported as a ratio against a non-watermarked
-control \emph{produced under the same decoding regime}, since the three methods require
-different regimes and a single shared baseline would charge the cost of a regime to
-whichever watermark used it. Detectability is reported as the true positive rate at a
-controlled false positive rate, never as a raw $z$.
 
 \input{tables/baseline_table}
 
-Two observations about the baselines. Locally reproduced dgMARK is weaker than its
-published table ($1.25\times$ for $99.4\,\%$), which is why the reproduction was worth
-running rather than citing. And KGW's apparent $1.03\times$ is against its own
-left-to-right control; charged against block decoding it is $1.20\times$, and under forced
-left-to-right decoding this model repeats about a third of its bigrams, so its detector
-must score each distinct bigram once --- an un-deduplicated detector measured a $37\,\%$
-false positive rate on non-watermarked text.
+All numbers are measured on one NVIDIA TITAN RTX with \texttt{GSAI-ML/LLaDA-8B-Instruct}
+in fp16. Prompts are C4 \texttt{realnewslike} documents truncated to $300$ characters ---
+dgMARK's published protocol --- and every method uses the same construction, checkpoint and
+$256$--$512$ generated tokens with $\text{steps} = \text{gen\_length}$. Quality is
+GPT-2-large perplexity against a non-watermarked control \emph{under the same decoding
+regime}, because the three methods require different regimes and one shared baseline would
+charge a regime's cost to whichever watermark used it; for ReTrace the control is the same
+generator with steering disabled, so the pairing isolates the watermark and nothing else.
+Detectability is the true positive rate at a fixed false positive rate, never a raw $z$.
+Development prompts are never reused: confirmatory runs draw from disjoint offsets of the
+corpus with per-document keys $K_d = \mathrm{HMAC}(K, \mathrm{nonce}_d)$.
+
+\subsection{Main Results and Analysis}
+\label{sec:analysis}
+
+\paragraph{The watermark is quality-free, and the earlier evidence against this was a
+harness artifact.} Paired against the matched control, the watermark costs a
+$\Delta$NLL median of $-0.027$ at $R{=}1$ and $-0.037$ at $R{=}2$ (ratios $0.97\times$,
+$0.93\times$; $n{=}30$), replicated on a disjoint held-out set at $0.980\times$ ($n{=}40$).
+Every larger figure previously on record traced to pairing against a differently-scheduled
+reference generator, and the fingerprint of that confound --- $R{=}1$ and $R{=}2$ showing
+the same $\Delta$NLL --- is what exposed it. The mechanism says this is not luck: at a
+one-sided position the emitted token is the natural sample whichever way the coin lands, so
+only genuinely two-sided carriers pay, each less than one bit.
+
+\paragraph{Retries buy detection with arithmetic, not compute.} On held-out prompts
+($n{=}30$, $512$ tokens), the presence rate climbs $0.617 \to 0.674$ from $R{=}2$ to
+$R{=}4$ and $\mathrm{TPR}@1\%$ climbs $0.73 \to 0.83$ --- level with locally reproduced
+dgMARK $3$-beam ($0.86$ at $1.23\times$ perplexity) --- while a retry redraws from an
+unchanged conditional row and therefore costs no forward pass
+(Figure~\ref{fig:rcurve}). Length is the other free axis: at $R{=}1$, doubling the document
+from $256$ to $512$ tokens lifts $1\%$-TPR from $0.25$ to $0.40$ purely by growing the
+presence count, the same length--power trade dgMARK reports.
+
+\paragraph{The simplest detector is the right one.} On identical held-out caches the gated
+count, the gated likelihood ratio and an all-position likelihood ratio are
+indistinguishable ($0.38$ at $1\%$ each at $R{=}1$), ungated counting is strictly worse
+($0.33$), and every variant holds its null on the control arm. Likelihood weighting buys
+nothing here because its extra evidence --- one-sided positions failing \emph{visibly} ---
+only materialises when the embedder has tried and been refused, which takes retries; at
+the operating points that matter the deployed detector is the gated indicator with its
+exact binomial null and no Monte-Carlo machinery.
+
+\paragraph{False positive control holds at the worst key.} Twenty keys $\times$ $120$
+non-watermarked generations give $2400$ null draws under the deployed decision rule:
+empirical FPR is at or below nominal at every level \emph{per key}, the worst key included
+($0.058$ at $\alpha{=}0.10$, $0.025$ at $0.05$, $0.000$ at $0.01$; Table~\ref{tab:validity}),
+and the matched control arms of every later run sat at zero false positives. An earlier
+revision reported a Gaussian tail here and measured $0.145$ at nominal $0.10$; the exact
+construction is what allows the guarantee to be stated per document rather than on average.
 
 \input{tables/validity_table}
 
-\paragraph{Held-out evaluation.}
-The documents used while developing and debugging the method are not a test set. Final
-numbers are reported on fresh documents with per-document nonces
-$K_d = \mathrm{HMAC}(K, \mathrm{nonce}_d)$, so each document is an independent key draw and
-the guarantee of Proposition~\ref{prop:null} applies per document.
+\paragraph{Robustness is the weak axis, and the mechanism says why.} Same-model
+re-denoising of $10\%$ of positions collapses $R{=}1$ detection from $0.35$ to $0.05$ at
+$1\%$ (deletion likewise), while the attacked control stays at $\alpha$ --- the attack
+erases evidence rather than triggering the detector. The fragility is structural: every
+block's challenges condition on all earlier blocks, so one edit perturbs the contrast of
+every later position. Whether the higher rates at $R{=}4$--$8$ buy usable headroom is
+measured on the saved held-out outputs, and the honest current statement is that
+token-hash watermarks keep an advantage under heavy post-editing.
+
+\paragraph{Detection cost.} Verification evaluates $L{+}1 = 9$ masked sequences per
+$32$-token block --- $144$ for a $512$-token document, independent of payload size,
+batchable, roughly ten seconds on this 2018 GPU and sub-second on a modern accelerator.
+Hash detectors need none. The comparison this prices is a verification API against a
+mass-scanning filter, and the method is only proposed for the former.

@@ -1,0 +1,29 @@
+\section{Background and Problem Setup}
+\label{sec:prelim}
+
+\paragraph{DLM generation.} A diffusion language model generates a sequence by learning to
+reverse a corruption process that independently masks each token, and at inference fills a
+masked region over $T$ steps, each step committing the positions it is most confident about
+and re-masking the rest. Practical systems decode \emph{semi-autoregressively}: the
+generation region is split into contiguous blocks filled left to right, diffusion running
+only within the active block~\citep{arriola2025blockdiffusion,nie2025llada}. Two
+consequences matter here. The model is trained to predict masked tokens from
+\emph{arbitrary} surviving context, so it can be applied to a finished text and not only
+used to produce one; and within a block, the token eventually emitted at a position is a
+sample from the model's conditional at some intermediate state --- a distribution the
+verifier can later reconstruct exactly, because everything that state conditions on is
+either the finished prefix or masked.
+
+\paragraph{Watermarking problem.} An embedder holding a secret key $K$ produces text whose
+provenance a verifier holding the same key can later establish from the text alone, against
+three requirements. \emph{Detectability:} a test statistic separating watermarked from
+natural text at a controlled false positive rate. \emph{Quality:} the watermarked
+distribution should cost little against the same generator without the key.
+\emph{Verifiability without the trajectory:} detection may use the text, the model and the
+key, but nothing recorded at generation time. Prior schemes meet these by making the
+verifier read a function of the token identities --- a green-list membership seeded by the
+preceding token~\citep{kirchenbauer2023watermark}, a parity of the unmasking
+order~\citep{hong2026dgmark}, a keyed sampling sequence~\citep{kuditipudi2024distortionfree}.
+This paper asks the verifier to read something else: how the model \emph{reconstructs} the
+text under keyed corruption. The cost of that choice is a detector that must run the model,
+and we account for it in every comparison.
