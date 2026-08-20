@@ -56,7 +56,14 @@ control null clean at $0.501$). Repetition sits at parity with the control
 raw-token measurement that suggested otherwise was counting EOS padding as repetition).
 Sub-$1.0$ ratios deserve suspicion rather than celebration --- the floor tilts toward
 higher-probability tokens, which perplexity rewards --- which is why repetition is
-reported next to the ratio rather than instead of it.
+reported next to the ratio rather than instead of it. Doubling the document to $1024$
+tokens moves the same configuration to $0.75$ at $1\%$ and $0.69$ at $0.1\%$ (rate
+$0.635$, ratio $0.83\times$), with the caveats stated rather than averaged away:
+repetition opens a $+0.06$ gap over the control at this length, and only half the
+documents clear the validity rule for quality pairing. Calibrated and weighted detector
+variants were also evaluated on identical caches and buy at most $0.02$ at $1\%$ ---
+the count is essentially optimal at these rates, so remaining power must come from the
+acceptance rate and the carrier count, not the statistic.
 
 \paragraph{The simplest detector is the right one.} On identical held-out caches the gated
 count, the gated likelihood ratio and an all-position likelihood ratio are
