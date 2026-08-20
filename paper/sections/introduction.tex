@@ -46,6 +46,18 @@ forward-pass cost, the conditional row being unchanged --- until its reconstruct
 response agrees with the key; if no draw agrees, one unconditional draw is emitted as-is.
 Positions whose plausible tokens all answer one way fall through to the natural sample
 either way, so the watermark is paid for only at genuinely ambivalent positions.
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_retrace_pipeline.pdf}
+\caption{\textbf{Prior verifiers read token identities; ReTrace's verifier runs the
+model.} \textbf{(a)} The finished text is corrupted twice under the key and re-denoised;
+the contrast between the reconstructions of each observed token is the evidence.
+\textbf{(b)} Embedding never leaves the model's conditional: draw, check the keyed
+response, redraw at most $R$ times at no forward-pass cost, emit a fresh draw on
+exhaustion.}
+\label{fig:pipeline}
+\end{figure}
+
 \important{ReTrace places the watermark in resampled tokens and reads it back from the
 model's reconstruction response} (Figure~\ref{fig:pipeline}).
 
