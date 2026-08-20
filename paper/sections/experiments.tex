@@ -18,6 +18,16 @@ corpus with per-document keys $K_d = \mathrm{HMAC}(K, \mathrm{nonce}_d)$.
 \subsection{Main Results and Analysis}
 \label{sec:analysis}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=.62\linewidth]{figures/fig_retrace_rcurve.pdf}
+\caption{\textbf{Retries buy detection with arithmetic, but spend the quality budget.}
+$n{=}30$ held-out $512$-token documents, per-document keys, control at zero false
+positives; paired quality $1.14\times/1.40\times/1.61\times$ at $R{=}2/4/8$. Reference
+lines are this paper's local baseline reproductions.}
+\label{fig:rcurve}
+\end{figure}
+
 \paragraph{The watermark is quality-free, and the earlier evidence against this was a
 harness artifact.} Paired against the matched control, the watermark costs a
 $\Delta$NLL median of $-0.027$ at $R{=}1$ and $-0.037$ at $R{=}2$ (ratios $0.97\times$,

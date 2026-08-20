@@ -32,19 +32,13 @@ and the watermark asks not that $y_i$ belong to a keyed vocabulary subset, but t
 sign of $g_i(y_i)$ agree with a keyed orientation. The evidence lives in the model's
 behaviour.
 
-Getting the embedding right took one full negative result, which we report because it is
-the reason the final design looks the way it does. The obvious way to place such a
-watermark is to \emph{substitute} tokens: at keyed positions, replace the model's choice
-with an admissible alternative whose contrast points the right way. On a well-trained
-diffusion language model this does not work, and the reason is a property of the model
-rather than of the algorithm. Under reference decoding the denoiser's conditionals are
-sharp enough that the median position admits exactly one token inside any usable fluency
-budget, so every unit of watermark evidence must be bought with a unit of fluency. Worse,
-the effect strengthens as generation improves: repairing a sampler bug in our own harness
-lowered draft perplexity from $22.2$ to $9.5$ and simultaneously halved the denoiser's
-entropy and shrank the admissible set by $34\text{--}60\,\%$. We state this as a finding in
-its own right --- \important{better diffusion-model generation reduces post-hoc
-watermarkability} --- and it rules out an entire family of designs.
+Getting the embedding right took one full negative result (\S\ref{sec:v1}). Substituting
+tokens --- the obvious embedding --- fails because a well-trained denoiser's conditionals
+are sharp: the median position admits exactly one token inside any usable fluency budget,
+and the effect \emph{strengthens} as generation improves, a sampler repair that lowered
+draft perplexity from $22.2$ to $9.5$ also shrinking the admissible set by
+$34\text{--}60\,\%$. \important{Better diffusion-model generation reduces post-hoc
+watermarkability}, and it rules out an entire family of designs.
 
 What survives is to stop changing \emph{which} token is produced and change only
 \emph{when} a model-preferred token is committed. Decoding a block, the model proposes what
@@ -58,17 +52,12 @@ verification time is the model's response to a keyed reconstruction.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_retrace_pipeline.pdf}
-\caption{\textbf{ReTrace embeds through the denoising trajectory but verifies through the
-model's response to a keyed reconstruction.} \textbf{(a)} Prior watermarks hand the verifier a
-function of the token identities --- a green-list membership, a parity, a hash. ReTrace
-hands it the model: the finished text is corrupted twice under the key and re-denoised, and
-the contrast between the two reconstructions of the \emph{observed} token is the evidence.
-The signal is therefore a property of the text's relationship to the model rather than of
-its symbols, and it is recoverable from the text, the model and the key alone, with no
-access to the generation trajectory. \textbf{(b)} Placing it costs almost nothing because
-nothing is overridden. Decoding follows the reference block schedule and the model proposes
-what it would have proposed; the key decides only whether a proposal is committed now or
-deferred to a later step, when more of the block has resolved.}
+\caption{\textbf{Prior verifiers read token identities; ReTrace's verifier runs the
+model.} \textbf{(a)} The finished text is corrupted twice under the key and re-denoised;
+the contrast between the reconstructions of each observed token is the evidence.
+\textbf{(b)} Embedding never leaves the model's conditional: draw, check the keyed
+response, redraw at most $R$ times at no forward-pass cost, emit a fresh draw on
+exhaustion.}
 \label{fig:pipeline}
 \end{figure}
 

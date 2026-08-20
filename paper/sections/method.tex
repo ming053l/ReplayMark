@@ -54,27 +54,24 @@ $m_i$ are i.i.d.\ $\mathrm{Bernoulli}(\tfrac12)$ and
 $T \sim \mathrm{Binomial}(|P|, \tfrac12)$ exactly.
 \end{proposition}
 
-The domain separation is load-bearing, not stylistic: the challenge patterns and the
-per-position pair selection are themselves keyed, so if they shared PRF output with the
-orientation bits, the conditioning event would carry information about the bits and the
-independence step would fail. Pair selection additionally uses only
-$S_i = 2\min(q_i^+, q_i^-)$, which is invariant under swapping the pair's arms, so it is
-orientation-symmetric by construction.
+The domain separation is load-bearing: the challenge patterns and pair selection are
+themselves keyed, and sharing PRF output with the orientation bits would let the
+conditioning event carry information about them. Pair selection uses only the
+swap-invariant $S_i$ of Eq.~\eqref{eq:gate}, so it is orientation-symmetric by
+construction.
 
 The proposition needs no calibration corpus and no model-specific null estimate, and it is
 finite-sample rather than asymptotic. Three implementation details are load-bearing.
 
-\emph{Ties must be resolved, not dropped.} The model is confident enough that at a large
-fraction of positions the emitted token's log-probability rounds to $0$ under \emph{both}
-arms in single precision, so their difference vanishes. Scoring $g_i = 0$ as a miss makes
-$\Pr[m_i=1] = (1-\Pr[g_i=0])/2$; we measured an unwatermarked match rate of $0.32$--$0.37$
-against $0.50$. We compute Eq.~\eqref{eq:g} in double precision inside the softmax, which
-removes the ties entirely, and break any residual tie with a second keyed coin.
+\emph{Ties must be resolved, not dropped.} In single precision the emitted token's
+log-probability rounds to $0$ under both arms at a quarter of positions, and scoring the
+vanished difference as a miss dragged the unwatermarked match rate to $0.32$--$0.37$
+against $0.50$. Double precision inside the softmax removes the ties; a second keyed coin
+breaks any residue.
 
-\emph{Counting, not averaging.} An earlier design averaged $g$ over the positions of a
-probe. The per-position contrast is heavy-tailed, so the mean is dominated by a few large
-values and controlling the \emph{sign} of the small ones --- all a commit-order channel can
-do --- has almost no leverage on it. A count gives every steered position exactly one unit.
+\emph{Counting, not averaging.} The per-position contrast is heavy-tailed, so an average
+is dominated by its largest values and sign control has no leverage on it; a count gives
+every steered position exactly one unit.
 
 \emph{Presence, verification and payload are separate tests.} Summing hits across payload
 groups cancels: with a balanced message, half the groups are driven toward $m_i=1$ and half
@@ -91,15 +88,11 @@ group separately.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_retrace_mechanism.pdf}
-\caption{\textbf{One rule, two regimes, and why the watermark is quality-free.} At a
-steerable carrier both response signs are plausible, so a handful of redraws finds an
-accepting token that is still a sample from the model's own conditional --- these are the
-only positions that can pay quality, and each pays less than one bit by construction. At a
-key-opposed position every guided draw is rejected and the single unconditional fallback
-emits the natural sample: zero cost, and the detector's gate excludes it. The verifier
-needs neither the trajectory nor the draw sequence: it re-masks the finished text under
-the key, reads one gated indicator per carrier, and counts against an exact
-$\mathrm{Binomial}(n,\tfrac12)$ null.}
+\caption{\textbf{One rule, two regimes.} A two-sided carrier accepts within a few
+redraws --- still a sample from the model's conditional, and the only kind of position
+that pays quality. A key-opposed position rejects every draw and emits the natural sample
+at zero cost; the gate excludes it. The verifier re-masks under the key and counts gated
+indicators against an exact binomial null, with no access to the trajectory.}
 \label{fig:mechanism}
 \end{figure}
 
@@ -114,10 +107,19 @@ v^{(1)}, v^{(2)}, \ldots \sim p_\theta(\cdot \mid x), \qquad
 \end{equation}
 and if all $R$ guided draws are rejected, one further unconditional draw is emitted as-is.
 A retry costs no forward pass --- the conditional row is unchanged --- so $R$ trades
-detection strength against arithmetic alone. With acceptance mass
-$q_i = \Pr_{v \sim p_i}[\,w_i \epsilon_i g_i(v) > 0\,]$, the indicator hits with
-probability $1 - (1 - q_i)^{R+1}$, and the emitted token is distributed as
-$p_i(v \mid v \in A_i)$ when accepted and as $p_i$ on fallback. This \emph{does} condition
+detection strength against arithmetic alone. Writing $A_i$ for the acceptance set and
+$q_i$ for its mass, the per-position hit probability and emitted distribution are
+\begin{equation}
+q_i = \Pr_{v \sim p_i}\!\left[\,w_i\,\epsilon_i\,g_i(v) > 0\,\right], \qquad
+\Pr[m_i = 1] \;=\; 1 - (1 - q_i)^{R+1},
+\label{eq:hit}
+\end{equation}
+\begin{equation}
+v_i \;\sim\;
+\bigl(1-(1-q_i)^{R}\bigr)\, p_i(\,\cdot \mid A_i)
+\;+\; (1-q_i)^{R}\, p_i .
+\label{eq:dist}
+\end{equation} This \emph{does} condition
 the sampling distribution on the acceptance predicate and is not claimed to be
 distortion-free; what makes it cheap is that the support never leaves the model's own
 conditional, and that the positions where the predicate binds hardest are exactly the
@@ -125,10 +127,15 @@ positions where it cannot be satisfied at all --- which fall through to the natu
 
 \paragraph{Only two-sided positions are carriers.}
 The live acceptance mass is bimodal (quartiles $0.02/0.60/0.98$): at most positions the
-model's plausible tokens all answer the challenge the same way. A position with
-$S_i = 2\min(q_i^+, q_i^-) \leq 0.5$ under the block-masked conditional is therefore not
-counted --- if the key opposes it, retries cannot help and the fallback makes it a certain
-miss rather than a coin flip. $S_i$ is invariant under swapping the pair's arms and never
+model's plausible tokens all answer the challenge the same way. Positions are gated by the orientation-symmetric two-sided mass
+\begin{equation}
+S_i \;=\; 2\min\!\left(q_i^{+},\, q_i^{-}\right), \qquad
+q_i^{\pm} = \Pr_{v \sim p_i^{\text{base}}}\!\left[\,\pm\, g_i(v) > 0\,\right],
+\label{eq:gate}
+\end{equation}
+computed under the block-masked conditional: a position with $S_i \leq 0.5$ is not
+counted, since if the key opposes it retries cannot help and the fallback makes it a
+certain miss rather than a coin flip. $S_i$ is invariant under swapping the pair's arms and never
 sees the key's direction or the message, and it is computed from the block-masked
 conditional, so the verifier reconstructs the identical carrier set from the finished
 text. The challenge pair itself is chosen per position among the $\binom{L}{2}$ keyed

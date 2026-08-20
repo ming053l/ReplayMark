@@ -58,7 +58,7 @@ DEFER_LINE = HexColor("#E3A6AC")
 CW, CH, GAP = 24, 18, 3          # token cell geometry, shared by every row
 
 
-def label(d, x, y, text, *, size=11, color=INK, font="SaberTimes", anchor="start"):
+def label(d, x, y, text, *, size=12, color=INK, font="SaberTimes", anchor="start"):
     d.add(String(x, y, text, fontName=font, fontSize=size, fillColor=color, textAnchor=anchor))
 
 
@@ -94,7 +94,7 @@ def badge(d, x, y, *, color, fill, mark="check", radius=7):
 
 def pill(d, x, y, w, text, *, fill, stroke, color, h=17):
     rounded_card(d, x, y - h / 2, w, h, fill=fill, stroke=stroke, radius=h / 2, width=1.0)
-    label(d, x + w / 2, y - 3.5, text, size=9, color=color, anchor="middle")
+    label(d, x + w / 2, y - 3.5, text, size=10.5, color=color, anchor="middle")
 
 
 def cells(d, x, y, states):
@@ -117,8 +117,8 @@ def cells(d, x, y, states):
 
 def lane_header(d, x, y, *, tag, title, subtitle, color, fill, stroke):
     pill(d, x, y + 24, 96, tag, fill=fill, stroke=stroke, color=color)
-    label(d, x, y - 2, title, size=11, color=INK, font="SaberTimes-Bold")
-    label(d, x, y - 15, subtitle, size=9, color=MUTED)
+    label(d, x, y - 2, title, size=12, color=INK, font="SaberTimes-Bold")
+    label(d, x, y - 15, subtitle, size=10.5, color=MUTED)
 
 
 def main():
@@ -128,7 +128,7 @@ def main():
     YA, YB, YV = 268, 188, 84
 
     label(d, LX, 304, "Two kinds of position, one rule: draw from the model until the "
-                      "keyed response accepts, at most R times.", size=10, color=MUTED)
+                      "keyed response accepts, at most R times.", size=12, color=MUTED)
 
     def draw_seq(x, y, seq, note, note_color):
         cx = x
@@ -139,7 +139,7 @@ def main():
                 "nat": (NEUTRAL_FILL, NEUTRAL_LINE, INK)}[kind]
             rounded_card(d, cx, y - 9, 58, 20, fill=fill, stroke=stroke, radius=4,
                          width=1.0)
-            label(d, cx + 29, y - 2, txt, size=8.5, color=col, anchor="middle")
+            label(d, cx + 29, y - 2, txt, size=12, color=col, anchor="middle")
             if kind == "rej":
                 cross(d, cx + 52, y + 8, color=DEFER, width=1.2)
             if kind == "acc":
@@ -147,7 +147,7 @@ def main():
             cx += 66
             if (txt, kind) != seq[-1]:
                 arrow(d, cx - 8, y, cx - 2, y, color=MUTED, width=1.0, head=4)
-        label(d, cx + 6, y - 2, note, size=9, color=note_color)
+        label(d, cx + 6, y - 2, note, size=10.5, color=note_color)
 
     lane_header(d, LX, YA, tag="two-sided", title="Steerable carrier",
                 subtitle="S > 0.5: both response signs plausible", color=BASIN,
@@ -155,7 +155,7 @@ def main():
     draw_seq(150, YA, [("draw 1", "rej"), ("draw 2", "rej"), ("draw 3", "acc")],
              "accepted: still a sample from the model's own conditional", BASIN_DARK)
     label(d, 150, YA - 26, "counted by the detector; the only positions that can pay "
-                           "quality, less than one bit each", size=8.5, color=MUTED)
+                           "quality, less than one bit each", size=12, color=MUTED)
 
     lane_header(d, LX, YB, tag="one-sided", title="Key-opposed position",
                 subtitle="target side holds ~no mass", color=DEFER, fill=DEFER_FILL,
@@ -164,23 +164,23 @@ def main():
                        ("fresh", "nat")],
              "exhausted: one unconditional draw, the natural sample", MUT if False else MUTED)
     label(d, 150, YB - 26, "zero quality cost by construction; excluded by the "
-                           "detector's gate", size=8.5, color=MUTED)
+                           "detector's gate", size=12, color=MUTED)
 
     d.add(Line(LX, 140, W - LX, 140, strokeColor=HAIRLINE, strokeWidth=1))
 
-    label(d, LX, 120, "Verification", size=11, color=BASIN, font="SaberTimes-Bold")
+    label(d, LX, 120, "Verification", size=12, color=BASIN, font="SaberTimes-Bold")
     label(d, 116, 120, "from the finished text alone, with no access to the trajectory "
-                       "or the draw sequence", size=9, color=MUTED)
+                       "or the draw sequence", size=10.5, color=MUTED)
 
     fin = [("the", "committed"), ("model", "committed"), ("fills", "committed"),
            ("in", "committed"), ("any", "committed"), ("order", "committed")]
     end = cells(d, LX, YV - 9, fin)
-    label(d, LX, YV - 26, "finished text", size=9, color=MUTED)
+    label(d, LX, YV - 26, "finished text", size=10.5, color=MUTED)
     arrow(d, end + 8, YV, end + 34, YV, color=BASIN)
     msk = [("[M]", "mask"), ("model", "committed"), ("[M]", "mask"),
            ("in", "committed"), ("[M]", "mask"), ("order", "committed")]
     end2 = cells(d, end + 40, YV - 9, msk)
-    label(d, end + 40, YV - 26, "re-masked under the key", size=9, color=BASIN_DARK)
+    label(d, end + 40, YV - 26, "re-masked under the key", size=10.5, color=BASIN_DARK)
     arrow(d, end2 + 8, YV, end2 + 34, YV, color=BASIN)
     ix = end2 + 40
     for k, m in enumerate((1, None, 0, None, 1, None)):
@@ -188,20 +188,20 @@ def main():
         if m is None:
             rounded_card(d, cx, YV - 9, CW, CH, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE,
                          radius=3, width=0.9)
-            label(d, cx + CW / 2, YV - 3.5, "\u2014", size=8, color=MUTED,
+            label(d, cx + CW / 2, YV - 3.5, "\u2014", size=10, color=MUTED,
                   anchor="middle")
         else:
             rounded_card(d, cx, YV - 9, CW, CH, fill=BASIN_FILL if m else DEFER_FILL,
                          stroke=BASIN if m else DEFER_LINE, radius=3, width=0.9)
-            label(d, cx + CW / 2, YV - 3.5, str(m), size=9,
+            label(d, cx + CW / 2, YV - 3.5, str(m), size=10.5,
                   color=BASIN_DARK if m else DEFER, anchor="middle")
-    label(d, ix, YV - 26, "gated indicators", size=9, color=MUTED)
+    label(d, ix, YV - 26, "gated indicators", size=10.5, color=MUTED)
     arrow(d, ix + 6 * (CW + GAP) + 4, YV, ix + 6 * (CW + GAP) + 30, YV, color=BASIN)
     rounded_card(d, ix + 6 * (CW + GAP) + 36, YV - 15, 104, 30, fill=BASIN_FILL,
                  stroke=BASIN)
-    label(d, ix + 6 * (CW + GAP) + 88, YV - 1, "count", size=10, color=BASIN_DARK,
+    label(d, ix + 6 * (CW + GAP) + 88, YV - 1, "count", size=12, color=BASIN_DARK,
           anchor="middle")
-    label(d, ix + 6 * (CW + GAP) + 88, YV - 12, "Binomial(n, 1/2)", size=8, color=MUTED,
+    label(d, ix + 6 * (CW + GAP) + 88, YV - 12, "Binomial(n, 1/2)", size=10, color=MUTED,
           anchor="middle")
 
     renderSVG.drawToFile(d, str(SVG_OUT))

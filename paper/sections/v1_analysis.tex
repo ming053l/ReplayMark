@@ -25,24 +25,9 @@ generation quality reduces its post-hoc watermarkability}, because both quantiti
 governed by the sharpness of the same conditionals.
 
 \paragraph{Moving to generation time does not rescue substitution.}
-A guidance table valid during generation requires every non-carrier token to be final
-before it is computed, which forces an unusual schedule: all non-carrier positions, then
-all carrier positions. Priced with the watermark switched off, that schedule alone costs
-$1.98\times$ perplexity --- more than dgMARK's entire watermark. The lesson is not that
-generation-time embedding is wrong but that a \emph{global} carrier is: making the carrier
-block-local reduces the isolated region from half the sequence to one block, and lets the
-reference schedule stand.
-
-\paragraph{Deferral, by contrast, does change the proposal.}
-The commit-order channel rests on one assumption: that a position which is deferred returns
-a \emph{different} token later. It does. Measured over full decoding runs, a deferred
-position's proposal changes $38$--$51\,\%$ of the time, and monotonically in how long it
-waits --- $0.20$ after one or two steps, $0.35$ after three to five, $0.49$ after six to ten,
-$0.57$ after eleven or more. The channel therefore needs step budget rather than a stronger
-push: a position must wait roughly six steps before a fresh draw is likely, so a schedule
-that gives a $32$-position block only $32$ steps finishes before long deferrals can pay.
-
-\paragraph{What this rules in.}
-Substitution buys evidence with fluency at a fixed exchange rate set by the model's
-conditionals, and that rate is unfavourable and worsening. Any viable embedding must
-therefore avoid overriding the model's choice --- which is what \S\ref{sec:embedding} does.
+A guidance table valid during generation needs every non-carrier token final first, which
+forces a two-phase schedule that costs $1.98\times$ perplexity \emph{before any watermark}
+--- more than dgMARK's entire cost. Substitution buys evidence with fluency at a rate set
+by the model's conditionals, and that rate is unfavourable and worsening; a viable
+embedding must never override the model's choice, which is what \S\ref{sec:embedding}
+does.

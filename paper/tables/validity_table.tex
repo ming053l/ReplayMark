@@ -12,14 +12,9 @@ $0.05$ & $0.0037$ & $0.0250$ & valid ($\leq\alpha$) \\
 $0.01$ & $0.0000$ & $0.0000$ & valid ($\leq\alpha$) \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{False positive control for a fixed key, measured per key.} $20$ keys
-$\times$ $120$ non-watermarked LLaDA generations $=2400$ draws; $z$ over all of them has
-mean $-0.076$ and standard deviation $0.976$. The decision rule is the one detection
-actually uses, $p_{\text{bound}}=\exp(-z^2/2)$, Hoeffding's inequality for Rademacher sums.
-Deployment uses one secret key over many documents, so the relevant guarantee is
-$P_{Y}(p\leq\alpha \mid K=k)\leq\alpha$ for the \emph{worst} $k$, not an average over keys,
-and a randomization $p$-value owes super-uniformity rather than strict uniformity. An
-earlier revision reported a Gaussian tail instead and measured $0.145$ at
-$\alpha=0.10$ --- anti-conservative, and the reason the exactness claim was withdrawn.}
+\caption{\textbf{False positive control holds per key, worst key included.} $20$ keys
+$\times$ $120$ non-watermarked generations under the deployed rule. Deployment uses one
+key across documents, so the per-key guarantee is the one that matters; an earlier
+Gaussian-tail version measured $0.145$ at nominal $0.10$ and was withdrawn.}
 \label{tab:validity}
 \end{table}
