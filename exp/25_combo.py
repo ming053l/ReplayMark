@@ -17,7 +17,7 @@ from basinmark.model import BasinModel
 from basinmark.data import c4_prompts
 from basinmark.resample import ResampleMark
 
-KEY, GEN, BLK, NS = b"retrace-key-A", 1024, 32, 20
+KEY, GEN, BLK, NS = b"retrace-key-A", 1024, 32, 16
 import os; os.environ["HF_HOME"] = "/ssd1/ming/hf_cache"
 from transformers import AutoModelForCausalLM, AutoTokenizer
 M = BasinModel()
@@ -35,9 +35,10 @@ def nll1(t):
 prompts = c4_prompts(M.tok, NS, skip=850)
 pls = [p.shape[1] for p in prompts]
 BASE = dict(block_len=BLK, sync_frac=1.0, n_payload_bits=1)
+# two arms only: 1024-token docs run ~8 min each on this GPU, and R16 bought little
+# rate over R8 at the same floor (0.574 vs 0.568 at kappa=0.3)
 ARMS = [("control", dict(s_min=2.0, retries=1)),
-        ("R8k10", dict(s_min=0.5, retries=8, p_floor=0.10)),
-        ("R16k10", dict(s_min=0.5, retries=16, p_floor=0.10))]
+        ("R8k10", dict(s_min=0.5, retries=8, p_floor=0.10))]
 out = {}
 for name, kw in ARMS:
     rec, t0 = [], time.time()
