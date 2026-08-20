@@ -33,17 +33,49 @@ CLIP = 1e-3
 
 
 @torch.no_grad()
-def build_cache(w: ResampleMark, ids, prompt_len, gen_len):
-    """One detection pass -> per-position arrays; everything later is offline."""
+def build_cache(w: ResampleMark, ids, prompt_len, gen_len, top_pairs=3):
+    """One detection pass -> per-position arrays; everything later is offline.
+
+    Besides the best pair, the top-`top_pairs` pairs by two-sided mass are stored per
+    position: any function of (y, non-orientation domains) keeps the exact randomization
+    null, so richer evidence -- multi-pair scores, |g| weights, S weights -- can be
+    evaluated offline without another GPU pass."""
+    from .challenges import block_challenges
     gen_end = prompt_len + gen_len
-    P, QP, QM, GY = [], [], [], []
+    P, QP, QM, GY, SS, ALT = [], [], [], [], [], []
     for b in range(max(1, gen_len // w.block_len)):
         lo = prompt_len + b * w.block_len
-        B, g, S, qp, qm = w._table(ids, lo, gen_end)
+        B = np.arange(lo, lo + w.block_len)
+        pats, _ = block_challenges(w.key, lo, w.block_len, w.n_patterns, w.ctx_frac,
+                                   mode=w.challenge)
+        base = ids.clone(); base[0, lo:gen_end] = 126336
+        batch = [base.clone() for _ in pats]
+        for m_, d_ in zip(batch, pats):
+            m_[0, torch.tensor(d_)] = 126336
+        batch.append(base)
+        lp = w.M.logprobs_rows(torch.cat(batch, 0), torch.tensor(B), chunk=2,
+                               dtype=torch.float64)
+        pr = torch.softmax(lp[-1] / w.temperature, dim=-1)
         y = ids[0, torch.tensor(B)]
-        GY.extend(g.gather(1, y[:, None]).squeeze(1).tolist())
-        P.extend(B.tolist()); QP.extend(qp.tolist()); QM.extend(qm.tolist())
-    return dict(pos=P, qp=QP, qm=QM, gy=GY)
+        L = len(pats)
+        per_pos = [[] for _ in range(len(B))]
+        for u in range(L):
+            for v in range(u + 1, L):
+                gg = lp[v] - lp[u]
+                qpv = (pr * (gg > 0)).sum(1).numpy()
+                qmv = (pr * (gg < 0)).sum(1).numpy()
+                gyv = gg.gather(1, y[:, None]).squeeze(1).numpy()
+                ssv = 2 * np.minimum(qpv, qmv)
+                for k in range(len(B)):
+                    per_pos[k].append((float(ssv[k]), float(qpv[k]), float(qmv[k]),
+                                       float(gyv[k])))
+        for k, i in enumerate(B):
+            pp = sorted(per_pos[k], key=lambda t: -t[0])[:top_pairs]
+            s0 = pp[0]
+            P.append(int(i)); SS.append(s0[0]); QP.append(s0[1]); QM.append(s0[2])
+            GY.append(s0[3])
+            ALT.append([list(t) for t in pp])
+    return dict(pos=P, qp=QP, qm=QM, gy=GY, S=SS, alt=ALT)
 
 
 def llr_pvalue(cache, key, prompt_len, gen_len, R, n_mc=100_000, seed=0):

@@ -24,3 +24,6 @@ echo "=== CHAIN FULLY DONE ==="
 /home/ming0531/miniconda3/envs/mmada/bin/python exp/21_R_matched.py > logs/21_R.log 2>&1
 echo "=== 21 exit $? ==="
 echo "=== NIGHT COMPLETE ==="
+/home/ming0531/miniconda3/envs/mmada/bin/python exp/22_tpr_boost.py > logs/22_boost.log 2>&1
+echo "=== 22 exit $? ==="
+echo "=== NIGHT COMPLETE v2 ==="
