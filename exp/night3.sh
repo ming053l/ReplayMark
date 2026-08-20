@@ -5,3 +5,5 @@ while nvidia-smi --query-compute-apps=pid --format=csv,noheader | grep -q .; do 
 $P exp/25_combo.py > logs/25_combo.log 2>&1; echo "=== 25 exit $? ==="
 $P exp/22_tpr_boost.py > logs/22_boost.log 2>&1; echo "=== 22b exit $? ==="
 echo "=== NIGHT3 DONE ==="
+$P exp/gate25.py > logs/gate25.log 2>&1; echo "=== gate exit $? ==="
+echo "=== NIGHT3 v2 DONE ==="
