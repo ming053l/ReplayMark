@@ -21,3 +21,6 @@ echo "=== 17b exit $? ==="
 /home/ming0531/miniconda3/envs/mmada/bin/python exp/18_detector_ablation.py > logs/18_ablation.log 2>&1
 echo "=== 18b exit $? ==="
 echo "=== CHAIN FULLY DONE ==="
+/home/ming0531/miniconda3/envs/mmada/bin/python exp/21_R_matched.py > logs/21_R.log 2>&1
+echo "=== 21 exit $? ==="
+echo "=== NIGHT COMPLETE ==="
