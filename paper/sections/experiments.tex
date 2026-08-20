@@ -28,12 +28,16 @@ the same $\Delta$NLL --- is what exposed it. The mechanism says this is not luck
 one-sided position the emitted token is the natural sample whichever way the coin lands, so
 only genuinely two-sided carriers pay, each less than one bit.
 
-\paragraph{Retries buy detection with arithmetic, not compute.} On held-out prompts
-($n{=}30$, $512$ tokens), the presence rate climbs $0.617 \to 0.674$ from $R{=}2$ to
-$R{=}4$ and $\mathrm{TPR}@1\%$ climbs $0.73 \to 0.83$ --- level with locally reproduced
-dgMARK $3$-beam ($0.86$ at $1.23\times$ perplexity) --- while a retry redraws from an
-unchanged conditional row and therefore costs no forward pass
-(Figure~\ref{fig:rcurve}). Length is the other free axis: at $R{=}1$, doubling the document
+\paragraph{Retries buy detection with arithmetic, not compute --- but they do spend the
+quality budget.} On held-out prompts ($n{=}30$, $512$ tokens), $\mathrm{TPR}@1\%$ climbs
+$0.73 \to 0.83 \to 0.87$ across $R{=}2/4/8$ while a retry costs no forward pass
+(Figure~\ref{fig:rcurve}); the paired quality on the same run is $1.14\times$,
+$1.40\times$ and $1.61\times$. The compute is free; the $-\log q$ budget at two-sided
+carriers is not, and more retries extract more of it. The operating points that survive
+comparison are therefore the low-$R$ ones: at $R{=}4$ the detection is level with locally
+reproduced dgMARK $3$-beam ($0.86$) but at higher quality cost ($1.40\times$ against
+$1.23\times$), so dgMARK dominates that point, whereas nothing in the table reaches the
+$R{\leq}2$ region's quality at any detection strength. Length is the other free axis: at $R{=}1$, doubling the document
 from $256$ to $512$ tokens lifts $1\%$-TPR from $0.25$ to $0.40$ purely by growing the
 presence count, the same length--power trade dgMARK reports.
 
