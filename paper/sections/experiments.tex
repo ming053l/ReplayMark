@@ -3,17 +3,13 @@
 
 \input{tables/baseline_table}
 
-All numbers are measured on one NVIDIA TITAN RTX with \texttt{GSAI-ML/LLaDA-8B-Instruct}
-in fp16. Prompts are C4 \texttt{realnewslike} documents truncated to $300$ characters ---
-dgMARK's published protocol --- and every method uses the same construction, checkpoint and
-$256$--$512$ generated tokens with $\text{steps} = \text{gen\_length}$. Quality is
-GPT-2-large perplexity against a non-watermarked control \emph{under the same decoding
-regime}, because the three methods require different regimes and one shared baseline would
-charge a regime's cost to whichever watermark used it; for ReTrace the control is the same
-generator with steering disabled, so the pairing isolates the watermark and nothing else.
-Detectability is the true positive rate at a fixed false positive rate, never a raw $z$.
-Development prompts are never reused: confirmatory runs draw from disjoint offsets of the
-corpus with per-document keys $K_d = \mathrm{HMAC}(K, \mathrm{nonce}_d)$.
+One TITAN RTX, \texttt{GSAI-ML/LLaDA-8B-Instruct} in fp16; C4 \texttt{realnewslike}
+prompts truncated to $300$ characters (dgMARK's protocol); $256$--$512$ tokens at
+$\text{steps}=\text{gen\_length}$. Quality is GPT-2-large perplexity against a control
+\emph{under the same decoding regime} --- for ReTrace, the same generator with steering
+disabled, so the pairing isolates the watermark. Detectability is TPR at fixed FPR, never
+raw $z$; development prompts are never reused, and confirmatory runs draw disjoint corpus
+offsets with per-document keys $K_d = \mathrm{HMAC}(K, \mathrm{nonce}_d)$.
 
 \subsection{Main Results and Analysis}
 \label{sec:analysis}

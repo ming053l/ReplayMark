@@ -40,44 +40,19 @@ draft perplexity from $22.2$ to $9.5$ also shrinking the admissible set by
 $34\text{--}60\,\%$. \important{Better diffusion-model generation reduces post-hoc
 watermarkability}, and it rules out an entire family of designs.
 
-What survives is to stop changing \emph{which} token is produced and change only
-\emph{when} a model-preferred token is committed. Decoding a block, the model proposes what
-it would have proposed anyway; a position whose proposal already answers the keyed
-challenge is committed first, and one that does not is deferred. No token is ever
-overridden, which is why this costs almost nothing --- the same reason decoding-order
-watermarks are cheap~\citep{hong2026dgmark}. The difference is what the verifier reads:
-order is only the \emph{embedding} channel here, while the evidence recovered at
-verification time is the model's response to a keyed reconstruction.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_retrace_pipeline.pdf}
-\caption{\textbf{Prior verifiers read token identities; ReTrace's verifier runs the
-model.} \textbf{(a)} The finished text is corrupted twice under the key and re-denoised;
-the contrast between the reconstructions of each observed token is the evidence.
-\textbf{(b)} Embedding never leaves the model's conditional: draw, check the keyed
-response, redraw at most $R$ times at no forward-pass cost, emit a fresh draw on
-exhaustion.}
-\label{fig:pipeline}
-\end{figure}
-
-\important{ReTrace places the watermark in the decoding order and reads it back from the
+What survives is to never leave the model's own conditional. At a keyed carrier the token
+is drawn from $p_\theta$ and simply \emph{redrawn} --- at most $R$ times, at no
+forward-pass cost, the conditional row being unchanged --- until its reconstruction
+response agrees with the key; if no draw agrees, one unconditional draw is emitted as-is.
+Positions whose plausible tokens all answer one way fall through to the natural sample
+either way, so the watermark is paid for only at genuinely ambivalent positions.
+\important{ReTrace places the watermark in resampled tokens and reads it back from the
 model's reconstruction response} (Figure~\ref{fig:pipeline}).
 
-\paragraph{Contributions.}
-\begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt]
-\item A watermark read from the model's response rather than from token patterns: the response of a
-finished text to keyed re-denoising, readable from the text, the model and the key alone,
-with no access to the generation trajectory (\S\ref{sec:method}).
-\item A test statistic that is a sum of bounded indicators with one keyed orientation bit
-per position, giving a finite-sample exact $\mathrm{Binomial}(n,\tfrac12)$ null under the
-ideal-PRF randomization model, with presence, claimed-message verification and payload
-decoding kept separate (\S\ref{sec:theory}). False-positive control is verified per key and
-at the worst key, not averaged over keys.
-\item An embedding rule that never leaves the model's conditional: keyed
-rejection-resampling with a capped retry budget, measured quality-free against a
-matched-scheduler control on two independent prompt sets (\S\ref{sec:embedding}).
-\item A negative result with a mechanism: post-hoc substitution is priced out on modern
-diffusion language models, and improving generation quality makes it worse
+In sum: a watermark read from the model's response rather than its tokens, verifiable
+from text, model and key alone (\S\ref{sec:method}); a counting statistic with a
+finite-sample exact binomial null under the ideal-PRF model, false-positive control
+verified at the \emph{worst} of twenty keys (\S\ref{sec:theory}); an embedding that never
+leaves the model's conditional (\S\ref{sec:embedding}); and a mechanism-level negative
+result --- substitution is priced out, and better generation makes it worse
 (\S\ref{sec:v1}).
-\end{itemize}

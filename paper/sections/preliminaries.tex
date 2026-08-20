@@ -1,18 +1,15 @@
 \section{Background and Problem Setup}
 \label{sec:prelim}
 
-\paragraph{DLM generation.} A diffusion language model generates a sequence by learning to
-reverse a corruption process that independently masks each token, and at inference fills a
-masked region over $T$ steps, each step committing the positions it is most confident about
-and re-masking the rest. Practical systems decode \emph{semi-autoregressively}: the
-generation region is split into contiguous blocks filled left to right, diffusion running
-only within the active block~\citep{arriola2025blockdiffusion,nie2025llada}. Two
-consequences matter here. The model is trained to predict masked tokens from
-\emph{arbitrary} surviving context, so it can be applied to a finished text and not only
-used to produce one; and within a block, the token eventually emitted at a position is a
-sample from the model's conditional at some intermediate state --- a distribution the
-verifier can later reconstruct exactly, because everything that state conditions on is
-either the finished prefix or masked.
+\paragraph{DLM generation.} A diffusion language model reverses a masking corruption:
+inference fills a masked region over $T$ steps, committing the most confident positions
+each step, and practical systems decode semi-autoregressively --- contiguous blocks left
+to right, diffusion within the active
+block~\citep{arriola2025blockdiffusion,nie2025llada}. Two consequences matter. The model
+predicts masked tokens from \emph{arbitrary} surviving context, so it can be applied to a
+finished text and not only used to produce one; and each emitted token is a sample from a
+conditional the verifier can reconstruct exactly, since that conditional sees only the
+finished prefix and masks.
 
 \paragraph{Watermarking problem.} An embedder holding a secret key $K$ produces text whose
 provenance a verifier holding the same key can later establish from the text alone, against

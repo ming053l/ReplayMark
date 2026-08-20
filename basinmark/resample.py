@@ -48,7 +48,7 @@ from .challenges import orientation_bits, tie_bits, score, block_challenges, rol
 class ResampleMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=8, ctx_frac=0.20,
                  n_payload_bits=7, sync_frac=0.5, challenge="contrast", s_min=0.5,
-                 retries=4, temperature=0.8, fallback="fresh", max_carriers=None,
+                 retries=4, temperature=0.8, fallback="fresh", max_carriers=None, p_floor=0.0,
                  nonce=None):
         self.M = model
         self.key = key if nonce is None else hmac.new(
@@ -67,6 +67,12 @@ class ResampleMark:
         # forward pass. "last" keeps the old behaviour for the ablation.
         self.fallback = fallback
         self.max_carriers = max_carriers   # per block; None = every S > s_min position
+        # Acceptance may additionally require p(v) >= p_floor * max_v p(v): a key-free,
+        # embedder-only cap on the per-token NLL cost (at most -log p_floor beyond the
+        # model's own argmax). The detector needs no knowledge of it -- it reads only the
+        # emitted token -- so the null and the carrier rule are untouched. This lets R
+        # grow without the quality budget growing with it.
+        self.p_floor = p_floor
 
     # ------------------------------------------------------------------ table
     @torch.no_grad()
@@ -238,10 +244,12 @@ class ResampleMark:
                         # draw is never examined; the single unconditional fallback below
                         # is what R+1 in the hit probability refers to.
                         hit = False
+                        pmax = float(row.max())
                         for r in range(self.retries):
                             gv = float(gi[tok])
                             self.stats["draw_tot"] += 1
-                            if gv != 0.0 and tgt * gv > 0:
+                            if (gv != 0.0 and tgt * gv > 0
+                                    and float(row[tok]) >= self.p_floor * pmax):
                                 self.stats["draw_hits"] += 1
                                 hit = True
                                 break
