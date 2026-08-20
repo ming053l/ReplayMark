@@ -124,74 +124,63 @@ def lane_header(d, x, y, *, tag, title, subtitle, color, fill, stroke):
 def main():
     d = Drawing(W, H)
     d.add(Rect(0, 0, W, H, fillColor=white, strokeColor=None))
+    LX = 24
+    YA, YB, YV = 268, 188, 84
 
-    LX = 24                     # lane header column
-    S1, S2, S3 = 172, 366, 560  # step columns
-    YA, YB, YV = 250, 176, 72   # lane centres and the verification strip
+    label(d, LX, 304, "Two kinds of position, one rule: draw from the model until the "
+                      "keyed response accepts, at most R times.", size=10, color=MUTED)
 
-    label(d, LX, 302, "One block of the reference decoding schedule; both lanes see the "
-                      "same model proposals.", size=10, color=MUTED)
+    def draw_seq(x, y, seq, note, note_color):
+        cx = x
+        for txt, kind in seq:
+            fill, stroke, col = {
+                "rej": (DEFER_FILL, DEFER_LINE, DEFER),
+                "acc": (BASIN_FILL, BASIN, BASIN_DARK),
+                "nat": (NEUTRAL_FILL, NEUTRAL_LINE, INK)}[kind]
+            rounded_card(d, cx, y - 9, 58, 20, fill=fill, stroke=stroke, radius=4,
+                         width=1.0)
+            label(d, cx + 29, y - 2, txt, size=8.5, color=col, anchor="middle")
+            if kind == "rej":
+                cross(d, cx + 52, y + 8, color=DEFER, width=1.2)
+            if kind == "acc":
+                check(d, cx + 50, y + 7, color=BASIN, width=1.3)
+            cx += 66
+            if (txt, kind) != seq[-1]:
+                arrow(d, cx - 8, y, cx - 2, y, color=MUTED, width=1.0, head=4)
+        label(d, cx + 6, y - 2, note, size=9, color=note_color)
 
-    for x, t in ((S1, "step t"), (S2, "step t+1"), (S3, "step t+2")):
-        label(d, x + 2.5 * (CW + GAP), 286, t, size=9, color=MUTED,
-              font="SaberTimes-Italic", anchor="middle")
+    lane_header(d, LX, YA, tag="two-sided", title="Steerable carrier",
+                subtitle="S > 0.5: both response signs plausible", color=BASIN,
+                fill=BASIN_SOFT, stroke=BASIN_LINE)
+    draw_seq(150, YA, [("draw 1", "rej"), ("draw 2", "rej"), ("draw 3", "acc")],
+             "accepted: still a sample from the model's own conditional", BASIN_DARK)
+    label(d, 150, YA - 26, "counted by the detector; the only positions that can pay "
+                           "quality, less than one bit each", size=8.5, color=MUTED)
 
-    # ------------------------------------------------------------------ lane A
-    lane_header(d, LX, YA, tag="reference", title="Reference decoding",
-                subtitle="commits by confidence", color=PRIOR, fill=PRIOR_FILL,
-                stroke=PRIOR_LINE)
+    lane_header(d, LX, YB, tag="one-sided", title="Key-opposed position",
+                subtitle="target side holds ~no mass", color=DEFER, fill=DEFER_FILL,
+                stroke=DEFER_LINE)
+    draw_seq(150, YB, [("draw 1", "rej"), ("...", "rej"), ("draw R", "rej"),
+                       ("fresh", "nat")],
+             "exhausted: one unconditional draw, the natural sample", MUT if False else MUTED)
+    label(d, 150, YB - 26, "zero quality cost by construction; excluded by the "
+                           "detector's gate", size=8.5, color=MUTED)
 
-    a1 = [("the", "committed"), ("model", "committed"), ("fills", "proposal"),
-          ("in", "proposal"), ("any", "proposal"), ("order", "proposal")]
-    a2 = [("the", "committed"), ("model", "committed"), ("fills", "committed"),
-          ("in", "proposal"), ("any", "proposal"), ("order", "proposal")]
-    a3 = [("the", "committed"), ("model", "committed"), ("fills", "committed"),
-          ("in", "committed"), ("any", "proposal"), ("order", "proposal")]
-    for x, st, hit in ((S1, a1, 2), (S2, a2, 3), (S3, a3, 4)):
-        cells(d, x, YA - 9, st)
-        badge(d, x + hit * (CW + GAP) + CW / 2, YA + 20, color=PRIOR, fill=white)
+    d.add(Line(LX, 140, W - LX, 140, strokeColor=HAIRLINE, strokeWidth=1))
 
-    # ------------------------------------------------------------------ lane B
-    lane_header(d, LX, YB, tag="ReTrace", title="Order-steered", color=BASIN,
-                subtitle="commits what answers the key", fill=BASIN_SOFT, stroke=BASIN_LINE)
-
-    b1 = [("the", "committed"), ("model", "committed"), ("fills", "defer"),
-          ("in", "proposal"), ("any", "wm"), ("order", "proposal")]
-    b2 = [("the", "committed"), ("model", "committed"), ("fills", "wm"),
-          ("in", "proposal"), ("any", "committed"), ("order", "proposal")]
-    b3 = [("the", "committed"), ("model", "committed"), ("fills", "committed"),
-          ("in", "proposal"), ("any", "committed"), ("order", "wm")]
-    for x, st, hit, mark in ((S1, b1, 4, "check"), (S2, b2, 2, "check"),
-                             (S3, b3, 5, "check")):
-        cells(d, x, YB - 9, st)
-        badge(d, x + hit * (CW + GAP) + CW / 2, YB + 20, color=BASIN, fill=white,
-              mark=mark)
-    badge(d, S1 + 2 * (CW + GAP) + CW / 2, YB + 20, color=DEFER, fill=white, mark="cross")
-
-    label(d, S1, YB - 26, "incompatible: deferred, token not replaced",
-          size=8.5, color=DEFER)
-    label(d, S2, YB - 26, "re-proposed with more of the block resolved",
-          size=8.5, color=MUTED)
-    label(d, S3, YB - 26, "compatible: committed now", size=8.5, color=BASIN_DARK)
-
-    d.add(Line(LX, 132, W - LX, 132, strokeColor=HAIRLINE, strokeWidth=1))
-
-    # ------------------------------------------------------- verification strip
-    label(d, LX, 114, "Verification", size=11, color=BASIN, font="SaberTimes-Bold")
-    label(d, 116, 114, "from the finished text alone, with no access to the trajectory",
-          size=9, color=MUTED)
+    label(d, LX, 120, "Verification", size=11, color=BASIN, font="SaberTimes-Bold")
+    label(d, 116, 120, "from the finished text alone, with no access to the trajectory "
+                       "or the draw sequence", size=9, color=MUTED)
 
     fin = [("the", "committed"), ("model", "committed"), ("fills", "committed"),
            ("in", "committed"), ("any", "committed"), ("order", "committed")]
     end = cells(d, LX, YV - 9, fin)
     label(d, LX, YV - 26, "finished text", size=9, color=MUTED)
-
     arrow(d, end + 8, YV, end + 34, YV, color=BASIN)
     msk = [("[M]", "mask"), ("model", "committed"), ("[M]", "mask"),
            ("in", "committed"), ("[M]", "mask"), ("order", "committed")]
     end2 = cells(d, end + 40, YV - 9, msk)
     label(d, end + 40, YV - 26, "re-masked under the key", size=9, color=BASIN_DARK)
-
     arrow(d, end2 + 8, YV, end2 + 34, YV, color=BASIN)
     ix = end2 + 40
     for k, m in enumerate((1, None, 0, None, 1, None)):
@@ -199,15 +188,14 @@ def main():
         if m is None:
             rounded_card(d, cx, YV - 9, CW, CH, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE,
                          radius=3, width=0.9)
-            label(d, cx + CW / 2, YV - 3.5, "—", size=8, color=MUTED, anchor="middle")
+            label(d, cx + CW / 2, YV - 3.5, "\u2014", size=8, color=MUTED,
+                  anchor="middle")
         else:
             rounded_card(d, cx, YV - 9, CW, CH, fill=BASIN_FILL if m else DEFER_FILL,
                          stroke=BASIN if m else DEFER_LINE, radius=3, width=0.9)
             label(d, cx + CW / 2, YV - 3.5, str(m), size=9,
                   color=BASIN_DARK if m else DEFER, anchor="middle")
-    label(d, ix, YV - 26, "indicators m", size=9, color=MUTED)
-    label(d, ix + 58, YV - 26, "i", size=7, color=MUTED, font="SaberTimes-Italic")
-
+    label(d, ix, YV - 26, "gated indicators", size=9, color=MUTED)
     arrow(d, ix + 6 * (CW + GAP) + 4, YV, ix + 6 * (CW + GAP) + 30, YV, color=BASIN)
     rounded_card(d, ix + 6 * (CW + GAP) + 36, YV - 15, 104, 30, fill=BASIN_FILL,
                  stroke=BASIN)

@@ -207,58 +207,54 @@ def main():
 
     # ------------------------------------------------------------- panel (b)
     panel_title(d, M, 128, "(b)", "How the watermark is placed")
-    label(d, 250, 128, "the model proposes; the key only chooses what commits now",
+    label(d, 250, 128, "every emitted token is drawn from the model's own conditional",
           size=10, color=MUTED)
 
-    label(d, M, YC + 32, "block being decoded", size=9, color=MUTED)
-    cells = [("The", NEUTRAL_FILL, NEUTRAL_LINE, INK),
-             ("model", NEUTRAL_FILL, NEUTRAL_LINE, INK),
-             ("[M]", MASK_FILL, NEUTRAL_LINE, MUTED),
-             ("[M]", MASK_FILL, NEUTRAL_LINE, MUTED),
-             ("[M]", MASK_FILL, NEUTRAL_LINE, MUTED)]
-    end = token_row(d, M, YC - 8, cells)
+    rounded_card(d, M, YC - 16, 118, 32, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
+    label(d, M + 59, YC + 5, "model conditional", size=10, color=INK, anchor="middle")
+    formula(d, M + 59, YC - 9,
+            [("p", "SaberTimes-Italic", 11, 0, MUTED),
+             ("\u03b8", "SaberTimes-Italic", 7, -3, MUTED),
+             ("( \u00b7 | x )  unchanged", "SaberTimes", 9, 0, MUTED)], anchor="middle")
 
-    arrow(d, end + 6, YC, 196, YC, color=MUTED)
-    rounded_card(d, 200, YC - 16, 106, 32, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
-    label(d, 253, YC + 5, "model proposal", size=10, color=INK, anchor="middle")
-    formula(d, 253, YC - 9,
-            [("x", "SaberTimes-Italic", 11, 0, MUTED),
-             ("i", "SaberTimes-Italic", 7, -3, MUTED),
-             ("  unchanged", "SaberTimes", 9, 0, MUTED)], anchor="middle")
-    label(d, 253, YC - 28, "no token is ever substituted", size=9, color=BASIN_DARK,
-          font="SaberTimes-Italic", anchor="middle")
+    arrow(d, M + 122, YC, M + 148, YC, color=MUTED)
+    rounded_card(d, M + 152, YC - 16, 92, 32, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
+    label(d, M + 198, YC + 5, "draw token", size=10, color=INK, anchor="middle")
+    formula(d, M + 198, YC - 9,
+            [("v", "SaberTimes-Italic", 11, 0, MUTED),
+             (" ~ p", "SaberTimes-Italic", 10, 0, MUTED),
+             ("\u03b8", "SaberTimes-Italic", 7, -3, MUTED)], anchor="middle")
 
-    arrow(d, 310, YC, 332, YC, color=MUTED)
-    rounded_card(d, 336, YC - 18, 156, 36, fill=BASIN_SOFT, stroke=BASIN_LINE)
-    formula(d, 414, YC + 3,
+    arrow(d, M + 248, YC, M + 274, YC, color=MUTED)
+    rounded_card(d, M + 278, YC - 18, 152, 36, fill=BASIN_SOFT, stroke=BASIN_LINE)
+    formula(d, M + 354, YC + 3,
             [("w", "SaberTimes-Italic", 11, 0, BASIN_DARK),
              ("i", "SaberTimes-Italic", 7, -3, BASIN_DARK),
              (" \u03b5", "SaberTimes-Italic", 11, 0, BASIN_DARK),
              ("i", "SaberTimes-Italic", 7, -3, BASIN_DARK),
              (" g", "SaberTimes-Italic", 11, 0, BASIN_DARK),
              ("i", "SaberTimes-Italic", 7, -3, BASIN_DARK),
-             ("(x", "SaberTimes", 11, 0, INK),
-             ("i", "SaberTimes-Italic", 7, -3, INK),
-             (") > 0 ?", "SaberTimes", 11, 0, INK)], anchor="middle")
-    label(d, 414, YC - 12, "answered by the model's own token", size=8, color=MUTED,
+             ("(v) > 0 ?", "SaberTimes", 11, 0, INK)], anchor="middle")
+    label(d, M + 354, YC - 12, "keyed reconstruction response", size=8, color=MUTED,
           anchor="middle")
 
-    # the two outcomes sit at symmetric offsets from the decision card's centre line
-    arrow(d, 496, YC + 6, 516, YC + OUT, color=BASIN, width=1.3)
-    arrow(d, 496, YC - 6, 516, YC - OUT, color=DEFER, width=1.3)
-
-    rounded_card(d, 520, YC + OUT - 14, 118, 28, fill=BASIN_FILL, stroke=BASIN)
-    badge(d, 536, YC + OUT, color=BASIN, fill=white, mark="check")
-    label(d, 550, YC + OUT - 4, "commit now", size=11, color=BASIN_DARK)
-
-    rounded_card(d, 520, YC - OUT - 14, 118, 28, fill=DEFER_FILL, stroke=DEFER_LINE)
-    badge(d, 536, YC - OUT, color=DEFER, fill=white, mark="cross")
-    label(d, 550, YC - OUT - 4, "defer", size=11, color=DEFER)
-
-    label(d, 648, YC + OUT - 4, "keeps the key's", size=9, color=MUTED)
-    label(d, 648, YC + OUT - 15, "evidence", size=9, color=MUTED)
-    label(d, 648, YC - OUT - 4, "re-proposed", size=9, color=MUTED)
-    label(d, 648, YC - OUT - 15, "next step", size=9, color=MUTED)
+    # accept path
+    arrow(d, M + 434, YC + 6, M + 458, YC + OUT, color=BASIN, width=1.3)
+    rounded_card(d, M + 462, YC + OUT - 14, 96, 28, fill=BASIN_FILL, stroke=BASIN)
+    badge(d, M + 478, YC + OUT, color=BASIN, fill=white, mark="check")
+    label(d, M + 492, YC + OUT - 4, "emit", size=11, color=BASIN_DARK)
+    # reject path loops back to the draw box: a retry is free, the row is unchanged
+    arrow(d, M + 434, YC - 6, M + 458, YC - OUT, color=DEFER, width=1.3)
+    badge(d, M + 470, YC - OUT, color=DEFER, fill=white, mark="cross")
+    label(d, M + 482, YC - OUT - 4, "redraw, at most R times", size=10, color=DEFER)
+    d.add(Line(M + 470, YC - OUT - 10, M + 198, YC - OUT - 10, strokeColor=DEFER,
+               strokeWidth=1.1))
+    arrow(d, M + 198, YC - OUT - 10, M + 198, YC - 20, color=DEFER, width=1.1, head=5)
+    label(d, M + 334, YC - OUT - 20,
+          "a retry costs no forward pass: the conditional row is unchanged",
+          size=8.5, color=MUTED, anchor="middle")
+    label(d, M + 566, YC + OUT - 4,
+          "exhausted: one fresh draw, emitted as-is", size=9, color=MUTED)
 
     renderSVG.drawToFile(d, str(SVG_OUT))
     svg = SVG_OUT.read_text(encoding="utf-8")

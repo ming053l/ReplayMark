@@ -70,56 +70,47 @@
 			<path d="M 24,148 L 736,148 Z" style="stroke: rgb(84%,87%,90%); stroke-linecap: butt; stroke-width: 1;"/>
 			<text x="24" y="128" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(0%,35%,70%); stroke:none;" transform="translate(0,256) scale(1,-1)">(b)</text>
 			<text x="46" y="128" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,256) scale(1,-1)">How the watermark is placed</text>
-			<text x="250" y="128" style="font-family: 'Times New Roman'; font-size: 10px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,256) scale(1,-1)">the model proposes; the key only chooses what commits now</text>
-			<text x="24" y="106" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,212) scale(1,-1)">block being decoded</text>
-			<rect x="24" y="66" width="26" height="17" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="30.00390625" y="71" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,142) scale(1,-1)">The</text>
-			<rect x="53" y="66" width="26" height="17" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="54.752197265625" y="71" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,142) scale(1,-1)">model</text>
-			<rect x="82" y="66" width="26" height="17" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(91%,92%,94%); fill-rule: evenodd;"/>
-			<text x="88.001708984375" y="71" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,142) scale(1,-1)">[M]</text>
-			<rect x="111" y="66" width="26" height="17" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(91%,92%,94%); fill-rule: evenodd;"/>
-			<text x="117.001708984375" y="71" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,142) scale(1,-1)">[M]</text>
-			<rect x="140" y="66" width="26" height="17" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(91%,92%,94%); fill-rule: evenodd;"/>
-			<text x="146.001708984375" y="71" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,142) scale(1,-1)">[M]</text>
-			<path d="M 172,74 L 190,74 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1.4;"/>
-			<polygon points="196 74, 190 77.72, 190 70.28" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
-			<rect x="200" y="58" width="106" height="32" rx="7" ry="7" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="222.033203125" y="79" style="font-family: 'Times New Roman'; font-size: 10px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,158) scale(1,-1)">model proposal</text>
-			<text x="227.844482421875" y="65" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,130) scale(1,-1)">x</text>
-			<text x="232.726806640625" y="62" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,124) scale(1,-1)">i</text>
-			<text x="234.671630859375" y="65" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,130) scale(1,-1)">  unchanged</text>
-			<text x="204.009765625" y="46" style="font-family: 'Times New Roman'; font-style: italic; font-size: 9px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,92) scale(1,-1)">no token is ever substituted</text>
-			<path d="M 310,74 L 326,74 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1.4;"/>
-			<polygon points="332 74, 326 77.72, 326 70.28" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
-			<rect x="336" y="56" width="156" height="36" rx="7" ry="7" style="stroke: rgb(62%,76%,90%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,97%,99%); fill-rule: evenodd;"/>
-			<text x="379.943603515625" y="77" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,154) scale(1,-1)">w</text>
-			<text x="387.280517578125" y="74" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,148) scale(1,-1)">i</text>
-			<text x="389.225341796875" y="77" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,154) scale(1,-1)"> ε</text>
-			<text x="396.309814453125" y="74" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,148) scale(1,-1)">i</text>
-			<text x="398.254638671875" y="77" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,154) scale(1,-1)"> g</text>
-			<text x="406.504638671875" y="74" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,148) scale(1,-1)">i</text>
-			<text x="408.449462890625" y="77" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,154) scale(1,-1)">(x</text>
-			<text x="417.612548828125" y="74" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,148) scale(1,-1)">i</text>
-			<text x="419.557373046875" y="77" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,154) scale(1,-1)">) &gt; 0 ?</text>
-			<text x="356.958984375" y="62" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,124) scale(1,-1)">answered by the model's own token</text>
-			<path d="M 496,80 L 510,104 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.3;"/>
-			<polygon points="516 104, 510 107.72, 510 100.28" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<path d="M 496,68 L 510,44 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.3;"/>
-			<polygon points="516 44, 510 47.72, 510 40.28" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1; fill: rgb(69%,9%,16%); fill-rule: evenodd;"/>
-			<rect x="520" y="90" width="118" height="28" rx="7" ry="7" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(90%,94%,98%); fill-rule: evenodd;"/>
-			<circle cx="536" cy="104" r="8" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
-			<path d="M 532 104 L 535 101 L 541 108 " style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.5; fill: none; fill-rule: evenodd;"/>
-			<text x="550" y="100" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,200) scale(1,-1)">commit now</text>
-			<rect x="520" y="30" width="118" height="28" rx="7" ry="7" style="stroke: rgb(89%,65%,67%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(98%,91%,92%); fill-rule: evenodd;"/>
-			<circle cx="536" cy="44" r="8" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
-			<path d="M 532.5,40.5 L 539.5,47.5 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.5;"/>
-			<path d="M 532.5,47.5 L 539.5,40.5 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.5;"/>
-			<text x="550" y="40" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(69%,9%,16%); stroke:none;" transform="translate(0,80) scale(1,-1)">defer</text>
-			<text x="648" y="100" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,200) scale(1,-1)">keeps the key's</text>
-			<text x="648" y="89" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,178) scale(1,-1)">evidence</text>
-			<text x="648" y="40" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,80) scale(1,-1)">re-proposed</text>
-			<text x="648" y="29" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,58) scale(1,-1)">next step</text>
+			<text x="250" y="128" style="font-family: 'Times New Roman'; font-size: 10px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,256) scale(1,-1)">every emitted token is drawn from the model's own conditional</text>
+			<rect x="24" y="58" width="118" height="32" rx="7" ry="7" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
+			<text x="46.75732421875" y="79" style="font-family: 'Times New Roman'; font-size: 10px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,158) scale(1,-1)">model conditional</text>
+			<text x="44.64233398437499" y="65" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,130) scale(1,-1)">p</text>
+			<text x="50.14233398437499" y="62" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,124) scale(1,-1)">θ</text>
+			<text x="53.58081054687499" y="65" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,130) scale(1,-1)">( · | x )  unchanged</text>
+			<path d="M 146,74 L 166,74 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="172 74, 166 77.72, 166 70.28" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
+			<rect x="176" y="58" width="92" height="32" rx="7" ry="7" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
+			<text x="199.646484375" y="79" style="font-family: 'Times New Roman'; font-size: 10px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,158) scale(1,-1)">draw token</text>
+			<text x="210.134521484375" y="65" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,130) scale(1,-1)">v</text>
+			<text x="215.016845703125" y="65" style="font-family: 'Times New Roman'; font-style: italic; font-size: 10px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,130) scale(1,-1)"> ~ p</text>
+			<text x="230.427001953125" y="62" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,124) scale(1,-1)">θ</text>
+			<path d="M 272,74 L 292,74 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1.4;"/>
+			<polygon points="298 74, 292 77.72, 292 70.28" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
+			<rect x="302" y="56" width="152" height="36" rx="7" ry="7" style="stroke: rgb(62%,76%,90%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,97%,99%); fill-rule: evenodd;"/>
+			<text x="344.916015625" y="77" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,154) scale(1,-1)">w</text>
+			<text x="352.2529296875" y="74" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,148) scale(1,-1)">i</text>
+			<text x="354.19775390625" y="77" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,154) scale(1,-1)"> ε</text>
+			<text x="361.2822265625" y="74" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,148) scale(1,-1)">i</text>
+			<text x="363.22705078125" y="77" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,154) scale(1,-1)"> g</text>
+			<text x="371.47705078125" y="74" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,148) scale(1,-1)">i</text>
+			<text x="373.421875" y="77" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,154) scale(1,-1)">(v) &gt; 0 ?</text>
+			<text x="329.572265625" y="62" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,124) scale(1,-1)">keyed reconstruction response</text>
+			<path d="M 458,80 L 476,104 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<polygon points="482 104, 476 107.72, 476 100.28" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
+			<rect x="486" y="90" width="96" height="28" rx="7" ry="7" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(90%,94%,98%); fill-rule: evenodd;"/>
+			<circle cx="502" cy="104" r="8" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 498 104 L 501 101 L 507 108 " style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.5; fill: none; fill-rule: evenodd;"/>
+			<text x="516" y="100" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,200) scale(1,-1)">emit</text>
+			<path d="M 458,68 L 476,44 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.3;"/>
+			<polygon points="482 44, 476 47.72, 476 40.28" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1; fill: rgb(69%,9%,16%); fill-rule: evenodd;"/>
+			<circle cx="494" cy="44" r="8" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 490.5,40.5 L 497.5,47.5 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<path d="M 490.5,47.5 L 497.5,40.5 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.5;"/>
+			<text x="506" y="40" style="font-family: 'Times New Roman'; font-size: 10px;fill: rgb(69%,9%,16%); stroke:none;" transform="translate(0,80) scale(1,-1)">redraw, at most R times</text>
+			<path d="M 494,34 L 222,34 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<path d="M 222,34 L 217,54 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.1;"/>
+			<polygon points="222 54, 217 57.1, 217 50.9" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1; fill: rgb(69%,9%,16%); fill-rule: evenodd;"/>
+			<text x="250.5982666015625" y="24" style="font-family: 'Times New Roman'; font-size: 8.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,48) scale(1,-1)">a retry costs no forward pass: the conditional row is unchanged</text>
+			<text x="584" y="100" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,200) scale(1,-1)">exhausted: one fresh draw, emitted as-is</text>
 		</g>
 	</g>
 </svg>

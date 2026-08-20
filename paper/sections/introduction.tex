@@ -85,8 +85,9 @@ per position, giving a finite-sample exact $\mathrm{Binomial}(n,\tfrac12)$ null 
 ideal-PRF randomization model, with presence, claimed-message verification and payload
 decoding kept separate (\S\ref{sec:theory}). False-positive control is verified per key and
 at the worst key, not averaged over keys.
-\item An embedding rule that never substitutes a token, steering only the commit order
-inside each block of the reference decoding schedule (\S\ref{sec:embedding}).
+\item An embedding rule that never leaves the model's conditional: keyed
+rejection-resampling with a capped retry budget, measured quality-free against a
+matched-scheduler control on two independent prompt sets (\S\ref{sec:embedding}).
 \item A negative result with a mechanism: post-hoc substitution is priced out on modern
 diffusion language models, and improving generation quality makes it worse
 (\S\ref{sec:v1}).
