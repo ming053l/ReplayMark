@@ -71,13 +71,13 @@ one, and ReTrace makes that the verification channel: corrupt the text under a s
 re-denoise, and read whether the model's reconstruction response agrees with a keyed
 orientation. Embedding never leaves the model's own conditional --- a keyed
 rejection-resampling with a capped retry budget --- and against a matched control it is
-quality-neutral at the low end ($0.93\times$--$0.98\times$ at $R{\leq}2$ across
-independent prompt sets, one set measuring $1.14\times$) and traces a tunable curve above
-it: $\mathrm{TPR}@1\%$ of $0.73/0.83/0.87$ at $1.14\times/1.40\times/1.61\times$ for
-$R{=}2/4/8$ on held-out $512$-token documents. The frontier position is honest rather than
-dominant --- locally reproduced dgMARK ($0.86$ at $1.23\times$) dominates the $R{\geq}4$
-points, while nothing in the comparison reaches the $R{\leq}2$ region's quality. The null
-is exact
+quality-neutral at the low end ($0.93\times$--$1.14\times$ at $R{\leq}2$) and, with a
+key-free plausibility floor on acceptance, holds sub-control perplexity at high retry
+budgets: $\mathrm{TPR}@1\% = 0.70$ at $0.87\times$ with repetition at parity
+($R{=}8$, $\kappa{=}0.1$, held-out). The frontier position is honest rather than dominant
+--- locally reproduced dgMARK ($0.86$ at $1.23\times$) still leads on detection, unfloored
+$R{\geq}4$ points are dominated, and nothing in the comparison reaches this quality
+region at any detection strength. The null is exact
 per document under the ideal-PRF model, and false positive control holds empirically at
 the worst of twenty keys.
 

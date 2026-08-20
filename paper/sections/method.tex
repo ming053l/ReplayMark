@@ -104,8 +104,12 @@ v^{(1)}, v^{(2)}, \ldots \sim p_\theta(\cdot \mid x), \qquad
 \label{eq:rule}
 \end{equation}
 and if all $R$ guided draws are rejected, one further unconditional draw is emitted as-is.
-A retry costs no forward pass --- the conditional row is unchanged --- so $R$ trades
-detection strength against arithmetic alone. Writing $A_i$ for the acceptance set and
+Acceptance may additionally require a \emph{plausibility floor} $p_i(v) \geq \kappa\,
+p_i^{\max}$, which caps any carrier's cost at $-\log\kappa$ beyond the model's own argmax;
+the floor is embedder-only and key-free --- the detector reads nothing but the emitted
+token --- so the null and the carrier rule are untouched. A retry costs no forward pass
+--- the conditional row is unchanged --- so $R$ trades detection strength against
+arithmetic alone, and the floor keeps that trade from spending the quality budget. Writing $A_i$ for the acceptance set and
 $q_i$ for its mass, the per-position hit probability and emitted distribution are
 \begin{equation}
 q_i = \Pr_{v \sim p_i}\!\left[\,w_i\,\epsilon_i\,g_i(v) > 0\,\right], \qquad

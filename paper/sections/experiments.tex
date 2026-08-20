@@ -47,6 +47,17 @@ $R{\leq}2$ region's quality at any detection strength. Length is the other free 
 from $256$ to $512$ tokens lifts $1\%$-TPR from $0.25$ to $0.40$ purely by growing the
 presence count, the same length--power trade dgMARK reports.
 
+\paragraph{A plausibility floor decouples $R$ from the quality budget.} Requiring
+$p(v) \geq \kappa\,p_{\max}$ at acceptance caps each carrier's cost at $-\log\kappa$, and
+at $\kappa{=}0.1$ it converts the $R{=}8$ point from $1.61\times$ to $\mathbf{0.87\times}$
+while keeping $\mathrm{TPR}@1\% = 0.70$ (rate $0.620$ against an unfloored $0.711$;
+control null clean at $0.501$). Repetition sits at parity with the control
+($0.33$ against $0.36$ on decoded text under the shared validity rule; an earlier
+raw-token measurement that suggested otherwise was counting EOS padding as repetition).
+Sub-$1.0$ ratios deserve suspicion rather than celebration --- the floor tilts toward
+higher-probability tokens, which perplexity rewards --- which is why repetition is
+reported next to the ratio rather than instead of it.
+
 \paragraph{The simplest detector is the right one.} On identical held-out caches the gated
 count, the gated likelihood ratio and an all-position likelihood ratio are
 indistinguishable ($0.38$ at $1\%$ each at $R{=}1$), ungated counting is strictly worse

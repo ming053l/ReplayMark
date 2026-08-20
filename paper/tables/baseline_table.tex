@@ -57,6 +57,13 @@ No watermark & matched scheduler & 11.38 & 1.00$\times$ & 0.00 & 0.00 & 0.00 & -
 \textcolor{oursemph}{ReTrace V3} & $R=2$ & -- & 1.14$\times$ & 0.83 & 0.73 & 0.63 & -- & 144 \\
 \textcolor{oursemph}{ReTrace V3} & $R=4$ & -- & \textcolor{failred}{1.40$\times$} & 0.90 & 0.83 & 0.77 & -- & 144 \\
 \textcolor{oursemph}{ReTrace V3} & $R=8$ & -- & \textcolor{failred}{1.61$\times$} & 0.87 & \textbf{0.87} & \textbf{0.80} & -- & 144 \\
+\midrule
+\multicolumn{9}{l}{\textit{ReTrace V3 with the plausibility floor $p(v)\geq\kappa\,p_{\max}$ (skip $700$, $n{=}30$, 512 tok)}} \\
+\midrule
+No watermark & matched scheduler & 7.25 & 1.00$\times$ & 0.03 & 0.00 & 0.00 & -- & -- \\
+\textcolor{oursemph}{ReTrace V3} & $R{=}8$, $\kappa{=}0.3$ & -- & \textbf{0.70}$\times$ & 0.60 & 0.50 & 0.27 & -- & 144 \\
+\rowcolor{finalres}
+\textcolor{oursemph}{ReTrace V3} & $R{=}8$, $\kappa{=}0.1$ & 5.67 & \textbf{0.87}$\times$ & 0.80 & 0.70 & 0.60 & -- & 144 \\
 \bottomrule
 \end{tabular}%
 }
