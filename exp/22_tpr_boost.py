@@ -71,9 +71,9 @@ GCLIP = float(np.quantile(np.abs(np.array(
 def variants(cache, key, pl, R):
     span = np.arange(pl, pl + HO["GEN"])
     eps = orientation_bits(key, span); tie = tie_bits(key, span)
-    pos = np.array(cache["pos"]); alt = cache["alt"]
+    pos = np.array(cache["pos"]); alt = cache.get("alt")   # pre-enrichment caches lack it
     qp = np.array(cache["qp"]); qm = np.array(cache["qm"]); gy = np.array(cache["gy"])
-    S = np.array(cache["S"])
+    S = np.array(cache["S"]) if "S" in cache else 2 * np.minimum(qp, qm)
     e = np.array([eps[int(t)] for t in pos], float)
     tb = np.array([tie[int(t)] for t in pos], int)
     m_of = lambda sign, g: np.where(g == 0.0, tb, (sign * g > 0).astype(int))
@@ -100,8 +100,8 @@ def variants(cache, key, pl, R):
         pm = np.where(m_of(sign, gy) == 1, p1, 1 - p1)
         return np.log(np.where(gy == 0.0, 0.5, pm) / 0.5)
     out["V3 LLR calib"] = sc(f3)
-    # V4 multi-pair calibrated LLR
-    A = [[(t[1], t[2], t[3]) for t in a] for a in alt]
+    # V4 multi-pair calibrated LLR (only when the cache carries the extra pairs)
+    A = [[(t[1], t[2], t[3]) for t in a] for a in alt] if alt else None
     def f4(sign):
         tot = np.zeros(len(pos))
         for j in range(3):
@@ -112,7 +112,8 @@ def variants(cache, key, pl, R):
             pm = np.where(m_of(sign, gj) == 1, p1, 1 - p1)
             tot += np.log(np.where(gj == 0.0, 0.5, pm) / 0.5)
         return tot
-    out["V4 LLR 3-pair"] = sc(f4)
+    if A is not None:
+        out["V4 LLR 3-pair"] = sc(f4)
     # V5 weighted indicator (gated)
     wgt = np.minimum(np.abs(gy), GCLIP) * keep
     def f5(sign):
