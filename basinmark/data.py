@@ -11,7 +11,7 @@ import torch
 C4 = "/ssd1/ming/basinmark/data/c4-validation.json.gz"
 
 
-def c4_prompts(tok, n, max_chars=300, min_tokens=20, skip=0):
+def c4_prompts(tok, n, max_chars=300, min_tokens=20, skip=0, src_min=0):
     out = []
     with gzip.open(C4, "rt") as f:
         for line in f:
@@ -23,6 +23,12 @@ def c4_prompts(tok, n, max_chars=300, min_tokens=20, skip=0):
                 cur = w if not cur else cur + " " + w
             ids = tok(cur)["input_ids"]
             if len(ids) < min_tokens:
+                continue
+            # For long-form generation: a source document too short to support the target
+            # length yields a degenerate continuation in EVERY arm (measured: a prompt
+            # window where 12/16 documents collapsed). Key-independent, applied to all
+            # methods identically, in the spirit of dgMARK's min-length retention.
+            if src_min and len(tok(text)["input_ids"]) < src_min:
                 continue
             if skip > 0:
                 skip -= 1
