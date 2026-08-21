@@ -85,27 +85,45 @@ group separately.
 
 \begin{figure}[t]
 \centering
-\fbox{\begin{minipage}{0.965\linewidth}\small
-\textbf{Algorithm 1} \; ReTrace embedding (\textcolor{oursemph}{blue} $=$ the watermark;
-black $=$ the reference sampler, unchanged)\\[1pt]
+\fbox{\begin{minipage}[t]{0.44\linewidth}\footnotesize
+\textbf{Algorithm 1} \; LLaDA reference sampler\\[1pt]
 \hrule\vspace{3pt}
 \begin{tabbing}
-\hspace{1.4em}\=\hspace{1.4em}\=\hspace{1.4em}\=\kill
-\textbf{Input:} prompt, key $K$, retry budget $R$, floor $\kappa$;
+\hspace{1.2em}\=\hspace{1.2em}\=\hspace{1.2em}\=\kill
+\textbf{Input:} prompt \\
 \textbf{Output:} text $x$\\
 1:\>\textbf{for} each block $b$ in order \textbf{do}\\
-2:\>\>\textcolor{oursemph}{build the challenge table for $b$: masked forwards
-$\rightarrow g_i$, gate $S_i$, keyed signs $w_i\,\epsilon_i$ \hfill(\S\ref{sec:observable})}\\
-3:\>\>\textbf{while} $b$ has masked positions \textbf{do}\\
-4:\>\>\>pick the most confident masked position $i$; draw $v \sim p_\theta(\cdot \mid x)$\\
-5:\>\>\>\textcolor{oursemph}{\textbf{if} $S_i > s_{\min}$ \textbf{then} redraw $v$ (at most
-$R$ draws) until $w_i\,\epsilon_i\,g_i(v) > 0$ and $p_i(v) \geq \kappa\, p_i^{\max}$;}\\
-6:\>\>\>\textcolor{oursemph}{\phantom{\textbf{if} $S_i > s_{\min}$ }\textbf{if} all $R$
-rejected, draw once more unconditionally \hfill(Eq.~\ref{eq:rule})}\\
-7:\>\>\>commit $v$ at position $i$\\
-\textbf{Verify:} from $x$ alone, rebuild every table of line 2 under $K$ and count
-$\mathbf{1}[w_i\,\epsilon_i\,g_i(x_i) > 0]$ over gated positions $\rightarrow$
-$\mathrm{Binomial}(n,\tfrac12)$ test \hfill(Eq.~\ref{eq:m})
+2:\>\>\textcolor{gray}{---}\\
+3:\>\>\textbf{while} $b$ has masks \textbf{do}\\
+4:\>\>\>pick most confident masked $i$\\
+5:\>\>\>draw $v \sim p_\theta(\cdot \mid x)$\\
+6:\>\>\>\textcolor{gray}{---}\\
+7:\>\>\>commit $v$ at $i$\\
+\textcolor{gray}{(no verifier)}
+\end{tabbing}
+\end{minipage}}\hfill
+\fbox{\begin{minipage}[t]{0.525\linewidth}\footnotesize
+\textbf{Algorithm 2} \; ReTrace in LLaDA
+(\textcolor{oursemph}{blue} $=$ ours)\\[1pt]
+\hrule\vspace{3pt}
+\begin{tabbing}
+\hspace{1.2em}\=\hspace{1.2em}\=\hspace{1.2em}\=\kill
+\textbf{Input:} prompt, \textcolor{oursemph}{key $K$, budget $R$, floor $\kappa$}\\
+\textbf{Output:} text $x$\\
+1:\>\textbf{for} each block $b$ in order \textbf{do}\\
+2:\>\>\textcolor{oursemph}{challenge table for $b$: masked fwds}\\
+\>\>\textcolor{oursemph}{$\rightarrow g_i$, gate $S_i$, signs $w_i\epsilon_i$
+\hfill(\S\ref{sec:observable})}\\
+3:\>\>\textbf{while} $b$ has masks \textbf{do}\\
+4:\>\>\>pick most confident masked $i$\\
+5:\>\>\>draw $v \sim p_\theta(\cdot \mid x)$\\
+6:\>\>\>\textcolor{oursemph}{\textbf{if} $S_i > s_{\min}$: redraw ($\leq R$) until}\\
+\>\>\>\textcolor{oursemph}{$w_i\epsilon_i g_i(v)>0 \,\wedge\, p_i(v)\geq\kappa p_i^{\max}$;}\\
+\>\>\>\textcolor{oursemph}{on exhaustion one fresh draw \hfill(Eq.~\ref{eq:rule})}\\
+7:\>\>\>commit $v$ at $i$\\
+\textcolor{oursemph}{\textbf{Verify:} from $x$: rebuild line-2 tables under $K$,}\\
+\textcolor{oursemph}{count $\mathbf{1}[w_i\epsilon_i g_i(x_i)>0] \rightarrow
+\mathrm{Binom}(n,\tfrac12)$ \hfill(Eq.~\ref{eq:m})}
 \end{tabbing}
 \end{minipage}}
 \vspace{-2pt}
@@ -124,12 +142,11 @@ indicators against an exact binomial null, with no access to the trajectory.}
 
 Generation follows the reference schedule of the base model --- blocks in order, diffusion
 within a block --- and commits positions in plain confidence order
-(Figure~\ref{fig:mechanism}). Algorithm~1 shows the full embedder against
-the reference sampler it wraps: the black lines \emph{are} the reference sampler, and
-ReTrace is exactly the \textcolor{oursemph}{blue} ones --- no logit is edited, no
-commitment is reordered, and deleting the blue lines recovers the base model's decoder
-line for line. At a carrier position the committed token is chosen by
-rejection sampling from the model's own conditional:
+(Figure~\ref{fig:mechanism}). Algorithms~1 and~2 put the embedder beside the reference
+sampler it wraps, line for line: the two differ only in the \textcolor{oursemph}{blue}
+lines --- no logit is edited, no commitment is reordered, and deleting the blue lines
+recovers the base model's decoder exactly. At a carrier position the committed token is
+chosen by rejection sampling from the model's own conditional:
 \begin{equation}
 v^{(1)}, v^{(2)}, \ldots \sim p_\theta(\cdot \mid x), \qquad
 \text{emit the first } v^{(r)} \text{ with } w_i\,\epsilon_i\,g_i(v^{(r)}) > 0,\quad r \le R,

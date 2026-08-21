@@ -40,12 +40,20 @@ draft perplexity from $22.2$ to $9.5$ also shrinking the admissible set by
 $34\text{--}60\,\%$. \important{Better diffusion-model generation reduces post-hoc
 watermarkability}, and it rules out an entire family of designs.
 
-What survives is to never leave the model's own conditional. At a keyed carrier the token
-is drawn from $p_\theta$ and simply \emph{redrawn} --- at most $R$ times, at no
-forward-pass cost, the conditional row being unchanged --- until its reconstruction
-response agrees with the key; if no draw agrees, one unconditional draw is emitted as-is.
-Positions whose plausible tokens all answer one way fall through to the natural sample
-either way, so the watermark is paid for only at genuinely ambivalent positions.
+What survives is to never leave the model's own conditional. Decoding follows the base
+model's own schedule, and at a keyed \emph{carrier} --- a position whose challenge
+response is genuinely two-sided under the key --- the token is drawn from $p_\theta$ and
+simply \emph{redrawn}, at most $R$ times at no forward-pass cost, the conditional row
+being unchanged, until its reconstruction response agrees with the key; on exhaustion one
+unconditional draw is emitted as-is. Two guards keep the price bounded. A keyed gate
+admits only two-sided positions, so positions whose plausible tokens all answer one way
+fall through to the natural sample and cost nothing; and acceptance can further require a
+key-free \emph{plausibility floor} $p(v) \geq \kappa\, p_{\max}$, capping any carrier's
+cost at $-\log\kappa$ beyond the model's own argmax. With the floor in place, raising $R$
+buys detection with arithmetic rather than quality: measured perplexity sits \emph{at or
+below} the matched non-watermarked control ($0.74\times$--$0.87\times$) at
+$\mathrm{TPR}@1\%$ of $0.70$--$0.80$ on $512$-token documents, and the whole embedder
+costs $1.28\times$ a plain decode.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_retrace_pipeline.pdf}
@@ -65,6 +73,9 @@ In sum: a watermark read from the model's response rather than its tokens, verif
 from text, model and key alone (\S\ref{sec:method}); a counting statistic with a
 finite-sample exact binomial null under the ideal-PRF model, false-positive control
 verified at the \emph{worst} of twenty keys (\S\ref{sec:theory}); an embedding that never
-leaves the model's conditional (\S\ref{sec:embedding}); and a mechanism-level negative
-result --- substitution is priced out, and better generation makes it worse
-(\S\ref{sec:v1}).
+leaves the model's conditional and holds quality at or below its control
+(\S\ref{sec:embedding}); a mechanism-level negative result --- substitution is priced
+out, and better generation makes it worse (\S\ref{sec:v1}); and an evaluation that
+reports what each method pays, not only what it scores --- generation budget and
+detection cost per row, with the advantages \emph{and} the limitations of the design
+stated explicitly against them (\S\ref{sec:baselines}).
