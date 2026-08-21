@@ -24,7 +24,7 @@ reading different functions. Masking $B$ and everything after it makes the table
 at both times; masking $B$ itself additionally makes it \emph{invariant} to whatever is
 committed inside $B$, so a single table serves the block's entire decoding.
 
-\important{The ablations are drawn from the already-final region.} $D_\ell \subset$
+\important{The ablations lie in the already-final region.} $D_\ell \subset$
 prompt $\cup\, B_{<b}$, which the verifier has verbatim. We use a \emph{contrast} pair ---
 one pattern ablating the context nearest the block, the other the furthest --- because
 recency dominates next-token prediction, so the two arms disagree far more than two random
@@ -63,7 +63,7 @@ construction.
 The proposition needs no calibration corpus and no model-specific null estimate, and it is
 finite-sample rather than asymptotic. Three implementation details are load-bearing.
 
-\emph{Ties must be resolved, not dropped.} In single precision the emitted token's
+\emph{Ties must be resolved, not dropped.} In single precision the committed token's
 log-probability rounds to $0$ under both arms at a quarter of positions, and scoring the
 vanished difference as a miss dragged the unwatermarked match rate to $0.32$--$0.37$
 against $0.50$. Double precision inside the softmax removes the ties; a second keyed coin
@@ -80,6 +80,8 @@ tests provenance with no claimed message (and never tests a message decoded from
 data); claimed-message verification aligns each group to its bit; payload thresholds each
 group separately.
 
+\input{sections/v1_analysis}
+
 \subsection{Embedding by response-guided resampling}
 \label{sec:embedding}
 
@@ -95,8 +97,8 @@ group separately.
 1:\>\textbf{for} each block $b$ in order \textbf{do}\\
 2:\>\>\textcolor{gray}{---}\\
 3:\>\>\textbf{while} $b$ has masks \textbf{do}\\
-4:\>\>\>pick most confident masked $i$\\
-5:\>\>\>draw $v \sim p_\theta(\cdot \mid x)$\\
+4:\>\>\>select highest-confidence masked $i$\\
+5:\>\>\>sample $v \sim p_\theta(\cdot \mid x)$\\
 6:\>\>\>\textcolor{gray}{---}\\
 7:\>\>\>commit $v$ at $i$\\
 \textcolor{gray}{(no verifier)}
@@ -115,11 +117,11 @@ group separately.
 \>\>\textcolor{oursemph}{$\rightarrow g_i$, gate $S_i$, signs $w_i\epsilon_i$
 \hfill(\S\ref{sec:observable})}\\
 3:\>\>\textbf{while} $b$ has masks \textbf{do}\\
-4:\>\>\>pick most confident masked $i$\\
-5:\>\>\>draw $v \sim p_\theta(\cdot \mid x)$\\
-6:\>\>\>\textcolor{oursemph}{\textbf{if} $S_i > s_{\min}$: redraw ($\leq R$) until}\\
+4:\>\>\>select highest-confidence masked $i$\\
+5:\>\>\>sample $v \sim p_\theta(\cdot \mid x)$\\
+6:\>\>\>\textcolor{oursemph}{\textbf{if} $S_i > s_{\min}$: resample ($\leq R$) until}\\
 \>\>\>\textcolor{oursemph}{$w_i\epsilon_i g_i(v)>0 \,\wedge\, p_i(v)\geq\kappa p_i^{\max}$;}\\
-\>\>\>\textcolor{oursemph}{on exhaustion one fresh draw \hfill(Eq.~\ref{eq:rule})}\\
+\>\>\>\textcolor{oursemph}{on exhaustion, one unconditional sample \hfill(Eq.~\ref{eq:rule})}\\
 7:\>\>\>commit $v$ at $i$\\
 \textcolor{oursemph}{\textbf{Verify:} from $x$: rebuild line-2 tables under $K$,}\\
 \textcolor{oursemph}{count $\mathbf{1}[w_i\epsilon_i g_i(x_i)>0] \rightarrow
@@ -133,8 +135,8 @@ group separately.
 \centering
 \includegraphics[width=\linewidth]{figures/fig_retrace_mechanism.pdf}
 \caption{\textbf{One rule, two regimes.} A two-sided carrier accepts within a few
-redraws --- still a sample from the model's conditional, and the only kind of position
-that pays quality. A key-opposed position rejects every draw and emits the natural sample
+resamples --- still a sample from the model's conditional, and the only kind of position
+that pays quality. A key-opposed position rejects every proposal and commits the natural sample
 at zero cost; the gate excludes it. The verifier re-masks under the key and counts gated
 indicators against an exact binomial null, with no access to the trajectory.}
 \label{fig:mechanism}
@@ -149,17 +151,17 @@ recovers the base model's decoder exactly. At a carrier position the committed t
 chosen by rejection sampling from the model's own conditional:
 \begin{equation}
 v^{(1)}, v^{(2)}, \ldots \sim p_\theta(\cdot \mid x), \qquad
-\text{emit the first } v^{(r)} \text{ with } w_i\,\epsilon_i\,g_i(v^{(r)}) > 0,\quad r \le R,
+\text{commit the first } v^{(r)} \text{ with } w_i\,\epsilon_i\,g_i(v^{(r)}) > 0,\quad r \le R,
 \label{eq:rule}
 \end{equation}
-and if all $R$ guided draws are rejected, one further unconditional draw is emitted as-is.
+and if all $R$ guided proposals are rejected, one further unconditional sample is committed as-is.
 Acceptance may additionally require a \emph{plausibility floor} $p_i(v) \geq \kappa\,
 p_i^{\max}$, which caps any carrier's cost at $-\log\kappa$ beyond the model's own argmax;
-the floor is embedder-only and key-free --- the detector reads nothing but the emitted
+the floor is embedder-only and key-free --- the detector reads nothing but the committed
 token --- so the null and the carrier rule are untouched. A retry costs no forward pass
 --- the conditional row is unchanged --- so $R$ trades detection strength against
 arithmetic alone, and the floor keeps that trade from spending the quality budget. Writing $A_i$ for the acceptance set and
-$q_i$ for its mass, the per-position hit probability and emitted distribution are
+$q_i$ for its mass, the per-position hit probability and committed-token distribution are
 \begin{equation}
 q_i = \Pr_{v \sim p_i}\!\left[\,w_i\,\epsilon_i\,g_i(v) > 0\,\right], \qquad
 \Pr[m_i = 1] \;=\; 1 - (1 - q_i)^{R+1},

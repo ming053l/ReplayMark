@@ -219,7 +219,7 @@ def main():
 
     arrow(d, M + 122, YC, M + 148, YC, color=MUTED)
     rounded_card(d, M + 152, YC - 16, 92, 32, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE)
-    label(d, M + 198, YC + 5, "draw token", size=12, color=INK, anchor="middle")
+    label(d, M + 198, YC + 5, "sample token", size=12, color=INK, anchor="middle")
     formula(d, M + 198, YC - 9,
             [("v", "SaberTimes-Italic", 11, 0, MUTED),
              (" ~ p", "SaberTimes-Italic", 10, 0, MUTED),
@@ -254,7 +254,7 @@ def main():
           "a retry costs no forward pass: the conditional row is unchanged",
           size=12, color=MUTED, anchor="middle")
     label(d, M + 566, YC + OUT - 4,
-          "exhausted: one fresh draw, emitted as-is", size=10.5, color=MUTED)
+          "exhausted: one unconditional sample, committed as-is", size=10.5, color=MUTED)
 
     renderSVG.drawToFile(d, str(SVG_OUT))
     svg = SVG_OUT.read_text(encoding="utf-8")

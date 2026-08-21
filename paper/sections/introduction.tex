@@ -42,10 +42,10 @@ watermarkability}, and it rules out an entire family of designs.
 
 What survives is to never leave the model's own conditional. Decoding follows the base
 model's own schedule, and at a keyed \emph{carrier} --- a position whose challenge
-response is genuinely two-sided under the key --- the token is drawn from $p_\theta$ and
-simply \emph{redrawn}, at most $R$ times at no forward-pass cost, the conditional row
+response is genuinely two-sided under the key --- the token is sampled from $p_\theta$ and
+simply \emph{resampled}, at most $R$ times at no forward-pass cost, the conditional row
 being unchanged, until its reconstruction response agrees with the key; on exhaustion one
-unconditional draw is emitted as-is. Two guards keep the price bounded. A keyed gate
+unconditional sample is committed as-is. Two guards keep the price bounded. A keyed gate
 admits only two-sided positions, so positions whose plausible tokens all answer one way
 fall through to the natural sample and cost nothing; and acceptance can further require a
 key-free \emph{plausibility floor} $p(v) \geq \kappa\, p_{\max}$, capping any carrier's
@@ -60,9 +60,9 @@ costs $1.28\times$ a plain decode.
 \caption{\textbf{Prior verifiers read token identities; ReTrace's verifier runs the
 model.} \textbf{(a)} The finished text is corrupted twice under the key and re-denoised;
 the contrast between the reconstructions of each observed token is the evidence.
-\textbf{(b)} Embedding never leaves the model's conditional: draw, check the keyed
-response, redraw at most $R$ times at no forward-pass cost, emit a fresh draw on
-exhaustion.}
+\textbf{(b)} Embedding never leaves the model's conditional: sample, check the keyed
+response, resample at most $R$ times at no forward-pass cost, and commit an
+unconditional sample on exhaustion.}
 \label{fig:pipeline}
 \end{figure}
 

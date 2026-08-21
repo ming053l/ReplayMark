@@ -49,7 +49,7 @@ log-likelihood contrast, and the watermark asks the sign of that contrast to agr
 keyed orientation, giving a test statistic that is a sum of bounded indicators with a
 finite-sample exact $\mathrm{Binomial}(n,\tfrac12)$ null. Embedding never overrides the
 model: decoding follows the reference block schedule, and the watermark only decides
-whether a sampled proposal is emitted or redrawn. We also report the
+whether a sampled proposal is committed or resampled. We also report the
 negative result that motivated this design --- post-hoc token substitution is priced out on
 a well-trained diffusion language model, and, because both are governed by the sharpness of
 the same conditionals, \emph{improving generation quality reduces post-hoc
@@ -60,7 +60,6 @@ watermarkability}.
 \input{sections/related_work}
 \input{sections/preliminaries}
 \input{sections/method}
-\input{sections/v1_analysis}
 \input{sections/experiments}
 
 \section{Conclusion}

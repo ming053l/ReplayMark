@@ -127,7 +127,7 @@ def main():
     LX = 24
     YA, YB, YV = 268, 188, 84
 
-    label(d, LX, 304, "Two kinds of position, one rule: draw from the model until the "
+    label(d, LX, 304, "Two kinds of position, one rule: sample from the model until the "
                       "keyed response accepts, at most R times.", size=12, color=MUTED)
 
     def draw_seq(x, y, seq, note, note_color):
@@ -152,7 +152,7 @@ def main():
     lane_header(d, LX, YA, tag="two-sided", title="Steerable carrier",
                 subtitle="S > 0.5: both response signs plausible", color=BASIN,
                 fill=BASIN_SOFT, stroke=BASIN_LINE)
-    draw_seq(150, YA, [("draw 1", "rej"), ("draw 2", "rej"), ("draw 3", "acc")],
+    draw_seq(150, YA, [("sample 1", "rej"), ("sample 2", "rej"), ("sample 3", "acc")],
              "accepted: still a sample from the model's own conditional", BASIN_DARK)
     label(d, 150, YA - 26, "counted by the detector; the only positions that can pay "
                            "quality, less than one bit each", size=12, color=MUTED)
@@ -160,9 +160,9 @@ def main():
     lane_header(d, LX, YB, tag="one-sided", title="Key-opposed position",
                 subtitle="target side holds ~no mass", color=DEFER, fill=DEFER_FILL,
                 stroke=DEFER_LINE)
-    draw_seq(150, YB, [("draw 1", "rej"), ("...", "rej"), ("draw R", "rej"),
-                       ("fresh", "nat")],
-             "exhausted: one unconditional draw, the natural sample", MUT if False else MUTED)
+    draw_seq(150, YB, [("sample 1", "rej"), ("...", "rej"), ("sample R", "rej"),
+                       ("uncond.", "nat")],
+             "exhausted: one unconditional sample committed as-is", MUT if False else MUTED)
     label(d, 150, YB - 26, "zero quality cost by construction; excluded by the "
                            "detector's gate", size=12, color=MUTED)
 

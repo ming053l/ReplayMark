@@ -8,7 +8,7 @@ prompts truncated to $300$ characters (dgMARK's protocol); $256$--$512$ tokens a
 $\text{steps}=\text{gen\_length}$. Quality is GPT-2-large perplexity against a control
 \emph{under the same decoding regime} --- for ReTrace, the same generator with steering
 disabled, so the pairing isolates the watermark. Detectability is TPR at fixed FPR, never
-raw $z$; development prompts are never reused, and confirmatory runs draw disjoint corpus
+raw $z$; development prompts are never reused, and confirmatory runs use disjoint corpus
 offsets with per-document keys $K_d = \mathrm{HMAC}(K, \mathrm{nonce}_d)$. Compute is a
 reported axis, not a footnote: generation forwards appear per row, and the budget-matched
 comparator for ReTrace ($1.28\times$ a plain decode, from one challenge-table pass per
@@ -35,7 +35,7 @@ $0.93\times$; $n{=}30$), replicated on a disjoint held-out set at $0.980\times$ 
 Every larger figure previously on record traced to pairing against a differently-scheduled
 reference generator, and the fingerprint of that confound --- $R{=}1$ and $R{=}2$ showing
 the same $\Delta$NLL --- is what exposed it. The mechanism says this is not luck: at a
-one-sided position the emitted token is the natural sample whichever way the coin lands, so
+one-sided position the committed token is the natural sample whichever way the coin lands, so
 only genuinely two-sided carriers pay, each less than one bit.
 
 \paragraph{Retries buy detection with arithmetic, not compute --- but they do spend the
@@ -79,7 +79,7 @@ the operating points that matter the deployed detector is the gated indicator wi
 exact binomial null and no Monte-Carlo machinery.
 
 \paragraph{False positive control holds at the worst key.} Twenty keys $\times$ $120$
-non-watermarked generations give $2400$ null draws under the deployed decision rule:
+non-watermarked generations give $2400$ null trials under the deployed decision rule:
 empirical FPR is at or below nominal at every level \emph{per key}, the worst key included
 ($0.058$ at $\alpha{=}0.10$, $0.025$ at $0.05$, $0.000$ at $0.01$; Table~\ref{tab:validity}),
 and the matched control arms of every later run sat at zero false positives. An earlier

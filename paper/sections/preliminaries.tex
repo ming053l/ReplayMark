@@ -7,7 +7,7 @@ each step, and practical systems decode semi-autoregressively --- contiguous blo
 to right, diffusion within the active
 block~\citep{arriola2025blockdiffusion,nie2025llada}. Two consequences matter. The model
 predicts masked tokens from \emph{arbitrary} surviving context, so it can be applied to a
-finished text and not only used to produce one; and each emitted token is a sample from a
+finished text and not only used to produce one; and each committed token is a sample from a
 conditional the verifier can reconstruct exactly, since that conditional sees only the
 finished prefix and masks.
 
