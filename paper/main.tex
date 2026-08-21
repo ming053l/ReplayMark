@@ -67,12 +67,10 @@ watermarkability}.
 
 ReTrace turns the fact that a diffusion language model can be \emph{applied} to a
 finished text into a verification channel: corrupt the text under a secret key,
-re-denoise, and read whether the reconstruction response agrees with a keyed orientation. Embedding never leaves the model's own conditional --- a keyed
-rejection-resampling with a capped retry budget --- and against a matched control it is
-quality-neutral at the low end ($0.93\times$--$1.14\times$ at $R{\leq}2$) and, with a
-key-free plausibility floor on acceptance, holds sub-control perplexity at high retry
-budgets: $\mathrm{TPR}@1\% = 0.70$ at $0.87\times$ with repetition at parity
-($R{=}8$, $\kappa{=}0.1$, held-out). The frontier position is honest rather than dominant
+re-denoise, and read whether the reconstruction response agrees with a keyed orientation. Embedding is a keyed rejection-resampling that never leaves the
+model's own conditional; with a key-free plausibility floor on acceptance it holds
+sub-control perplexity even at high retry budgets --- $\mathrm{TPR}@1\% = 0.70$ at
+$0.87\times$ with repetition at parity ($R{=}8$, $\kappa{=}0.1$, held-out). The frontier position is honest rather than dominant
 --- locally reproduced dgMARK ($0.86$ at $1.23\times$) still leads on detection, but
 nothing in the comparison reaches this quality region at any strength --- and the null is
 exact per document, holding empirically at the worst of twenty keys.
@@ -80,8 +78,8 @@ exact per document, holding empirically at the worst of twenty keys.
 What separates ReTrace from the watermarks it is compared against is the object verified:
 token hashes read symbols, ReTrace reads the model's response, and \S\ref{sec:baselines}
 keeps the explicit ledger of what that buys and costs. The open item on that ledger is
-post-editing robustness; hardening the response channel --- shorter challenge contexts,
-redundancy across blocks --- is the next thing this line of work must address.
+post-editing robustness; hardening the response channel against edits is the next thing
+this line of work must address.
 
 \bibliographystyle{iclr2025_conference}
 \bibliography{main}

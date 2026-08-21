@@ -1,12 +1,15 @@
 \section{ReTrace}
 \label{sec:method}
 
-The scheme has three parts, presented in the order a verifier needs them: an
-\emph{observable} computable from text, model and key alone --- the introduction's
-``keyed question'' made precise (\S\ref{sec:observable}); a \emph{statistic} over it
-with an exact rather than asymptotic null (\S\ref{sec:theory}); and the \emph{embedder}
-(\S\ref{sec:embedding}), preceded by the measurements ruling out the more obvious one
-(\S\ref{sec:v1}).
+One requirement organises everything in this section. The verifier holds only the
+finished text, the model and the key --- so whatever quantity the embedder steers toward
+during generation, the verifier must later be able to recompute \emph{bit for bit} from
+the finished text. We first construct an observable with exactly that property
+(\S\ref{sec:observable}), then a statistic over it whose null distribution is known
+exactly rather than asymptotically (\S\ref{sec:theory}), then ask how generated text can
+be made to score highly on it. The obvious embedding fails for measurable reasons
+(\S\ref{sec:v1}), and what those measurements leave standing is the resampling embedder
+of \S\ref{sec:embedding}.
 
 \subsection{The observable}
 \label{sec:observable}
@@ -20,37 +23,45 @@ g_i(w) \;=\; \log p_\theta\!\left(w \mid \mathcal{C}_v\right) - \log p_\theta\!\
 \qquad w \in \mathcal{V}.
 \label{eq:g}
 \end{equation}
+In words: how much more does the model expect $w$ at position $i$ when the key has hidden
+one part of the context than when it has hidden the other.
 
-Two properties of $\mathcal{C}_\ell$ matter and neither is optional.
-
-\important{The block and its future are masked in every arm.} While $B$ is being decoded,
-every later block is still \texttt{[MASK]}. If the verifier recomputed
-Eq.~\eqref{eq:g} on the finished text without re-masking that tail, it would condition on
-tokens that did not exist when the guidance was produced, and the two sides would be
-reading different functions. Masking $B$ and everything after it makes the table identical
-at both times; masking $B$ itself additionally makes it \emph{invariant} to whatever is
-committed inside $B$, so a single table serves the block's entire decoding.
-
-\important{The ablations lie in the already-final region.} $D_\ell \subset$
-prompt $\cup\, B_{<b}$, which the verifier has verbatim. We use a \emph{contrast} pair ---
-one pattern ablating the context nearest the block, the other the furthest --- because
-recency dominates next-token prediction, so the two arms disagree far more than two random
-ablations do, widening the dynamic range of $g$.
+The shape of $\mathcal{C}_\ell$ is dictated by the reproducibility requirement.
+Mid-generation, when the embedder consults Eq.~\eqref{eq:g}, every block after $B$ is
+still \texttt{[MASK]}; if the verifier later recomputed the contrast on the finished
+text without re-masking that tail, it would condition on tokens that did not exist when
+the embedder acted, and the two sides would be reading different functions. So
+$\mathcal{C}_\ell$ masks $B$ and everything after it, in every arm. Masking $B$ itself
+buys a second property for free: the contrast becomes \emph{invariant} to whatever is
+committed inside $B$, so one table, computed once, serves the block's entire decoding
+and is reproduced identically from the finished text. The ablations, for the same
+reason, lie only in the region that is already final --- $D_\ell \subset$ prompt
+$\cup\, B_{<b}$, which the verifier has verbatim. Within that region the pair is chosen
+for signal: one pattern ablates the context nearest the block, the other the farthest,
+and because recency dominates masked-token prediction, the two arms disagree far more
+than two random ablations would, widening the dynamic range of $g$.
 
 \subsection{The statistic}
 \label{sec:theory}
 
-The statistic is the count of positions whose answer matches the key. Formally, each
-position carries an independent keyed \emph{orientation bit} $\epsilon_i\in\{\pm1\}$ ---
-the hidden coin fixing which sign of $g_i$ counts as agreement --- and a target
-$w_i\in\{\pm1\}$ carrying the message bit ($w_i \equiv +1$ when only provenance is
-claimed), and contributes a bounded indicator
+The contrast turns each position into a signed answer; the statistic aggregates the
+answers so that chance is exactly quantifiable. Each position carries an independent
+keyed \emph{orientation bit} $\epsilon_i\in\{\pm1\}$ --- the hidden coin fixing which
+sign of $g_i$ counts as agreement --- and a target $w_i\in\{\pm1\}$ carrying the message
+bit ($w_i \equiv +1$ when only provenance is claimed). Aggregation is a plain count of
+agreements,
 \begin{equation}
 m_i \;=\; \mathbf{1}\!\left[\,w_i\,\epsilon_i\,g_i(y_i) > 0\,\right],
 \qquad
-T \;=\; \sum_{i\in P} m_i .
+T \;=\; \sum_{i\in P} m_i ,
 \label{eq:m}
 \end{equation}
+and a count rather than an average deliberately: the per-position contrast is
+heavy-tailed, so an average is dominated by its largest values and sign steering has no
+leverage on it, whereas a count gives every position exactly one unit.
+
+Why is chance exactly quantifiable? Because for a text produced without the key, each
+$m_i$ is a comparison against a coin that was never consulted:
 
 \begin{proposition}[Exact null]
 \label{prop:null}
@@ -64,31 +75,17 @@ $m_i$ are i.i.d.\ $\mathrm{Bernoulli}(\tfrac12)$ and
 $T \sim \mathrm{Binomial}(|P|, \tfrac12)$ exactly.
 \end{proposition}
 
-The domain separation is load-bearing: the challenge patterns and pair selection are
-themselves keyed, and sharing PRF output with the orientation bits would let the
-conditioning event carry information about them. Pair selection uses only the
-swap-invariant $S_i$ of Eq.~\eqref{eq:gate}, so it is orientation-symmetric by
-construction.
-
-The proposition needs no calibration corpus and no model-specific null estimate, and it is
-finite-sample rather than asymptotic. Three implementation details are load-bearing.
-
-\emph{Ties must be resolved, not dropped.} In single precision the committed token's
-log-probability rounds to $0$ under both arms at a quarter of positions, and scoring the
-vanished difference as a miss dragged the unwatermarked match rate to $0.32$--$0.37$
-against $0.50$. Double precision inside the softmax removes the ties; a second keyed coin
-breaks any residue.
-
-\emph{Counting, not averaging.} The per-position contrast is heavy-tailed, so an average
-is dominated by its largest values and sign control has no leverage on it; a count gives
-every steered position exactly one unit.
-
-\emph{Presence, verification and payload are separate tests.} Summing hits across payload
-groups cancels --- a balanced message drives half toward $m_i{=}1$ and half toward
-$m_i{=}0$, so a perfect watermark sums to $|P|/2$. A presence pool with $w_i \equiv +1$
-tests provenance with no claimed message (and never tests a message decoded from the same
-data); claimed-message verification aligns each group to its bit; payload thresholds each
-group separately.
+The result needs no calibration corpus and no model-specific null estimate, but its
+hypotheses have to be engineered, not assumed. The separate PRF domains let the
+conditioning go through: pattern choice and pair selection are themselves keyed, and
+sharing randomness with the orientation bits would leak the coin (pair selection uses
+only the swap-invariant $S_i$ of Eq.~\eqref{eq:gate}, so it is orientation-symmetric).
+Exact ties $g_i(y_i)=0$ are resolved by a further keyed coin rather than scored as
+misses, which would bias $T$ off the binomial. And presence is tested on its own pool
+with $w_i \equiv +1$: summing agreement across payload groups cancels --- a balanced
+message leaves a perfect watermark at the chance value $|P|/2$ --- so claimed-message
+verification aligns each group to its bit and payload decoding thresholds each group
+separately.
 
 \input{sections/v1_analysis}
 
@@ -152,13 +149,14 @@ indicators against an exact binomial null, with no access to the trajectory.}
 \label{fig:mechanism}
 \end{figure}
 
-Generation follows the reference schedule of the base model --- blocks in order, diffusion
-within a block --- and commits positions in plain confidence order
-(Figure~\ref{fig:mechanism}). Algorithms~1 and~2 put the embedder beside the reference
-sampler it wraps, line for line: the two differ only in the \textcolor{oursemph}{blue}
-lines --- no logit is edited, no commitment is reordered, and deleting the blue lines
-recovers the base model's decoder exactly. At a carrier position the committed token is
-chosen by rejection sampling from the model's own conditional:
+Rejection resampling is the embedder that satisfies this constraint. Generation follows
+the reference schedule of the base model --- blocks in order, diffusion within a block,
+positions committed in plain confidence order (Figure~\ref{fig:mechanism}) --- and
+Algorithms~1 and~2 put the embedder beside the reference sampler it wraps, line for
+line: the two differ only in the \textcolor{oursemph}{blue} lines --- no logit is
+edited, no commitment is reordered, and deleting the blue lines recovers the base
+model's decoder exactly. At a carrier position the committed token is chosen by
+rejection sampling from the model's own conditional:
 \begin{equation}
 v^{(1)}, v^{(2)}, \ldots \sim p_\theta(\cdot \mid x), \qquad
 \text{commit the first } v^{(r)} \text{ with } w_i\,\epsilon_i\,g_i(v^{(r)}) > 0,\quad r \le R,
@@ -188,19 +186,27 @@ distortion-free; what makes it cheap is that the support never leaves the model'
 conditional, and that the positions where the predicate binds hardest are exactly the
 positions where it cannot be satisfied at all --- which fall through to the natural sample.
 
-\paragraph{Only two-sided positions are carriers.}
-The live acceptance mass is bimodal (quartiles $0.02/0.60/0.98$): at most positions the
-model's plausible tokens all answer the challenge the same way. Positions are gated by the orientation-symmetric two-sided mass
+One question remains: which positions should the detector count? Not all of them ---
+the acceptance mass $q_i$ is bimodal in practice (quartiles $0.02/0.60/0.98$), meaning
+at most positions the model's plausible tokens all answer the challenge the same way.
+Where that answer opposes the key, retries cannot help, and counting the position turns
+a coin flip into a certain miss. Positions are therefore gated by the two-sided mass
 \begin{equation}
 S_i \;=\; 2\min\!\left(q_i^{+},\, q_i^{-}\right), \qquad
 q_i^{\pm} = \Pr_{v \sim p_i^{\text{base}}}\!\left[\,\pm\, g_i(v) > 0\,\right],
 \label{eq:gate}
 \end{equation}
-computed under the block-masked conditional: a position with $S_i \leq 0.5$ is not
-counted, since if the key opposes it retries cannot help and the fallback makes it a
-certain miss rather than a coin flip. $S_i$ is invariant under swapping the pair's arms and never
-sees the key's direction or the message, and it is computed from the block-masked
-conditional, so the verifier reconstructs the identical carrier set from the finished
-text. The challenge pair itself is chosen per position among the $\binom{L}{2}$ keyed
-patterns by the same $S_i$, which raises the mean two-sided mass from $0.28$ (a fixed
-near/far pair) to $0.45$.
+and only carriers with $S_i > s_{\min}$ are counted. The gate respects both earlier
+requirements at once: it is computed from the block-masked conditional, so the verifier
+reconstructs the identical carrier set from the finished text (\S\ref{sec:observable});
+and it is invariant under swapping the pair's arms and never sees the key's direction or
+the message, so conditioning on it leaves the null of Proposition~\ref{prop:null} intact.
+The challenge pair itself is chosen per position among the $\binom{L}{2}$ keyed patterns
+by the same swap-invariant $S_i$, which raises the mean two-sided mass from $0.28$ (a
+fixed near/far pair) to $0.45$.
+
+The loop is now closed: every quantity in Algorithm~2's blue lines is a function of
+text, model and key alone (\S\ref{sec:observable}), the count they feed carries an
+exact null (\S\ref{sec:theory}), and the only freedom the embedder exercises ---
+choosing among the model's own proposals --- is the one \S\ref{sec:v1} showed a
+well-trained denoiser leaves open.

@@ -1,33 +1,34 @@
 \subsection{Why substitution cannot pay}
 \label{sec:v1}
 
-The first version of ReTrace embedded by substitution: at keyed carrier positions,
-replace the model's token with an admissible alternative whose contrast points the right
-way, subject to a per-token fluency budget $\tau$ (a substitution is admissible iff
-$p(w)/p(w^\star) \geq e^{-\tau}$). It does not work, and the reason generalises beyond our
-implementation.
+With the observable and the statistic fixed, the embedder's task sounds elementary:
+make the committed tokens answer with the key. The natural first design does it by
+\emph{substitution} --- generate normally, then at keyed positions replace the model's
+token with an alternative whose contrast points the right way, subject to a per-token
+fluency budget $\tau$ (admissible iff $p(w)/p(w^\star) \geq e^{-\tau}$). Its measured
+failure dictates the final design.
 
-\paragraph{There is nothing to substitute.}
-Across $36$ configurations spanning three carrier-selection rules, three budgets and two
-guidance weights, the median carrier position admits \emph{exactly one} token at
-$\tau = 3$, i.e.\ $p(w)/p(w^\star) \geq 0.05$, with no truncation of the candidate slate.
-The best configuration inside a $1.35\times$ perplexity budget reaches
-$\mathrm{TPR}@1\% = 0.10$; matched local dgMARK reaches $0.86$ at $1.23\times$.
+The first obstacle is that there is usually nothing to substitute. A well-trained
+denoiser's conditionals are sharp: across $36$ configurations spanning three
+carrier-selection rules, three budgets and two guidance weights, the \emph{median} keyed
+position admits exactly one token at $\tau = 3$ ($p(w)/p(w^\star) \geq 0.05$), with no
+truncation of the candidate slate. The best configuration inside a $1.35\times$
+perplexity budget reaches only $\mathrm{TPR}@1\% = 0.10$, against $0.86$ for locally
+reproduced dgMARK at $1.23\times$.
 
-\paragraph{Better generation makes it worse.}
-Our harness initially ranked positions for low-confidence remasking by the maximum of the
-Gumbel-perturbed logits rather than by $p(x_0)$ under the clean softmax. Repairing it to
-match the reference sampler moved draft perplexity from $22.2$ to $9.5$ --- and halved the
-denoiser's entropy, from $0.655$ to $0.319$, shrinking the admissible set by $34$--$60\,\%$
-($|A(3)|$: $2.5 \to 1.6$; $|A(6)|$: $14.1 \to 5.6$). Part of the early design's apparent
-strength came from a degraded generator. \important{Improving a diffusion language model's
-generation quality reduces its post-hoc watermarkability}, because both quantities are
-governed by the sharpness of the same conditionals.
+Sharper still, the obstacle grows with model quality. When a confidence-ranking defect
+in our sampler was repaired --- draft perplexity moving from $22.2$ to $9.5$ --- the
+denoiser's entropy halved ($0.655 \to 0.319$) and the admissible sets shrank by
+$34$--$60\,\%$ ($|A(3)|$: $2.5 \to 1.6$; $|A(6)|$: $14.1 \to 5.6$). Substitution buys
+evidence with fluency at a rate set by the sharpness of the model's conditionals, and
+\important{improving a diffusion language model's generation quality reduces its
+post-hoc watermarkability}, because both quantities are governed by the same sharpness.
+Nor does moving the substitution to generation time escape this: a guidance table valid
+during generation needs every non-carrier token final first, and the two-phase schedule
+that forces costs $1.98\times$ perplexity \emph{before any watermark} --- more than
+dgMARK's entire cost.
 
-\paragraph{Moving to generation time does not rescue substitution.}
-A guidance table valid during generation needs every non-carrier token final first, which
-forces a two-phase schedule that costs $1.98\times$ perplexity \emph{before any watermark}
---- more than dgMARK's entire cost. Substitution buys evidence with fluency at a rate set
-by the model's conditionals, and that rate is unfavourable and worsening; a viable
-embedding must never override the model's choice, which is what \S\ref{sec:embedding}
-does.
+What these measurements leave standing is a design constraint rather than a tuning
+problem: an embedder must never override the model's choice --- it may only choose
+\emph{among} tokens the model itself proposes. The next subsection builds exactly that
+embedder.

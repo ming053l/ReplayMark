@@ -37,14 +37,11 @@ so each of its answers matches an independent hidden coin: agreements follow an 
 $\mathrm{Binomial}(n,\tfrac12)$ law, and provenance becomes an ordinary hypothesis test.
 No vocabulary partition, no token hash --- the evidence lives in the model's behaviour.
 
-How does the watermark get the answers \emph{into} the text? The failed way first,
-because it shaped the design (\S\ref{sec:v1}): editing tokens after generation. On a
-well-trained denoiser the conditionals are sharp --- at the median position exactly one
-token is fluent enough to use, so there is nothing to edit toward. Worse, the effect
-\emph{strengthens} as generation improves: a sampler repair that lowered draft perplexity
-from $22.2$ to $9.5$ also shrank the set of usable alternatives by $34\text{--}60\,\%$.
-\important{Better diffusion-model generation reduces post-hoc watermarkability}, and it
-rules out an entire family of designs.
+How does the watermark get the answers \emph{into} the text? Not by editing tokens after
+generation: on a well-trained denoiser the median position admits exactly one fluent
+token, so there is nothing to edit toward, and the effect \emph{strengthens} as
+generation improves (\S\ref{sec:v1}) --- \important{better diffusion-model generation
+reduces post-hoc watermarkability}, ruling out an entire family of designs.
 
 What survives is to never override the model at all. ReTrace decodes exactly as the base
 model would, with one added rule: at positions where the keyed question is genuinely

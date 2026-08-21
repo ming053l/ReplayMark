@@ -60,8 +60,7 @@ cost at $-\log\kappa$, and at $\kappa{=}0.1$ it converts the $R{=}8$ point from
 $1.61\times$ to $\mathbf{0.87\times}$ while keeping $\mathrm{TPR}@1\% = 0.70$ (the
 fraction of carriers answering with the key drops only from $0.711$ to $0.620$; the
 control arm stays at the chance level of $0.501$). Repetition sits at parity with the control
-($0.33$ against $0.36$ on decoded text under the shared validity rule; an earlier
-raw-token measurement that suggested otherwise was counting EOS padding as repetition).
+($0.33$ against $0.36$ on decoded text under the shared validity rule).
 Sub-$1.0$ ratios deserve suspicion rather than celebration --- the floor tilts toward
 higher-probability tokens, which perplexity rewards --- which is why repetition is
 reported next to the ratio rather than instead of it. Doubling the document to $1024$
@@ -86,9 +85,8 @@ exact binomial null and no Monte-Carlo machinery.
 non-watermarked generations give $2400$ null trials under the deployed decision rule:
 empirical FPR is at or below nominal at every level \emph{per key}, the worst key included
 ($0.058$ at $\alpha{=}0.10$, $0.025$ at $0.05$, $0.000$ at $0.01$; Table~\ref{tab:validity}),
-and the matched control arms of every later run sat at zero false positives. An earlier
-revision reported a Gaussian tail here and measured $0.145$ at nominal $0.10$; the exact
-construction is what allows the guarantee to be stated per document rather than on average.
+and the matched control arms of every later run sat at zero false positives; the exact
+construction is what lets the guarantee be stated per document rather than on average.
 
 \input{tables/validity_table}
 
@@ -97,9 +95,8 @@ re-denoising of $10\%$ of positions collapses $R{=}1$ detection from $0.35$ to $
 $1\%$ (deletion likewise), while the attacked control stays at $\alpha$ --- the attack
 erases evidence rather than triggering the detector. The fragility is structural: every
 block's challenges condition on all earlier blocks, so one edit perturbs the contrast of
-every later position. Whether the higher rates at $R{=}4$--$8$ buy usable headroom is
-measured on the saved held-out outputs, and the honest current statement is that
-token-hash watermarks keep an advantage under heavy post-editing.
+every later position. The honest current statement is that token-hash watermarks keep an advantage under
+heavy post-editing.
 
 \paragraph{Advantages, stated as claims the tables support.} (i)~\emph{Quality below the
 control}: with the plausibility floor, ReTrace is the only method in
