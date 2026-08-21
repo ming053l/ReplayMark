@@ -24,63 +24,42 @@
 \cmidrule(lr){5-7}
 Method & Setting & PPL $\downarrow$ & Ratio $\downarrow$ & $5\%$ & $1\%$ & $0.1\%$ & Gen.\ fwd. & Det.\ fwd. \\
 \midrule
-\multicolumn{9}{l}{\textit{Generation-time watermarks (the watermark is applied while the text is produced)}} \\
+\multicolumn{9}{l}{\textit{Budget: one decode per document (Gen.\ fwd.\ $=$ tokens generated)}} \\
 \midrule
-No watermark & block dec., top-$k$ 3 & 9.94 & 1.00$\times$ & -- & -- & -- & 256 & -- \\
-dgMARK \citep{hong2026dgmark} & $k=1$ & 15.40 & 1.55$\times$ & 0.88 & 0.74 & 0.62 & 256 & \textbf{0} \\
+dgMARK \citep{hong2026dgmark} & $k=1$, 256 tok & 15.40 & 1.55$\times$ & 0.88 & 0.74 & 0.62 & 256 & \textbf{0} \\
 \rowcolor{finalres}
-dgMARK \citep{hong2026dgmark} & $+3$-beam & 12.23 & 1.23$\times$ & \textbf{0.92} & \textbf{0.86} & \textbf{0.82} & \textcolor{failred}{$\sim$1024} & \textbf{0} \\
-\midrule
-No watermark & left-to-right & 11.61 & 1.00$\times$ & -- & -- & -- & 256 & -- \\
-\rowcolor{finalres}
-KGW \citep{kirchenbauer2023watermark} & $\delta=1$ & 11.96 & \textbf{1.03}$\times$ & 0.97 & \textbf{0.93} & 0.73 & 256 & \textbf{0} \\
-KGW \citep{kirchenbauer2023watermark} & $\delta=2$ & 16.21 & 1.40$\times$ & 1.00 & 1.00 & 1.00 & 256 & \textbf{0} \\
-KGW \citep{kirchenbauer2023watermark} & $\delta=3$ & 14.05 & 1.21$\times$ & 1.00 & 1.00 & 1.00 & 256 & \textbf{0} \\
-\midrule
-\multicolumn{9}{l}{\textit{Post-hoc substitution --- ReTrace V1, archived (\S\ref{sec:v1})}} \\
-\midrule
-No watermark & $T=0.8$, full vocab & 26.21 & 1.00$\times$ & -- & -- & -- & 256 & -- \\
-\textcolor{oursemph}{ReTrace V1} & keyed carrier & 27.7 & 1.11$\times$ & 0.00 & 0.00 & 0.00 & 256 & 9 \\
+KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 256 tok & 11.96 & \textbf{1.03}$\times$ & 0.97 & \textbf{0.93} & 0.73 & 256 & \textbf{0} \\
+KGW \citep{kirchenbauer2023watermark} & $\delta=3$, 256 tok & 14.05 & 1.21$\times$ & 1.00 & 1.00 & 1.00 & 256 & \textbf{0} \\
 \textcolor{oursemph}{ReTrace V1} & best under $1.35\times$ ppl & 30.5 & 1.17$\times$ & 0.10 & \textcolor{failred}{0.10} & 0.00 & 256 & 9 \\
-\textcolor{oursemph}{ReTrace V1} & generation-time, two-phase & 203.7 & \textcolor{failred}{7.77$\times$} & 0.12 & \textcolor{failred}{0.00} & 0.00 & 512 & 9 \\
 \midrule
-\multicolumn{9}{l}{\textit{Response-guided resampling --- ReTrace V3, presence-only, 512 tok, $n{=}30$, matched control}} \\
+\multicolumn{9}{l}{\textit{Budget: $1.28\times$ decode --- ReTrace V3 (decode $+$ one challenge-table pass per block); controls share it}} \\
 \midrule
-No watermark & matched scheduler & 11.38 & 1.00$\times$ & 0.00 & 0.00 & 0.00 & 656 & -- \\
+\textcolor{oursemph}{ReTrace V3} & $R{=}1$, 512 tok & 11.0 & \textbf{0.97}$\times$ & 0.57 & 0.43 & 0.20 & 656 & 144 \\
+\textcolor{oursemph}{ReTrace V3} & $R{=}2$, 512 tok, held-out & -- & 1.14$\times$ & 0.83 & 0.73 & 0.63 & 656 & 144 \\
+\textcolor{oursemph}{ReTrace V3} & $R{=}4$, 512 tok, held-out & -- & \textcolor{failred}{1.40$\times$} & 0.90 & 0.83 & 0.77 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{ReTrace V3} & $R=1$ & 11.0 & \textbf{0.97}$\times$ & 0.57 & 0.43 & 0.20 & 656 & 144 \\
-\textcolor{oursemph}{ReTrace V3} & $R=2$ & 10.6 & \textbf{0.93}$\times$ & 0.70 & 0.57 & 0.40 & 656 & 144 \\
-\midrule
-\multicolumn{9}{l}{\textit{ReTrace V3, held-out prompts (skip $600$), $n{=}30$, 512 tok; ratios paired against the matched control, valid $n{=}16$--$17$}} \\
-\midrule
+\textcolor{oursemph}{ReTrace V3} & $R{=}16$, $\kappa{=}0.05$, 512 tok & -- & \textbf{0.74}$\times$ & 0.90 & \textbf{0.80} & 0.60 & 656 & 144 \\
+\textcolor{oursemph}{ReTrace V3} & $R{=}8$, $\kappa{=}0.1$, 512 tok & 5.67 & \textbf{0.87}$\times$ & 0.80 & 0.70 & 0.60 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{ReTrace V3} & $R=2$ & -- & 1.14$\times$ & 0.83 & 0.73 & 0.63 & 656 & 144 \\
-\textcolor{oursemph}{ReTrace V3} & $R=4$ & -- & \textcolor{failred}{1.40$\times$} & 0.90 & 0.83 & 0.77 & 656 & 144 \\
-\textcolor{oursemph}{ReTrace V3} & $R=8$ & -- & \textcolor{failred}{1.61$\times$} & 0.87 & \textbf{0.87} & \textbf{0.80} & 656 & 144 \\
+\textcolor{oursemph}{ReTrace V3} & $R{=}8$, $\kappa{=}0.1$, 1024 tok & -- & \textbf{0.83}$\times$ & 0.81 & \textbf{0.75} & \textbf{0.69} & 1312 & 288 \\
 \midrule
-\multicolumn{9}{l}{\textit{ReTrace V3 with the plausibility floor $p(v)\geq\kappa\,p_{\max}$ (skip $700$, $n{=}30$, 512 tok)}} \\
+\multicolumn{9}{l}{\textit{Budget: $\sim\!4\times$ decode (one-step lookahead per candidate)}} \\
 \midrule
-No watermark & matched scheduler & 7.25 & 1.00$\times$ & 0.03 & 0.00 & 0.00 & 656 & -- \\
-\textcolor{oursemph}{ReTrace V3} & $R{=}8$, $\kappa{=}0.3$ & -- & \textbf{0.70}$\times$ & 0.60 & 0.50 & 0.27 & 656 & 144 \\
-\rowcolor{finalres}
-\textcolor{oursemph}{ReTrace V3} & $R{=}8$, $\kappa{=}0.1$ & 5.67 & \textbf{0.87}$\times$ & 0.80 & 0.70 & 0.60 & 656 & 144 \\
-\midrule
-\multicolumn{9}{l}{\textit{Floor $\times$ length: $1024$ tok, $n{=}16$ (skip $850$); quality-pairing valid $n{=}8$}} \\
-\midrule
-No watermark & matched scheduler & -- & 1.00$\times$ & 0.06 & 0.00 & 0.00 & 1312 & -- \\
-\rowcolor{finalres}
-\textcolor{oursemph}{ReTrace V3} & $R{=}8$, $\kappa{=}0.1$ & -- & \textbf{0.83}$\times$ & 0.81 & \textbf{0.75} & \textbf{0.69} & 1312 & 288 \\
-\bottomrule
+dgMARK \citep{hong2026dgmark} & $+3$-beam, 256 tok & 12.23 & 1.23$\times$ & \textbf{0.92} & \textbf{0.86} & \textbf{0.82} & \textcolor{failred}{$\sim$1024} & \textbf{0} \\
 \end{tabular}%
 }
-\caption{\textbf{Detectability against the quality and the compute actually paid.} One
-machine, checkpoint and prompt protocol; each block is scored against a control under its
-own decoding regime, \emph{Ratio} relative to that control. \emph{Gen.\ fwd.} counts model
-forwards spent producing the text (ReTrace: decode steps plus one challenge-table pass per
-block); \emph{Det.\ fwd.} counts masked evaluations per detection. The budget-matched
-comparator for ReTrace is dgMARK $k{=}1$ ($1.28\times$ its generation budget); $3$-beam
-spends $\sim\!4\times$ for its lookahead and is marked accordingly. KGW is scored on
-distinct bigrams ($37\%$ FPR at $\delta{=}0$ otherwise) and its left-to-right regime costs
-$1.17\times$ against block decoding. Non-watermarked arms sit at $|z|\leq0.25$.}
+\caption{\textbf{Detectability against the quality and compute actually paid, grouped by
+generation budget.} One machine, checkpoint and prompt protocol. \emph{Ratio} is against a
+non-watermarked control run under the same decoding regime (control PPL: block decoding
+$9.94$, left-to-right $11.61$, $T{=}0.8$ full-vocab $26.21$; ReTrace: paired matched-scheduler
+control per sub-group); control arms score $\mathrm{TPR}\leq0.03$ at the $5\%$ threshold and
+$0.00$ below, $|z|\leq0.25$. \emph{Gen.\ fwd.} counts model forwards spent producing the text;
+ReTrace's tier costs $1.28\times$ a plain decode for its per-block challenge tables, and
+dgMARK $3$-beam sits alone at $\sim\!4\times$ for its lookahead. \emph{Det.\ fwd.} counts
+masked evaluations per detection --- zero for token-hash detectors, fixed for ReTrace. KGW is
+scored on distinct bigrams ($37\%$ FPR at $\delta{=}0$ otherwise); its left-to-right regime
+itself costs $1.17\times$ against block decoding. ReTrace prompt sets are disjoint per
+sub-group with per-document keys, $n{=}30$ per 512-token arm ($n{=}20$ for $R{=}16$,
+$n{=}16$ at 1024 tokens; quality pairing on valid documents).}
 \label{tab:baselines}
 \end{table}
