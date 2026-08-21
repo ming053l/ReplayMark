@@ -85,6 +85,34 @@ group separately.
 
 \begin{figure}[t]
 \centering
+\fbox{\begin{minipage}{0.965\linewidth}\small
+\textbf{Algorithm 1} \; ReTrace embedding (\textcolor{oursemph}{blue} $=$ the watermark;
+black $=$ the reference sampler, unchanged)\\[1pt]
+\hrule\vspace{3pt}
+\begin{tabbing}
+\hspace{1.4em}\=\hspace{1.4em}\=\hspace{1.4em}\=\kill
+\textbf{Input:} prompt, key $K$, retry budget $R$, floor $\kappa$;
+\textbf{Output:} text $x$\\
+1:\>\textbf{for} each block $b$ in order \textbf{do}\\
+2:\>\>\textcolor{oursemph}{build the challenge table for $b$: masked forwards
+$\rightarrow g_i$, gate $S_i$, keyed signs $w_i\,\epsilon_i$ \hfill(\S\ref{sec:observable})}\\
+3:\>\>\textbf{while} $b$ has masked positions \textbf{do}\\
+4:\>\>\>pick the most confident masked position $i$; draw $v \sim p_\theta(\cdot \mid x)$\\
+5:\>\>\>\textcolor{oursemph}{\textbf{if} $S_i > s_{\min}$ \textbf{then} redraw $v$ (at most
+$R$ draws) until $w_i\,\epsilon_i\,g_i(v) > 0$ and $p_i(v) \geq \kappa\, p_i^{\max}$;}\\
+6:\>\>\>\textcolor{oursemph}{\phantom{\textbf{if} $S_i > s_{\min}$ }\textbf{if} all $R$
+rejected, draw once more unconditionally \hfill(Eq.~\ref{eq:rule})}\\
+7:\>\>\>commit $v$ at position $i$\\
+\textbf{Verify:} from $x$ alone, rebuild every table of line 2 under $K$ and count
+$\mathbf{1}[w_i\,\epsilon_i\,g_i(x_i) > 0]$ over gated positions $\rightarrow$
+$\mathrm{Binomial}(n,\tfrac12)$ test \hfill(Eq.~\ref{eq:m})
+\end{tabbing}
+\end{minipage}}
+\vspace{-2pt}
+\end{figure}
+
+\begin{figure}[t]
+\centering
 \includegraphics[width=\linewidth]{figures/fig_retrace_mechanism.pdf}
 \caption{\textbf{One rule, two regimes.} A two-sided carrier accepts within a few
 redraws --- still a sample from the model's conditional, and the only kind of position
@@ -96,7 +124,11 @@ indicators against an exact binomial null, with no access to the trajectory.}
 
 Generation follows the reference schedule of the base model --- blocks in order, diffusion
 within a block --- and commits positions in plain confidence order
-(Figure~\ref{fig:mechanism}). At a carrier position the committed token is chosen by
+(Figure~\ref{fig:mechanism}). Algorithm~1 shows the full embedder against
+the reference sampler it wraps: the black lines \emph{are} the reference sampler, and
+ReTrace is exactly the \textcolor{oursemph}{blue} ones --- no logit is edited, no
+commitment is reordered, and deleting the blue lines recovers the base model's decoder
+line for line. At a carrier position the committed token is chosen by
 rejection sampling from the model's own conditional:
 \begin{equation}
 v^{(1)}, v^{(2)}, \ldots \sim p_\theta(\cdot \mid x), \qquad

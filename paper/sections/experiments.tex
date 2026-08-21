@@ -97,8 +97,27 @@ every later position. Whether the higher rates at $R{=}4$--$8$ buy usable headro
 measured on the saved held-out outputs, and the honest current statement is that
 token-hash watermarks keep an advantage under heavy post-editing.
 
-\paragraph{Detection cost.} Verification evaluates $L{+}1 = 9$ masked sequences per
-$32$-token block --- $144$ for a $512$-token document, independent of payload size,
-batchable, roughly ten seconds on this 2018 GPU and sub-second on a modern accelerator.
-Hash detectors need none. The comparison this prices is a verification API against a
-mass-scanning filter, and the method is only proposed for the former.
+\paragraph{Advantages, stated as claims the tables support.} (i)~\emph{Quality below the
+control}: with the plausibility floor, ReTrace is the only method in
+Table~\ref{tab:baselines} operating under $1.0\times$ ($0.74\times$--$0.87\times$) at
+nontrivial detection --- every baseline pays quality for strength. (ii)~\emph{An exact,
+per-document null}: the decision threshold is $\mathrm{Binomial}(n,\tfrac12)$, not an
+asymptotic $z$ or an empirically calibrated cutoff, and it held at the worst of twenty
+keys (Table~\ref{tab:validity}). (iii)~\emph{The sample never leaves the model}: no logit
+is edited, no vocabulary is partitioned, no commitment is reordered
+(Algorithm~1), so failure modes are capped --- a key-opposed position falls through to
+the natural sample at zero cost. (iv)~\emph{Near-plain generation budget}: $1.28\times$
+a reference decode, against $\sim\!4\times$ for the strongest dgMARK setting.
+
+\paragraph{Limitations, equally explicit.} (i)~\emph{Detection needs the model}:
+$L{+}1 = 9$ masked sequences per $32$-token block --- $144$ per $512$-token document,
+batchable, seconds on a modern accelerator, but never the hash detectors' zero; this
+prices a verification API, not a mass-scanning filter, and the method is only proposed
+for the former. (ii)~\emph{Post-editing robustness is the weak axis}: the collapse
+measured above is structural, and token-hash schemes keep a real advantage under heavy
+edits. (iii)~\emph{Carrier supply depends on model entropy}: sharp conditionals yield few
+two-sided positions, and the same mechanism that priced out substitution (\S\ref{sec:v1})
+caps how many carriers a well-trained model offers. (iv)~\emph{Detection strength trails
+the strongest baselines at equal length}: $0.80$ at $1\%$ against $3$-beam dgMARK's
+$0.86$ and KGW's $0.93$ at $256$ tokens --- the case for ReTrace is the joint operating
+point, not any single axis.

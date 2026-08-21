@@ -82,14 +82,11 @@ per document under the ideal-PRF model, and false positive control holds empiric
 the worst of twenty keys.
 
 What separates ReTrace from the watermarks it is compared against is the object verified
-rather than the strength read. A token-hash detector reads the symbols and is therefore
-free, fast and robust to the model's own opinion of the text; ReTrace reads the model's
-response, which costs a fixed number of masked evaluations, and inherits both the good and
-the bad of context: an exactly reproducible carrier set on one side, and edit damage that
-propagates through every later block's challenges on the other. Post-editing robustness is
-accordingly where token-hash schemes keep a real advantage, and hardening the response
-channel against it --- shorter challenge contexts, redundancy across blocks --- is the next
-thing this line of work must address.
+rather than the strength read: a token-hash detector reads the symbols, ReTrace reads the
+model's response, and the explicit ledger of what that buys and costs is in
+\S\ref{sec:baselines}. The open item on that ledger is post-editing robustness, and
+hardening the response channel --- shorter challenge contexts, redundancy across blocks
+--- is the next thing this line of work must address.
 
 \bibliographystyle{iclr2025_conference}
 \bibliography{main}
