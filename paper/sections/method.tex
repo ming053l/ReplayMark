@@ -1,6 +1,13 @@
 \section{ReTrace}
 \label{sec:method}
 
+The scheme has three parts, presented in the order a verifier needs them: an
+\emph{observable} computable from text, model and key alone --- the introduction's
+``keyed question'' made precise (\S\ref{sec:observable}); a \emph{statistic} over it
+with an exact rather than asymptotic null (\S\ref{sec:theory}); and the \emph{embedder}
+(\S\ref{sec:embedding}), preceded by the measurements ruling out the more obvious one
+(\S\ref{sec:v1}).
+
 \subsection{The observable}
 \label{sec:observable}
 
@@ -33,8 +40,11 @@ ablations do, widening the dynamic range of $g$.
 \subsection{The statistic}
 \label{sec:theory}
 
-Each position carries an independent keyed orientation bit $\epsilon_i\in\{\pm1\}$ and a
-target $w_i\in\{\pm1\}$, and contributes a bounded indicator
+The statistic is the count of positions whose answer matches the key. Formally, each
+position carries an independent keyed \emph{orientation bit} $\epsilon_i\in\{\pm1\}$ ---
+the hidden coin fixing which sign of $g_i$ counts as agreement --- and a target
+$w_i\in\{\pm1\}$ carrying the message bit ($w_i \equiv +1$ when only provenance is
+claimed), and contributes a bounded indicator
 \begin{equation}
 m_i \;=\; \mathbf{1}\!\left[\,w_i\,\epsilon_i\,g_i(y_i) > 0\,\right],
 \qquad

@@ -65,27 +65,23 @@ watermarkability}.
 \section{Conclusion}
 \label{sec:conclusion}
 
-A diffusion language model can be applied to a finished text and not only used to produce
-one, and ReTrace makes that the verification channel: corrupt the text under a secret key,
-re-denoise, and read whether the model's reconstruction response agrees with a keyed
-orientation. Embedding never leaves the model's own conditional --- a keyed
+ReTrace turns the fact that a diffusion language model can be \emph{applied} to a
+finished text into a verification channel: corrupt the text under a secret key,
+re-denoise, and read whether the reconstruction response agrees with a keyed orientation. Embedding never leaves the model's own conditional --- a keyed
 rejection-resampling with a capped retry budget --- and against a matched control it is
 quality-neutral at the low end ($0.93\times$--$1.14\times$ at $R{\leq}2$) and, with a
 key-free plausibility floor on acceptance, holds sub-control perplexity at high retry
 budgets: $\mathrm{TPR}@1\% = 0.70$ at $0.87\times$ with repetition at parity
 ($R{=}8$, $\kappa{=}0.1$, held-out). The frontier position is honest rather than dominant
---- locally reproduced dgMARK ($0.86$ at $1.23\times$) still leads on detection, unfloored
-$R{\geq}4$ points are dominated, and nothing in the comparison reaches this quality
-region at any detection strength. The null is exact
-per document under the ideal-PRF model, and false positive control holds empirically at
-the worst of twenty keys.
+--- locally reproduced dgMARK ($0.86$ at $1.23\times$) still leads on detection, but
+nothing in the comparison reaches this quality region at any strength --- and the null is
+exact per document, holding empirically at the worst of twenty keys.
 
-What separates ReTrace from the watermarks it is compared against is the object verified
-rather than the strength read: a token-hash detector reads the symbols, ReTrace reads the
-model's response, and the explicit ledger of what that buys and costs is in
-\S\ref{sec:baselines}. The open item on that ledger is post-editing robustness, and
-hardening the response channel --- shorter challenge contexts, redundancy across blocks
---- is the next thing this line of work must address.
+What separates ReTrace from the watermarks it is compared against is the object verified:
+token hashes read symbols, ReTrace reads the model's response, and \S\ref{sec:baselines}
+keeps the explicit ledger of what that buys and costs. The open item on that ledger is
+post-editing robustness; hardening the response channel --- shorter challenge contexts,
+redundancy across blocks --- is the next thing this line of work must address.
 
 \bibliographystyle{iclr2025_conference}
 \bibliography{main}

@@ -21,39 +21,43 @@ it: corrupt it, re-denoise it, and observe the response. That response is a prop
 text's relationship to the model, not of its symbols, and it is available to anyone holding
 the model --- but only interpretable by someone holding the key that chose the corruption.
 
-We call the resulting scheme \textbf{ReTrace}. A secret key derives two corruption
-patterns over the context of a span. Reading the model's log-probability of each
-\emph{observed} token under both corruptions gives a contrast
+We call the resulting scheme \textbf{ReTrace}, and its verifier is easiest to describe as
+a keyed question posed to every token of the text. The key hides two different parts of
+the text's own context --- say, the sentences nearest a span in one version and the
+farthest in the other --- and the model scores the span's tokens under both corruptions.
+Each token then \emph{answers} the question ``which context do you rely on more?'': the
+sign of
 \begin{equation}
-g_i(y_i) \;=\; \log p_\theta\!\left(y_i \mid C^1_i(y)\right) - \log p_\theta\!\left(y_i \mid C^0_i(y)\right),
+g_i(y_i) \;=\; \log p_\theta\!\left(y_i \mid C^1_i(y)\right) - \log p_\theta\!\left(y_i \mid C^0_i(y)\right).
 \label{eq:contrast}
 \end{equation}
-and the watermark asks not that $y_i$ belong to a keyed vocabulary subset, but that the
-sign of $g_i(y_i)$ agree with a keyed orientation. The evidence lives in the model's
-behaviour.
+The key also fixes, per position, which answer a watermarked text \emph{should} give, and
+the verifier counts agreements. A text written without the key cannot know the questions,
+so each of its answers matches an independent hidden coin: agreements follow an exact
+$\mathrm{Binomial}(n,\tfrac12)$ law, and provenance becomes an ordinary hypothesis test.
+No vocabulary partition, no token hash --- the evidence lives in the model's behaviour.
 
-Getting the embedding right took one full negative result (\S\ref{sec:v1}). Substituting
-tokens --- the obvious embedding --- fails because a well-trained denoiser's conditionals
-are sharp: the median position admits exactly one token inside any usable fluency budget,
-and the effect \emph{strengthens} as generation improves, a sampler repair that lowered
-draft perplexity from $22.2$ to $9.5$ also shrinking the admissible set by
-$34\text{--}60\,\%$. \important{Better diffusion-model generation reduces post-hoc
-watermarkability}, and it rules out an entire family of designs.
+How does the watermark get the answers \emph{into} the text? The failed way first,
+because it shaped the design (\S\ref{sec:v1}): editing tokens after generation. On a
+well-trained denoiser the conditionals are sharp --- at the median position exactly one
+token is fluent enough to use, so there is nothing to edit toward. Worse, the effect
+\emph{strengthens} as generation improves: a sampler repair that lowered draft perplexity
+from $22.2$ to $9.5$ also shrank the set of usable alternatives by $34\text{--}60\,\%$.
+\important{Better diffusion-model generation reduces post-hoc watermarkability}, and it
+rules out an entire family of designs.
 
-What survives is to never leave the model's own conditional. Decoding follows the base
-model's own schedule, and at a keyed \emph{carrier} --- a position whose challenge
-response is genuinely two-sided under the key --- the token is sampled from $p_\theta$ and
-simply \emph{resampled}, at most $R$ times at no forward-pass cost, the conditional row
-being unchanged, until its reconstruction response agrees with the key; on exhaustion one
-unconditional sample is committed as-is. Two guards keep the price bounded. A keyed gate
-admits only two-sided positions, so positions whose plausible tokens all answer one way
-fall through to the natural sample and cost nothing; and acceptance can further require a
-key-free \emph{plausibility floor} $p(v) \geq \kappa\, p_{\max}$, capping any carrier's
-cost at $-\log\kappa$ beyond the model's own argmax. With the floor in place, raising $R$
-buys detection with arithmetic rather than quality: measured perplexity sits \emph{at or
-below} the matched non-watermarked control ($0.74\times$--$0.87\times$) at
-$\mathrm{TPR}@1\%$ of $0.70$--$0.80$ on $512$-token documents, and the whole embedder
-costs $1.28\times$ a plain decode.
+What survives is to never override the model at all. ReTrace decodes exactly as the base
+model would, with one added rule: at positions where the keyed question is genuinely
+open --- both answers plausible, which the key can determine on its own --- the model's
+sampled token is checked against the desired answer, and \emph{resampled from the same
+distribution} (at most $R$ times, at no extra forward pass) until an agreeing token comes
+up; if none does, the natural sample is kept. Every committed token is therefore a sample
+the model itself proposed. A key-free \emph{plausibility floor} $p(v) \geq \kappa\,
+p_{\max}$ additionally refuses agreeing-but-unlikely tokens, capping what any single
+position can cost. The measured effect of both guards together is that watermarked
+perplexity sits \emph{at or below} the matched non-watermarked control
+($0.74\times$--$0.87\times$) at $\mathrm{TPR}@1\%$ of $0.70$--$0.80$ on $512$-token
+documents, with the whole embedder costing $1.28\times$ a plain decode.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_retrace_pipeline.pdf}

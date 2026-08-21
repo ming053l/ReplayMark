@@ -28,22 +28,24 @@ lines are this paper's local baseline reproductions.}
 \label{fig:rcurve}
 \end{figure}
 
-\paragraph{The watermark is quality-free, and the earlier evidence against this was a
-harness artifact.} Paired against the matched control, the watermark costs a
-$\Delta$NLL median of $-0.027$ at $R{=}1$ and $-0.037$ at $R{=}2$ (ratios $0.97\times$,
-$0.93\times$; $n{=}30$), replicated on a disjoint held-out set at $0.980\times$ ($n{=}40$).
-Every larger figure previously on record traced to pairing against a differently-scheduled
-reference generator, and the fingerprint of that confound --- $R{=}1$ and $R{=}2$ showing
-the same $\Delta$NLL --- is what exposed it. The mechanism says this is not luck: at a
-one-sided position the committed token is the natural sample whichever way the coin lands, so
-only genuinely two-sided carriers pay, each less than one bit.
+\paragraph{At low retry budgets the watermark costs nothing --- measured against the
+right control.} Paired against a control from the \emph{same} generator with steering
+disabled, the watermark's $\Delta$NLL median is $-0.027$ at $R{=}1$ and $-0.037$ at
+$R{=}2$ (ratios $0.97\times$, $0.93\times$; $n{=}30$), replicated on a disjoint held-out
+set at $0.980\times$ ($n{=}40$). The control matters: pairing against a separately-run
+reference generator with a different schedule overstates the cost roughly twofold,
+because the pairing then measures the scheduler difference, not the watermark. The
+mechanism says the near-zero cost is not luck: a position whose plausible tokens all
+answer one way commits the natural sample whichever way the hidden coin landed, so only
+genuinely two-sided carriers pay, each less than one bit.
 
-\paragraph{Retries buy detection with arithmetic, not compute --- but they do spend the
-quality budget.} On held-out prompts ($n{=}30$, $512$ tokens), $\mathrm{TPR}@1\%$ climbs
+\paragraph{Retries buy detection without compute --- but, unguarded, they do spend
+quality.} On held-out prompts ($n{=}30$, $512$ tokens), $\mathrm{TPR}@1\%$ climbs
 $0.73 \to 0.83 \to 0.87$ across $R{=}2/4/8$ while a retry costs no forward pass
 (Figure~\ref{fig:rcurve}); the paired quality on the same run is $1.14\times$,
-$1.40\times$ and $1.61\times$. The compute is free; the $-\log q$ budget at two-sided
-carriers is not, and more retries extract more of it. The operating points that survive
+$1.40\times$ and $1.61\times$. The reason both things are true at once: resampling is
+free in compute, but each extra retry makes it likelier that a \emph{less probable}
+agreeing token is committed, and that likelihood loss is the quality cost. The operating points that survive
 comparison are therefore the low-$R$ ones: at $R{=}4$ the detection is level with locally
 reproduced dgMARK $3$-beam ($0.86$) but at higher quality cost ($1.40\times$ against
 $1.23\times$), so dgMARK dominates that point, whereas nothing in the table reaches the
@@ -51,11 +53,13 @@ $R{\leq}2$ region's quality at any detection strength. Length is the other free 
 from $256$ to $512$ tokens lifts $1\%$-TPR from $0.25$ to $0.40$ purely by growing the
 presence count, the same length--power trade dgMARK reports.
 
-\paragraph{A plausibility floor decouples $R$ from the quality budget.} Requiring
-$p(v) \geq \kappa\,p_{\max}$ at acceptance caps each carrier's cost at $-\log\kappa$, and
-at $\kappa{=}0.1$ it converts the $R{=}8$ point from $1.61\times$ to $\mathbf{0.87\times}$
-while keeping $\mathrm{TPR}@1\% = 0.70$ (rate $0.620$ against an unfloored $0.711$;
-control null clean at $0.501$). Repetition sits at parity with the control
+\paragraph{A plausibility floor decouples $R$ from the quality budget.} The floor
+refuses exactly the tokens the previous paragraph identified as the cost --- agreeing but
+unlikely ones. Requiring $p(v) \geq \kappa\,p_{\max}$ at acceptance caps each carrier's
+cost at $-\log\kappa$, and at $\kappa{=}0.1$ it converts the $R{=}8$ point from
+$1.61\times$ to $\mathbf{0.87\times}$ while keeping $\mathrm{TPR}@1\% = 0.70$ (the
+fraction of carriers answering with the key drops only from $0.711$ to $0.620$; the
+control arm stays at the chance level of $0.501$). Repetition sits at parity with the control
 ($0.33$ against $0.36$ on decoded text under the shared validity rule; an earlier
 raw-token measurement that suggested otherwise was counting EOS padding as repetition).
 Sub-$1.0$ ratios deserve suspicion rather than celebration --- the floor tilts toward
@@ -110,14 +114,13 @@ the natural sample at zero cost. (iv)~\emph{Near-plain generation budget}: $1.28
 a reference decode, against $\sim\!4\times$ for the strongest dgMARK setting.
 
 \paragraph{Limitations, equally explicit.} (i)~\emph{Detection needs the model}:
-$L{+}1 = 9$ masked sequences per $32$-token block --- $144$ per $512$-token document,
-batchable, seconds on a modern accelerator, but never the hash detectors' zero; this
-prices a verification API, not a mass-scanning filter, and the method is only proposed
-for the former. (ii)~\emph{Post-editing robustness is the weak axis}: the collapse
+$144$ masked evaluations per $512$-token document ($L{+}1=9$ per block), batchable and
+seconds on a modern accelerator, but never the hash detectors' zero --- this prices a
+verification API, not a mass-scanning filter, and the method is proposed only for the
+former. (ii)~\emph{Post-editing robustness is the weak axis}: the collapse
 measured above is structural, and token-hash schemes keep a real advantage under heavy
 edits. (iii)~\emph{Carrier supply depends on model entropy}: sharp conditionals yield few
 two-sided positions, and the same mechanism that priced out substitution (\S\ref{sec:v1})
-caps how many carriers a well-trained model offers. (iv)~\emph{Detection strength trails
-the strongest baselines at equal length}: $0.80$ at $1\%$ against $3$-beam dgMARK's
-$0.86$ and KGW's $0.93$ at $256$ tokens --- the case for ReTrace is the joint operating
+caps how many carriers a well-trained model offers. (iv)~\emph{Detection strength trails the strongest baselines} ($0.80$ at $1\%$ against
+$3$-beam dgMARK's $0.86$, KGW's $0.93$) --- the case for ReTrace is the joint operating
 point, not any single axis.
