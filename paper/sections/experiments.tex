@@ -9,7 +9,11 @@ $\text{steps}=\text{gen\_length}$. Quality is GPT-2-large perplexity against a c
 \emph{under the same decoding regime} --- for ReTrace, the same generator with steering
 disabled, so the pairing isolates the watermark. Detectability is TPR at fixed FPR, never
 raw $z$; development prompts are never reused, and confirmatory runs draw disjoint corpus
-offsets with per-document keys $K_d = \mathrm{HMAC}(K, \mathrm{nonce}_d)$.
+offsets with per-document keys $K_d = \mathrm{HMAC}(K, \mathrm{nonce}_d)$. Compute is a
+reported axis, not a footnote: generation forwards appear per row, and the budget-matched
+comparator for ReTrace ($1.28\times$ a plain decode, from one challenge-table pass per
+block) is dgMARK $k{=}1$ --- its $3$-beam variant spends roughly four decodes per document
+on lookahead and is flagged as such.
 
 \subsection{Main Results and Analysis}
 \label{sec:analysis}
