@@ -5,7 +5,7 @@ viewBox="0 0 960 326">
 <rect x="12" y="8" width="310" height="305" rx="8" fill="white" stroke="#D9DFE7" stroke-width="1"/>
 <rect x="329" y="8" width="304" height="305" rx="8" fill="white" stroke="#D9DFE7" stroke-width="1"/>
 <rect x="640" y="8" width="308" height="305" rx="8" fill="white" stroke="#D9DFE7" stroke-width="1"/>
-<text x="25" y="24" font-size="13" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">(a)</text>
+<text x="25" y="24" font-size="13" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">(a)</text>
 <text x="52" y="24" font-size="13.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">Detection–quality frontier</text>
 <text x="52" y="40" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">local comparison rows; TPR at 1% FPR</text>
 <line x1="67" y1="225.6111111111111" x2="298" y2="225.6111111111111" stroke="#D9DFE7" stroke-width="0.8"/>
@@ -28,29 +28,29 @@ viewBox="0 0 960 326">
 <line x1="67" y1="62" x2="67" y2="252" stroke="#17202B" stroke-width="1"/>
 <text x="182.5" y="286" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">paired PPL ratio  ← better</text>
 <text x="27" y="157.0" font-size="11" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="middle" transform="rotate(-90 27 157.0)">TPR ↑</text>
-<polyline points="129.37,217.69444444444446 168.64,138.52777777777777 228.7,112.13888888888889 277.21000000000004,101.58333333333331" fill="none" stroke="#83B9EA" stroke-width="2"/>
-<circle cx="129.37" cy="217.69444444444446" r="5.5" fill="#005AB5" stroke="white" stroke-width="1.2"/>
-<text x="136.37" y="231.69444444444446" font-size="9.8" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">R1</text>
-<circle cx="168.64" cy="138.52777777777777" r="5.5" fill="#005AB5" stroke="white" stroke-width="1.2"/>
-<text x="175.64" y="151.52777777777777" font-size="9.8" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">R2</text>
-<circle cx="228.7" cy="112.13888888888889" r="5.5" fill="#005AB5" stroke="white" stroke-width="1.2"/>
-<text x="234.7" y="104.13888888888889" font-size="9.8" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">R4</text>
-<circle cx="277.21000000000004" cy="101.58333333333331" r="5.5" fill="#005AB5" stroke="white" stroke-width="1.2"/>
-<text x="270.21000000000004" y="92.58333333333331" font-size="9.8" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="end">R8</text>
-<rect x="100.77000000000001" y="140.94444444444446" width="11.0" height="11.0" rx="1" fill="#287A4B" stroke="white" stroke-width="1.2"/>
-<text x="113.27000000000001" y="138.44444444444446" font-size="9.5" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="start">floor .10</text>
-<rect x="70.74000000000001" y="114.55555555555557" width="11.0" height="11.0" rx="1" fill="#287A4B" stroke="white" stroke-width="1.2"/>
-<text x="83.24000000000001" y="112.05555555555557" font-size="9.5" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="start">floor .05</text>
+<polyline points="129.37,217.69444444444446 168.64,138.52777777777777 228.7,112.13888888888889 277.21000000000004,101.58333333333331" fill="none" stroke="#91AFC4" stroke-width="2"/>
+<circle cx="129.37" cy="217.69444444444446" r="5.5" fill="#285F8F" stroke="white" stroke-width="1.2"/>
+<text x="136.37" y="231.69444444444446" font-size="9.8" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">R1</text>
+<circle cx="168.64" cy="138.52777777777777" r="5.5" fill="#285F8F" stroke="white" stroke-width="1.2"/>
+<text x="175.64" y="151.52777777777777" font-size="9.8" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">R2</text>
+<circle cx="228.7" cy="112.13888888888889" r="5.5" fill="#285F8F" stroke="white" stroke-width="1.2"/>
+<text x="234.7" y="104.13888888888889" font-size="9.8" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">R4</text>
+<circle cx="277.21000000000004" cy="101.58333333333331" r="5.5" fill="#285F8F" stroke="white" stroke-width="1.2"/>
+<text x="270.21000000000004" y="92.58333333333331" font-size="9.8" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="end">R8</text>
+<rect x="100.77000000000001" y="140.94444444444446" width="11.0" height="11.0" rx="1" fill="#285F8F" stroke="white" stroke-width="1.2"/>
+<text x="113.27000000000001" y="138.44444444444446" font-size="9.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">floor .10</text>
+<rect x="70.74000000000001" y="114.55555555555557" width="11.0" height="11.0" rx="1" fill="#285F8F" stroke="white" stroke-width="1.2"/>
+<text x="83.24000000000001" y="112.05555555555557" font-size="9.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">floor .05</text>
 <polygon points="143.23000000000002,79.24999999999997 149.73000000000002,91.24999999999997 136.73000000000002,91.24999999999997" fill="#697384" stroke="white" stroke-width="1.2"/>
 <text x="136.23000000000002" y="76.74999999999997" font-size="9.5" fill="#697384" font-weight="bold" font-style="normal" text-anchor="end">KGW δ1</text>
 <polygon points="184.81,60.77777777777777 191.31,72.77777777777777 178.31,72.77777777777777" fill="#697384" stroke="white" stroke-width="1.2"/>
 <text x="191.81" y="80.27777777777777" font-size="9.5" fill="#697384" font-weight="bold" font-style="normal" text-anchor="start">KGW δ3</text>
-<polygon points="263.35,129.38888888888889 269.85,135.88888888888889 263.35,142.38888888888889 256.85,135.88888888888889" fill="#8B6843" stroke="white" stroke-width="1.2"/>
-<text x="256.35" y="150.88888888888889" font-size="9.5" fill="#8B6843" font-weight="bold" font-style="normal" text-anchor="end">dgMARK k1</text>
-<polygon points="189.43,97.7222222222222 195.93,104.2222222222222 189.43,110.7222222222222 182.93,104.2222222222222" fill="#8B6843" stroke="white" stroke-width="1.2"/>
-<text x="182.43" y="96.2222222222222" font-size="9.5" fill="#8B6843" font-weight="bold" font-style="normal" text-anchor="end">dgMARK b3</text>
+<polygon points="263.35,129.38888888888889 269.85,135.88888888888889 263.35,142.38888888888889 256.85,135.88888888888889" fill="#8A6D3B" stroke="white" stroke-width="1.2"/>
+<text x="256.35" y="150.88888888888889" font-size="9.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="end">dgMARK k1</text>
+<polygon points="189.43,97.7222222222222 195.93,104.2222222222222 189.43,110.7222222222222 182.93,104.2222222222222" fill="#8A6D3B" stroke="white" stroke-width="1.2"/>
+<text x="182.43" y="96.2222222222222" font-size="9.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="end">dgMARK b3</text>
 <text x="178" y="305" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">● ReTrace   ■ +floor   ◆ dgMARK   ▲ KGW</text>
-<text x="342" y="24" font-size="13" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">(b)</text>
+<text x="342" y="24" font-size="13" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">(b)</text>
 <text x="369" y="24" font-size="13.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">What retries change</text>
 <text x="369" y="40" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">unfloored 512-token operating points</text>
 <line x1="379" y1="130.83333333333331" x2="605" y2="130.83333333333331" stroke="#D9DFE7" stroke-width="0.75"/>
@@ -61,12 +61,12 @@ viewBox="0 0 960 326">
 <text x="372" y="82.16666666666666" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="end">0.8</text>
 <line x1="379" y1="144" x2="605" y2="144" stroke="#17202B" stroke-width="1"/>
 <line x1="379" y1="65" x2="379" y2="144" stroke="#17202B" stroke-width="1"/>
-<polyline points="379.0,126.88333333333333 454.3333333333333,87.38333333333333 529.6666666666666,74.21666666666665 605.0,68.94999999999999" fill="none" stroke="#005AB5" stroke-width="2"/>
-<circle cx="379.0" cy="126.88333333333333" r="5" fill="#005AB5" stroke="white" stroke-width="1.2"/>
-<circle cx="454.3333333333333" cy="87.38333333333333" r="5" fill="#005AB5" stroke="white" stroke-width="1.2"/>
-<circle cx="529.6666666666666" cy="74.21666666666665" r="5" fill="#005AB5" stroke="white" stroke-width="1.2"/>
-<circle cx="605.0" cy="68.94999999999999" r="5" fill="#005AB5" stroke="white" stroke-width="1.2"/>
-<text x="384" y="78" font-size="10.5" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">TPR@1%</text>
+<polyline points="379.0,126.88333333333333 454.3333333333333,87.38333333333333 529.6666666666666,74.21666666666665 605.0,68.94999999999999" fill="none" stroke="#285F8F" stroke-width="2"/>
+<circle cx="379.0" cy="126.88333333333333" r="5" fill="#285F8F" stroke="white" stroke-width="1.2"/>
+<circle cx="454.3333333333333" cy="87.38333333333333" r="5" fill="#285F8F" stroke="white" stroke-width="1.2"/>
+<circle cx="529.6666666666666" cy="74.21666666666665" r="5" fill="#285F8F" stroke="white" stroke-width="1.2"/>
+<circle cx="605.0" cy="68.94999999999999" r="5" fill="#285F8F" stroke="white" stroke-width="1.2"/>
+<text x="384" y="78" font-size="10.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">TPR@1%</text>
 <line x1="379" y1="251.1" x2="605" y2="251.1" stroke="#D9DFE7" stroke-width="0.75"/>
 <text x="372" y="255.1" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="end">0.8</text>
 <line x1="379" y1="219.5" x2="605" y2="219.5" stroke="#D9DFE7" stroke-width="0.75"/>
@@ -75,20 +75,20 @@ viewBox="0 0 960 326">
 <text x="372" y="191.89999999999998" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="end">1.6</text>
 <line x1="379" y1="259" x2="605" y2="259" stroke="#17202B" stroke-width="1"/>
 <line x1="379" y1="180" x2="379" y2="259" stroke="#17202B" stroke-width="1"/>
-<polyline points="379.0,237.67 454.3333333333333,224.24 529.6666666666666,203.7 605.0,187.10999999999999" fill="none" stroke="#B2182B" stroke-width="2"/>
-<circle cx="379.0" cy="237.67" r="5" fill="#B2182B" stroke="white" stroke-width="1.2"/>
-<circle cx="454.3333333333333" cy="224.24" r="5" fill="#B2182B" stroke="white" stroke-width="1.2"/>
-<circle cx="529.6666666666666" cy="203.7" r="5" fill="#B2182B" stroke="white" stroke-width="1.2"/>
-<circle cx="605.0" cy="187.10999999999999" r="5" fill="#B2182B" stroke="white" stroke-width="1.2"/>
-<text x="384" y="193" font-size="10.5" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="start">PPL ratio</text>
+<polyline points="379.0,237.67 454.3333333333333,224.24 529.6666666666666,203.7 605.0,187.10999999999999" fill="none" stroke="#8A6D3B" stroke-width="2"/>
+<circle cx="379.0" cy="237.67" r="5" fill="#8A6D3B" stroke="white" stroke-width="1.2"/>
+<circle cx="454.3333333333333" cy="224.24" r="5" fill="#8A6D3B" stroke="white" stroke-width="1.2"/>
+<circle cx="529.6666666666666" cy="203.7" r="5" fill="#8A6D3B" stroke="white" stroke-width="1.2"/>
+<circle cx="605.0" cy="187.10999999999999" r="5" fill="#8A6D3B" stroke="white" stroke-width="1.2"/>
+<text x="384" y="193" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="start">PPL ratio</text>
 <text x="379.0" y="276" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">1</text>
 <text x="454.3333333333333" y="276" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">2</text>
 <text x="529.6666666666666" y="276" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">4</text>
 <text x="605.0" y="276" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">8</text>
 <text x="492.0" y="294" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">retry budget R</text>
 <rect x="355" y="300" width="250" height="0" rx="6" fill="none" stroke="none" stroke-width="1"/>
-<text x="481" y="308" font-size="9.5" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">Floor (TPR / PPL):  R8 κ=.1 → .70/.87;  R16 κ=.05 → .80/.74</text>
-<text x="653" y="24" font-size="13" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">(c)</text>
+<text x="481" y="308" font-size="9.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">Floor (TPR / PPL):  R8 κ=.1 → .70/.87;  R16 κ=.05 → .80/.74</text>
+<text x="653" y="24" font-size="13" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">(c)</text>
 <text x="680" y="24" font-size="13.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">Post-edit signal collapses</text>
 <text x="680" y="40" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">R=1, n=20; analytic 1% threshold</text>
 <line x1="687" y1="254.0" x2="924" y2="254.0" stroke="#D9DFE7" stroke-width="0.75"/>
@@ -103,27 +103,27 @@ viewBox="0 0 960 326">
 <text x="680" y="74.0" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="end">0.4</text>
 <line x1="687" y1="254" x2="924" y2="254" stroke="#17202B" stroke-width="1"/>
 <line x1="687" y1="70" x2="687" y2="254" stroke="#17202B" stroke-width="1"/>
-<rect x="706" y="93.00000000000003" width="17" height="160.99999999999997" rx="1" fill="#005AB5" stroke="none" stroke-width="0"/>
+<rect x="706" y="93.00000000000003" width="17" height="160.99999999999997" rx="1" fill="#285F8F" stroke="none" stroke-width="0"/>
 <rect x="725" y="254.0" width="17" height="1" rx="1" fill="#697384" stroke="none" stroke-width="0"/>
-<text x="714.5" y="88.00000000000003" font-size="9.5" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="middle">0.35</text>
+<text x="714.5" y="88.00000000000003" font-size="9.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">0.35</text>
 <text x="721" y="270" font-size="9.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">clean</text>
-<rect x="764" y="231.0" width="17" height="23.0" rx="1" fill="#005AB5" stroke="none" stroke-width="0"/>
+<rect x="764" y="231.0" width="17" height="23.0" rx="1" fill="#285F8F" stroke="none" stroke-width="0"/>
 <rect x="783" y="231.0" width="17" height="23.0" rx="1" fill="#697384" stroke="none" stroke-width="0"/>
-<text x="772.5" y="226.0" font-size="9.5" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="middle">0.05</text>
+<text x="772.5" y="226.0" font-size="9.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">0.05</text>
 <text x="779" y="270" font-size="9.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">re-denoise</text>
 <text x="779" y="281" font-size="9.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">10%</text>
-<rect x="822" y="231.0" width="17" height="23.0" rx="1" fill="#005AB5" stroke="none" stroke-width="0"/>
+<rect x="822" y="231.0" width="17" height="23.0" rx="1" fill="#285F8F" stroke="none" stroke-width="0"/>
 <rect x="841" y="254.0" width="17" height="1" rx="1" fill="#697384" stroke="none" stroke-width="0"/>
-<text x="830.5" y="226.0" font-size="9.5" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="middle">0.05</text>
+<text x="830.5" y="226.0" font-size="9.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">0.05</text>
 <text x="837" y="270" font-size="9.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">re-denoise</text>
 <text x="837" y="281" font-size="9.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">20%</text>
-<rect x="880" y="231.0" width="17" height="23.0" rx="1" fill="#005AB5" stroke="none" stroke-width="0"/>
+<rect x="880" y="231.0" width="17" height="23.0" rx="1" fill="#285F8F" stroke="none" stroke-width="0"/>
 <rect x="899" y="231.0" width="17" height="23.0" rx="1" fill="#697384" stroke="none" stroke-width="0"/>
-<text x="888.5" y="226.0" font-size="9.5" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="middle">0.05</text>
+<text x="888.5" y="226.0" font-size="9.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">0.05</text>
 <text x="895" y="270" font-size="9.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">delete</text>
 <text x="895" y="281" font-size="9.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">10%</text>
 <text x="653" y="162.0" font-size="11" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="middle" transform="rotate(-90 653 162.0)">rate</text>
-<rect x="708" y="295" width="10" height="10" rx="1" fill="#005AB5" stroke="none" stroke-width="0"/>
+<rect x="708" y="295" width="10" height="10" rx="1" fill="#285F8F" stroke="none" stroke-width="0"/>
 <text x="723" y="304" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">watermarked TPR</text>
 <rect x="822" y="295" width="10" height="10" rx="1" fill="#697384" stroke="none" stroke-width="0"/>
 <text x="837" y="304" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">control FPR</text>

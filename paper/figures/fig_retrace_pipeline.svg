@@ -18,17 +18,17 @@
 <text x="55" y="59" font-size="14" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">Reference DLM</text>
 <text x="55" y="74" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">keep the native block schedule</text>
 <rect x="241" y="40" width="223" height="266" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
-<circle cx="259" cy="61" r="11" fill="#9B6A16" stroke="#9B6A16" stroke-width="1"/>
+<circle cx="259" cy="61" r="11" fill="#8A6D3B" stroke="#8A6D3B" stroke-width="1"/>
 <text x="259" y="65" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">2</text>
 <text x="278" y="59" font-size="14" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">Response Bank + Gate</text>
 <text x="278" y="74" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">RRB records; BCG selects</text>
 <rect x="474" y="40" width="223" height="266" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
-<circle cx="492" cy="61" r="11" fill="#005AB5" stroke="#005AB5" stroke-width="1"/>
+<circle cx="492" cy="61" r="11" fill="#285F8F" stroke="#285F8F" stroke-width="1"/>
 <text x="492" y="65" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">3</text>
 <text x="511" y="59" font-size="14" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">RAR embedding</text>
 <text x="511" y="74" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">response-aligned resampling</text>
 <rect x="707" y="40" width="235" height="266" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
-<circle cx="725" cy="61" r="11" fill="#287A4B" stroke="#287A4B" stroke-width="1"/>
+<circle cx="725" cy="61" r="11" fill="#285F8F" stroke="#285F8F" stroke-width="1"/>
 <text x="725" y="65" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">4</text>
 <text x="744" y="59" font-size="14" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">RRV verification</text>
 <text x="744" y="74" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">replay, count, test</text>
@@ -45,8 +45,8 @@
 <rect x="171" y="108" width="43" height="25" rx="4" fill="#E7EBF0" stroke="#CCD3DD" stroke-width="0.9"/>
 <text x="192.5" y="125" font-size="11.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">MASK</text>
 <line x1="124" y1="137" x2="124" y2="153" stroke="#596579" stroke-width="1.1" marker-end="url(#arrow)"/>
-<rect x="73" y="156" width="102" height="32" rx="7" fill="#EAF3FC" stroke="#9BC3EA" stroke-width="1"/>
-<text x="124" y="177" font-size="12" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">diffusion LM</text>
+<rect x="73" y="156" width="102" height="32" rx="7" fill="#EDF3F7" stroke="#AABFCC" stroke-width="1"/>
+<text x="124" y="177" font-size="12" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="middle">diffusion LM</text>
 <line x1="124" y1="190" x2="124" y2="203" stroke="#596579" stroke-width="1.1" marker-end="url(#arrow)"/>
 <rect x="58" y="202" width="132" height="80" rx="5" fill="white" stroke="#CCD3DD" stroke-width="1"/>
 <path d="M58,222 H190" stroke="#CCD3DD"/>
@@ -62,14 +62,14 @@
 <text x="162.0" y="278" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">.13</text>
 <text x="124" y="297" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">sample once and commit</text>
 <text x="255" y="96" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">Mask block + suffix; ablate the fixed prefix</text>
-<text x="255" y="118" font-size="11" fill="#9B6A16" font-weight="bold" font-style="normal" text-anchor="start">Cᵘ</text>
+<text x="255" y="118" font-size="11" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="start">Cᵘ</text>
 <rect x="280" y="103" width="27" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
 <text x="293.5" y="120" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">·</text>
 <rect x="310" y="103" width="47" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
 <text x="333.5" y="120" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">fixed</text>
 <rect x="360" y="103" width="49" height="25" rx="4" fill="#E7EBF0" stroke="#CCD3DD" stroke-width="0.9"/>
 <text x="384.5" y="120" font-size="11.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">MASK</text>
-<text x="255" y="149" font-size="11" fill="#9B6A16" font-weight="bold" font-style="normal" text-anchor="start">Cᵛ</text>
+<text x="255" y="149" font-size="11" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="start">Cᵛ</text>
 <rect x="280" y="134" width="52" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
 <text x="306.0" y="151" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">prompt</text>
 <rect x="335" y="134" width="27" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
@@ -77,8 +77,8 @@
 <rect x="365" y="134" width="49" height="25" rx="4" fill="#E7EBF0" stroke="#CCD3DD" stroke-width="0.9"/>
 <text x="389.5" y="151" font-size="11.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">MASK</text>
 <line x1="415" y1="129" x2="435" y2="129" stroke="#596579" stroke-width="1.1" marker-end="url(#arrow)"/>
-<rect x="392" y="155" width="58" height="31" rx="6" fill="#FBF3E3" stroke="#D9BB7B" stroke-width="1"/>
-<text x="421" y="175" font-size="11.5" fill="#9B6A16" font-weight="bold" font-style="normal" text-anchor="middle">DLM</text>
+<rect x="392" y="155" width="58" height="31" rx="6" fill="#F4F0E8" stroke="#D9BB7B" stroke-width="1"/>
+<text x="421" y="175" font-size="11.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="middle">DLM</text>
 <text x="255" y="196" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">RRB entry  gᵢ(z)=log pᵛ−log pᵘ</text>
 <rect x="255" y="202" width="172" height="72" rx="5" fill="white" stroke="#CCD3DD" stroke-width="1"/>
 <path d="M255,220 H427" stroke="#CCD3DD"/>
@@ -89,22 +89,22 @@
 <text x="408.0" y="218" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">sign</text>
 <text x="292.0" y="236" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">the</text>
 <text x="359.0" y="236" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">+.8</text>
-<text x="408.0" y="236" font-size="11" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
+<text x="408.0" y="236" font-size="11" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
 <rect x="256" y="238" width="170" height="18" fill="#F6F8FA"/>
 <text x="292.0" y="254" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">a</text>
 <text x="359.0" y="254" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">−.6</text>
-<text x="408.0" y="254" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="middle">−</text>
+<text x="408.0" y="254" font-size="11" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="middle">−</text>
 <text x="292.0" y="272" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">this</text>
 <text x="359.0" y="272" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">+.1</text>
-<text x="408.0" y="272" font-size="11" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
+<text x="408.0" y="272" font-size="11" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
 <rect x="255" y="292" width="194" height="8" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="1"/>
-<rect x="256" y="293" width="102" height="6" rx="3" fill="#005AB5"/>
-<rect x="358" y="293" width="90" height="6" rx="3" fill="#B2182B"/>
-<text x="255" y="286" font-size="10.5" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="start">q₊=.53</text>
-<text x="449" y="286" font-size="10.5" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="end">q₋=.47  ⇒  carrier</text>
-<rect x="488" y="91" width="195" height="34" rx="7" fill="#EAF3FC" stroke="#9BC3EA" stroke-width="1"/>
+<rect x="256" y="293" width="102" height="6" rx="3" fill="#285F8F"/>
+<rect x="358" y="293" width="90" height="6" rx="3" fill="#8A6D3B"/>
+<text x="255" y="286" font-size="10.5" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="start">q₊=.53</text>
+<text x="449" y="286" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="end">q₋=.47  ⇒  carrier</text>
+<rect x="488" y="91" width="195" height="34" rx="7" fill="#EDF3F7" stroke="#AABFCC" stroke-width="1"/>
 <text x="500" y="105" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">keyed orientation</text>
-<text x="671" y="113" font-size="13" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="end">wᵢ εᵢ = +1</text>
+<text x="671" y="113" font-size="13" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="end">wᵢ εᵢ = +1</text>
 <text x="488" y="146" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">Draw from the unchanged live row</text>
 <rect x="488" y="153" width="209" height="75" rx="5" fill="white" stroke="#CCD3DD" stroke-width="1"/>
 <path d="M488,178 H697" stroke="#CCD3DD"/>
@@ -120,61 +120,61 @@
 <text x="501.0" y="194" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">1</text>
 <text x="541.5" y="194" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">a</text>
 <text x="591.0" y="194" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">.25</text>
-<text x="628.5" y="194" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="middle">−</text>
-<text x="670.5" y="194" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="middle">reject</text>
+<text x="628.5" y="194" font-size="11" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="middle">−</text>
+<text x="670.5" y="194" font-size="11" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="middle">reject</text>
 <rect x="489" y="203" width="207" height="25" fill="#F6F8FA"/>
 <text x="501.0" y="219" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">2</text>
 <text x="541.5" y="219" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">the</text>
 <text x="591.0" y="219" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">.42</text>
-<text x="628.5" y="219" font-size="11" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
-<text x="670.5" y="219" font-size="11" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">accept</text>
+<text x="628.5" y="219" font-size="11" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
+<text x="670.5" y="219" font-size="11" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="middle">accept</text>
 <text x="488" y="244" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">accept if sign matches and pᵢ ≥ κ max pᵢ</text>
-<text x="488" y="261" font-size="10.5" fill="#B2182B" font-weight="normal" font-style="normal" text-anchor="start">after R misses: one unchecked fallback draw</text>
+<text x="488" y="261" font-size="10.5" fill="#8A6D3B" font-weight="normal" font-style="normal" text-anchor="start">after R misses: one unchecked fallback draw</text>
 <text x="488" y="276" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">Committed block</text>
-<rect x="488" y="280" width="55" height="25" rx="4" fill="#EAF3FC" stroke="#005AB5" stroke-width="0.9"/>
-<text x="515.5" y="297" font-size="11.5" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">the</text>
+<rect x="488" y="280" width="55" height="25" rx="4" fill="#EDF3F7" stroke="#285F8F" stroke-width="0.9"/>
+<text x="515.5" y="297" font-size="11.5" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="middle">the</text>
 <rect x="546" y="280" width="55" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
 <text x="573.5" y="297" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">next</text>
 <rect x="604" y="280" width="42" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
 <text x="625.0" y="297" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">…</text>
 <text x="721" y="96" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">Finished text</text>
-<rect x="721" y="103" width="46" height="25" rx="4" fill="#EAF3FC" stroke="#005AB5" stroke-width="0.9"/>
-<text x="744.0" y="120" font-size="11.5" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">the</text>
+<rect x="721" y="103" width="46" height="25" rx="4" fill="#EDF3F7" stroke="#285F8F" stroke-width="0.9"/>
+<text x="744.0" y="120" font-size="11.5" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="middle">the</text>
 <rect x="770" y="103" width="48" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
 <text x="794.0" y="120" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">next</text>
-<rect x="821" y="103" width="49" height="25" rx="4" fill="#EAF3FC" stroke="#005AB5" stroke-width="0.9"/>
-<text x="845.5" y="120" font-size="11.5" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">claim</text>
+<rect x="821" y="103" width="49" height="25" rx="4" fill="#EDF3F7" stroke="#285F8F" stroke-width="0.9"/>
+<text x="845.5" y="120" font-size="11.5" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="middle">claim</text>
 <rect x="873" y="103" width="32" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
 <text x="889.0" y="120" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">…</text>
 <line x1="812" y1="132" x2="812" y2="150" stroke="#596579" stroke-width="1.1" marker-end="url(#arrow)"/>
-<rect x="735" y="153" width="154" height="34" rx="7" fill="#EAF5EE" stroke="#A9D1B8" stroke-width="1"/>
-<text x="812" y="168" font-size="10.5" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">re-mask and rebuild</text>
+<rect x="735" y="153" width="154" height="34" rx="7" fill="#EDF3F7" stroke="#A9D1B8" stroke-width="1"/>
+<text x="812" y="168" font-size="10.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">re-mask and rebuild</text>
 <text x="812" y="181" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">the same Response Bank</text>
 <text x="721" y="208" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">Carrier matches mᵢ</text>
-<circle cx="735" cy="225" r="9" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
-<text x="735" y="229" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
-<circle cx="761" cy="225" r="9" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
-<text x="761" y="229" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
-<circle cx="787" cy="225" r="9" fill="#FBEAEC" stroke="#B2182B" stroke-width="1.1"/>
-<text x="787" y="229" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="middle">×</text>
-<circle cx="813" cy="225" r="9" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
-<text x="813" y="229" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
-<circle cx="839" cy="225" r="9" fill="#FBEAEC" stroke="#B2182B" stroke-width="1.1"/>
-<text x="839" y="229" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="middle">×</text>
-<circle cx="865" cy="225" r="9" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
-<text x="865" y="229" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
-<circle cx="891" cy="225" r="9" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
-<text x="891" y="229" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
+<circle cx="735" cy="225" r="9" fill="#EDF3F7" stroke="#285F8F" stroke-width="1.1"/>
+<text x="735" y="229" font-size="11" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
+<circle cx="761" cy="225" r="9" fill="#EDF3F7" stroke="#285F8F" stroke-width="1.1"/>
+<text x="761" y="229" font-size="11" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
+<circle cx="787" cy="225" r="9" fill="#F4F0E8" stroke="#8A6D3B" stroke-width="1.1"/>
+<text x="787" y="229" font-size="11" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="middle">×</text>
+<circle cx="813" cy="225" r="9" fill="#EDF3F7" stroke="#285F8F" stroke-width="1.1"/>
+<text x="813" y="229" font-size="11" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
+<circle cx="839" cy="225" r="9" fill="#F4F0E8" stroke="#8A6D3B" stroke-width="1.1"/>
+<text x="839" y="229" font-size="11" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="middle">×</text>
+<circle cx="865" cy="225" r="9" fill="#EDF3F7" stroke="#285F8F" stroke-width="1.1"/>
+<text x="865" y="229" font-size="11" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
+<circle cx="891" cy="225" r="9" fill="#EDF3F7" stroke="#285F8F" stroke-width="1.1"/>
+<text x="891" y="229" font-size="11" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
 <rect x="721" y="246" width="207" height="43" rx="7" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="1"/>
 <text x="732" y="263" font-size="12" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">T = Σᵢ mᵢ</text>
 <text x="732" y="280" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">pdet = Pr[Bin(n, ½) ≥ T]</text>
-<rect x="844" y="252" width="75" height="28" rx="14" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.2"/>
-<text x="881.5" y="270" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">detected</text>
+<rect x="844" y="252" width="75" height="28" rx="14" fill="#EDF3F7" stroke="#285F8F" stroke-width="1.2"/>
+<text x="881.5" y="270" font-size="11" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">detected</text>
 <rect x="18" y="317" width="924" height="29" rx="6" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="1"/>
-<text x="35" y="336" font-size="10" fill="#9B6A16" font-weight="bold" font-style="normal" text-anchor="start">REPRODUCIBLE</text>
+<text x="35" y="336" font-size="10" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="start">REPRODUCIBLE</text>
 <text x="124" y="336" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">table uses only the fixed prefix</text>
-<text x="350" y="336" font-size="10" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">MODEL-PROPOSED</text>
+<text x="350" y="336" font-size="10" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">MODEL-PROPOSED</text>
 <text x="449" y="336" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">retries reuse one probability row</text>
-<text x="687" y="336" font-size="10" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="start">EXACT NULL</text>
+<text x="687" y="336" font-size="10" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">EXACT NULL</text>
 <text x="756" y="336" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">conditional Binomial(n, ½)</text>
 </svg>

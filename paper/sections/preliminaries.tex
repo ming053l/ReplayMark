@@ -1,27 +1,31 @@
 \section{Background and Problem Setup}
 \label{sec:prelim}
 
-\paragraph{Blockwise masked diffusion.}
-Let $x$ be a prompt and $y=(y_1,\ldots,y_N)$ the generated continuation. We study the
-semi-autoregressive schedule used by LLaDA: $y$ is partitioned into contiguous blocks,
-blocks are completed from left to right, and diffusion resolves masks within the active
-block~\citep{arriola2025blockdiffusion,nie2025llada}. When block $B_b$ is active, the
-prompt and earlier blocks are fixed while $B_b$ and all later blocks remain masked. A
-masked DLM returns a categorical distribution for every unresolved position in one
-sequence evaluation; the sampler commits the most confident positions according to the
-reference schedule.
+Let $x$ be a prompt and $y=(y_1,\ldots,y_N)$ a continuation partitioned into blocks. We
+study LLaDA's semi-autoregressive schedule: blocks finish left to right, while diffusion
+resolves masks within the active block~\citep{arriola2025blockdiffusion,nie2025llada}. One
+sequence evaluation returns a categorical distribution at every unresolved position, and
+the reference confidence rule decides which positions to commit.
 
-\paragraph{Verification setting.}
-The embedder receives the model, prompt, secret key $K$, and message. The verifier later
-receives only the completed token sequence, the same model, $K$, and public decoding
-parameters. It does not receive logits, random seeds, or the order in which tokens were
-committed. Each document uses a nonce-derived key
-$K_d=\mathrm{HMAC}(K,\mathrm{nonce}_d)$. The null hypothesis covers any text produced
-independently of $K_d$; it does not require a particular natural-text distribution.
+The embedder receives the model, prompt, secret key $K$, and target bits. The verifier
+later receives only the completed sequence, the same model, $K$, and public parameters;
+it does not receive logits, random seeds, or commit order. A nonce derives a document key
+$K_d=\mathrm{HMAC}(K,\mathrm{nonce}_d)$. The null covers any text generated independently
+of $K_d$.
 
-We evaluate three properties. \emph{Validity} requires false-positive control under the
-null. \emph{Power} is reported as true-positive rate (TPR) at a fixed false-positive rate
-(FPR). \emph{Cost} includes both changes in text quality and the model evaluations required
-at generation and verification time. Because ReTrace changes the sampling distribution,
-quality is always compared with a non-watermarked control using the same base schedule and
-sampling temperature.
+\paragraph{Threat model and scope.}
+The model and algorithm may be public; secrecy rests in $K$. We require false-positive
+control for arbitrary fixed text independent of the document key, including machine text
+from another sampler. We do not claim security after key disclosure, against an adaptive
+adversary with detector-query access, or when verification uses a numerically different
+checkpoint. The latter restriction is deliberate: ReTrace binds its evidence to the
+contextual behavior of a specified model, but sacrifices the portability of token-only
+detectors.
+
+\paragraph{Design requirements.}
+Three constraints shape the construction. \emph{Replayability} requires every scored
+context to be recoverable from the final text. \emph{Orientation independence} requires
+carrier selection to ignore which response sign the key will reward; otherwise the null
+can be biased. \emph{Schedule fidelity} requires embedding to retain the reference block
+and confidence order. We evaluate power at fixed FPR, paired quality against the same base
+sampler, and generation and verification model evaluations.

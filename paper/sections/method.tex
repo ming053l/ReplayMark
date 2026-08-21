@@ -1,6 +1,18 @@
 \section{ReTrace}
 \label{sec:method}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_retrace_pipeline.pdf}
+\caption{\textbf{Overall ReTrace pipeline.} The reference DLM retains its block and
+confidence schedule. RRB records context-ablation responses; BCG admits positions with
+mass on both signs; and RAR retries from the unchanged live conditional. For detection,
+RRV re-masks each completed block, reconstructs the same bank and carriers, counts keyed
+sign matches $T$, and returns an exact binomial $p$-value. Verification needs the final
+text, model, public parameters, and key, but no generation trajectory or rejected samples.}
+\label{fig:pipeline}
+\end{figure}
+
 ReTrace must reproduce at verification time every decision that determines which tokens
 are scored. This requirement divides the method into four modules. The
 \emph{Reproducible Response Bank} (RRB) records how the DLM responds to a fixed family of
@@ -11,15 +23,13 @@ block schedule (\S\ref{sec:embedding}), and the \emph{Response-Replay Verifier} 
 reconstructs the RRB from the completed text and applies an exact test
 (\S\ref{sec:theory}).
 
-\subsection{Reproducible Response Bank}
+\subsection{Reproducible Response Bank and Balanced Carrier Gate}
 \label{sec:observable}
 
-Consider a block $B_b$ beginning at position $r_b$. Let $F_b$ contain the prompt and all
-positions before $B_b$, which are final when the block starts. ReTrace constructs $L$
-equal-size ablation patterns $D_{b,1},\ldots,D_{b,L}\subset F_b$. The implementation
-includes near-context, far-context, and keyed pseudorandom patterns. For pattern $\ell$,
-the model input masks $D_{b,\ell}$, the entire current block, and every later block. For
-each $i\in B_b$ and vocabulary item $v$, one masked sequence evaluation yields
+For block $B_b$, let $F_b$ be the prompt and completed prefix. ReTrace constructs $L$
+equal-size near, far, and keyed pseudorandom ablations $D_{b,\ell}\subset F_b$. It masks
+$D_{b,\ell}$, the current block, and the suffix; one model evaluation then yields, for all
+$i\in B_b$ and vocabulary items $v$,
 \begin{equation}
 \ell_{i,\ell}(v)
   = \log p_\theta\!\left(v \mid F_b\setminus D_{b,\ell};
@@ -27,12 +37,12 @@ each $i\in B_b$ and vocabulary item $v$, one masked sequence evaluation yields
 \label{eq:arm-logprob}
 \end{equation}
 
-Masking the current block is essential. It prevents tokens committed later in that block
-from changing the RRB. Masking the suffix is equally important because those tokens were
-not visible when the embedder built the bank. Given the completed text, the RRV restores
-exactly this state by re-masking the current block and suffix. Thus the RRB depends on the
-final prefix, model, public parameters, and key, but not on an unrecorded generation
-trajectory.
+Re-masking the block and suffix removes tokens unavailable when its bank was built. The
+verifier can therefore restore the same state from the final text; no trajectory is needed.
+Masking only the ablated prefix would fail: tokens committed later in the same block would
+leak into verification-time logits, while the future suffix was entirely invisible during
+embedding. Block-and-suffix masking is therefore the mechanism that turns a transient
+generation-time response into a document-replayable statistic.
 
 For an unordered pair of patterns $(u,v)$, define
 \begin{equation}
@@ -60,56 +70,31 @@ Because $S_i^{u,v}$ is unchanged when $u$ and $v$ are swapped, the BCG neither o
 favors the requested orientation. Both pair selection and gating are recomputable from the
 block-masked state.
 
-\subsection{Response-Replay Verifier and exact null}
-\label{sec:theory}
-
-The key derives an orientation $\epsilon_i\in\{-1,+1\}$ for every position using a PRF
-domain separate from pattern generation, pair selection, carrier assignment, and payload
-grouping. A target $w_i\in\{-1,+1\}$ represents the desired provenance or message bit.
-For a nonzero contrast, position $i$ matches when
+After the BCG admits a position, the key supplies an orientation
+$\epsilon_i\in\{-1,+1\}$ from a PRF domain separate from pattern generation, pair
+selection, carrier assignment, and payload grouping. A target
+$w_i\in\{-1,+1\}$ represents the desired provenance or message bit. For a candidate $z$,
+the shared embedding-and-verification predicate is
 \begin{equation}
-m_i=\mathbf{1}[w_i\epsilon_i g_i(y_i)>0].
+m_i(z)=\mathbf{1}[w_i\epsilon_i g_i(z)>0].
 \label{eq:m}
 \end{equation}
-If $g_i(y_i)=0$ exactly, ReTrace uses an additional domain-separated fair tie bit for
-$m_i$. Ties cannot be steered during embedding, but assigning all of them zero would bias
-the null.
+If $g_i(z)=0$ exactly, a second domain-separated fair bit defines $m_i(z)$. Such ties
+cannot be steered by the RAR, but the tie rule is required for the RRV's exact null.
 
-For provenance-only detection, all carriers form a presence pool $P$ with $w_i=+1$. If a
-payload is enabled, the implementation can reserve a synchronization subset for presence
-and partition the remaining carriers by payload bit. These groups must remain separate:
-aggregating a balanced message would cancel positive and negative targets. The presence
-statistic and its one-sided $p$-value are
-\begin{equation}
-T=\sum_{i\in P}m_i,\qquad
-p_{\mathrm{det}}=\Pr\!\left[\mathrm{Binomial}(|P|,\tfrac12)\geq T\right].
-\label{eq:test}
-\end{equation}
-
-\begin{proposition}[Conditional exact null]
-\label{prop:null}
-Assume the PRF domains above behave as independent random functions. Fix any text $y$
-generated independently of the document key, and condition on the carrier set, selected
-pairs, contrast values, payload roles, and target bits. The orientation bits (and tie bits
-where needed) remain independent fair coins. Consequently, the $m_i$ are independent
-$\mathrm{Bernoulli}(\tfrac12)$ variables and
-$T\sim\mathrm{Binomial}(|P|,\tfrac12)$ exactly.
-\end{proposition}
-
-The proposition is conditional on the observed text and therefore requires neither a text
-distribution nor an asymptotic approximation. Its guarantee does rely on correct domain
-separation and on the text being independent of the document key under the null. The
-implementation enforces this separation with distinct HMAC labels.
+Because $S_i$ uses the reproducible block-masked distribution while generation uses an
+evolving live conditional, it is a symmetric proxy rather than a guarantee of easy
+steering. Best-pair selection raises the measured mean score from $0.28$ for a fixed
+near/far pair to $0.45$.
 
 \subsection{Response-Aligned Resampling}
 \label{sec:embedding}
 
 \begin{algorithm}[H]
-\caption{\textbf{ReTrace embedding and verification.} \textsc{Build-RRB} is shared
-verbatim by the RAR and RRV. The reference block order, confidence selection, and live DLM
-conditional are unchanged; guided retries reuse the current probability row.}
+\caption{\textbf{ReTrace embedding and detection.} RAR and RRV share
+\textsc{Build-RRB}; guided retries reuse the current probability row.}
 \label{alg:retrace}
-\small
+\footnotesize
 \textbf{Input:} prompt $x_{<B_1}$, key $K$, retry budget $R$, floor $\kappa$,
 threshold $s_{\min}$ \qquad \textbf{Output:} generated text $y$ or $p_{\rm det}$
 \vspace{2pt}
@@ -138,9 +123,8 @@ threshold $s_{\min}$ \qquad \textbf{Output:} generated text $y$ or $p_{\rm det}$
 \end{tabular}
 \end{algorithm}
 
-Algorithm~\ref{alg:retrace} makes the module boundaries explicit. Within each block, the
-RAR uses the reference confidence order and live conditional $p_i$. Positions rejected by
-the BCG are sampled normally. At an admitted carrier, define the acceptance set
+Within each block, RAR retains the reference confidence order and live conditional $p_i$;
+positions rejected by BCG are sampled normally. At an admitted carrier define
 \begin{equation}
 A_i=\left\{z:
  w_i\epsilon_i g_i(z)>0\ \text{ and }\
@@ -148,10 +132,9 @@ A_i=\left\{z:
 \right\}.
 \label{eq:accept-set}
 \end{equation}
-The RAR draws independently from $p_i$ up to $R$ times and commits the first proposal
-in $A_i$. If none is accepted, it makes one fresh unconditional draw from $p_i$ and commits
-it without inspection. The probability row does not change during these retries, so they
-do not require additional model evaluations.
+RAR draws from $p_i$ up to $R$ times and commits the first member of $A_i$; after $R$
+misses it commits one fresh unchecked draw. The row is unchanged, so retries require no
+model evaluation.
 
 This procedure changes the sampling distribution. Let
 $a_i=p_i(A_i)$ be the acceptance mass and let
@@ -173,33 +156,49 @@ and its detector-hit probability is
 \label{eq:hit}
 \end{equation}
 When $\kappa=0$ and the conditional assigns no mass to exact ties, $a_i=q_i$ and
-Eq.~\eqref{eq:hit} reduces to $1-(1-q_i)^{R+1}$. Separating $a_i$ and $q_i$ is necessary
-when the plausibility floor or tie rule is active: a fallback token may score as a hit even
-if it could not have been accepted as a guided proposal.
+Eq.~\eqref{eq:hit} reduces to $1-(1-q_i)^{R+1}$. The distinction matters with a floor or
+tie rule because an unchecked fallback may score as a hit without belonging to $A_i$.
 
-The floor bounds the model NLL of every \emph{guided accepted} proposal to within
-$-\log\kappa$ of the live argmax. It does not guarantee better semantic quality, and the
-unconditional fallback remains unrestricted. Similarly, saying that every output was
-proposed by the model is a support statement, not a distortion-free claim. Equation
-\eqref{eq:dist} makes the distributional change explicit.
+The floor bounds each guided proposal's model NLL to within $-\log\kappa$ of the live
+argmax; it neither constrains the fallback nor guarantees semantic quality. Being
+model-proposed is a support statement, not a distortion-free claim.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_retrace_mechanism.pdf}
-\caption{\textbf{The Balanced Carrier Gate separates usable response channels from
-orientation-dependent ones.} The BCG admits a position only when both signs carry
-substantial mass under the RRB's block-masked conditional. Its score is invariant to
-swapping the response arms and is computed without consulting the keyed orientation.
-Admitted positions are steered by the RAR and counted by the RRV; rejected positions follow
-the reference sampler and contribute no detector trial.}
-\label{fig:mechanism}
-\end{figure}
+Together, the BCG, unconditional fallback, and plausibility floor determine the RAR's
+empirical detection--quality trade-off.
 
-The score $S_i$ is computed under the reproducible block-masked distribution, whereas
-generation samples from the evolving live conditional. It is therefore a symmetric proxy
-for live acceptance mass, not a guarantee that each carrier is easy to steer. Selecting
-the best pair per position increases the measured mean two-sided score from $0.28$ for a
-fixed near/far pair to $0.45$. This gate, the unconditional fallback, and the plausibility
-floor are the three safeguards that determine ReTrace's empirical trade-off.
+\subsection{Response-Replay Verification and exact null}
+\label{sec:theory}
 
-\input{sections/v1_analysis}
+Given completed text $y$, RRV re-masks each block and suffix, rebuilds its RRB from the
+fixed prefix, reapplies BCG, and evaluates $m_i=m_i(y_i)$ at admitted positions. Rejected
+proposals and the generation trajectory are irrelevant.
+
+For provenance-only detection, all admitted carriers form a presence pool $P$ with
+$w_i=+1$. If a payload is enabled, the implementation can reserve a synchronization subset
+for presence and partition the remaining carriers by payload bit. These groups must remain
+separate: aggregating a balanced message would cancel positive and negative targets. The
+presence statistic and its one-sided $p$-value are
+\begin{equation}
+T=\sum_{i\in P}m_i,\qquad
+p_{\mathrm{det}}=\Pr\!\left[\mathrm{Binomial}(|P|,\tfrac12)\geq T\right].
+\label{eq:test}
+\end{equation}
+
+\begin{proposition}[Conditional exact null]
+\label{prop:null}
+Assume the PRF domains above behave as independent random functions. Fix any text $y$
+generated independently of the document key, and condition on the carrier set, selected
+pairs, contrast values, payload roles, and target bits. The orientation bits (and tie bits
+where needed) remain independent fair coins. Consequently, the $m_i$ are independent
+$\mathrm{Bernoulli}(\tfrac12)$ variables and
+$T\sim\mathrm{Binomial}(|P|,\tfrac12)$ exactly.
+\end{proposition}
+
+The result requires neither a text distribution nor an asymptotic approximation, but it
+does require key-independent null text and correct domain separation, implemented with
+distinct HMAC labels.
+The conditioning in Proposition~\ref{prop:null} is important. The carrier count, selected
+ablation pair, and contrast magnitude may all depend arbitrarily on the text and model.
+Exactness survives because these quantities are fixed before the independent orientation
+bit is consulted. A gate based on the requested sign would destroy this symmetry and make
+the nominal binomial tail anti-conservative.

@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="286"
+ viewBox="0 0 960 286">
+<defs>
+  <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4"
+          orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,4 L0,8 z" fill="#596579"/>
+  </marker>
+  <style>text { font-family: 'Times New Roman', 'Liberation Serif', serif; }</style>
+</defs>
+<rect width="100%" height="100%" fill="white"/>
+<text x="18" y="22" font-size="15.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">Where does ReTrace find room for a watermark?</text>
+<text x="942" y="22" font-size="10.5" fill="#596579" font-weight="normal" font-style="italic" text-anchor="end">illustrative probability row</text>
+<rect x="18" y="35" width="274" height="211" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
+<circle cx="38" cy="56" r="11" fill="#697384" stroke="#697384" stroke-width="1"/>
+<text x="38" y="60" font-size="11.5" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">1</text>
+<text x="57" y="54" font-size="14.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">The model has local choice</text>
+<text x="57" y="70" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">several tokens remain plausible</text>
+<rect x="302" y="35" width="320" height="211" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
+<circle cx="322" cy="56" r="11" fill="#8A6D3B" stroke="#8A6D3B" stroke-width="1"/>
+<text x="322" y="60" font-size="11.5" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">2</text>
+<text x="341" y="54" font-size="14.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">Context assigns polarity</text>
+<text x="341" y="70" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">RRB measures a replayable response</text>
+<rect x="632" y="35" width="310" height="211" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
+<circle cx="652" cy="56" r="11" fill="#285F8F" stroke="#285F8F" stroke-width="1"/>
+<text x="652" y="60" font-size="11.5" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">3</text>
+<text x="671" y="54" font-size="14.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">The key selects one side</text>
+<text x="671" y="70" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">RAR embeds; RRV replays</text>
+<rect x="36" y="84" width="54" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="63.0" y="101" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">The</text>
+<rect x="94" y="84" width="65" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="126.5" y="101" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">result</text>
+<rect x="163" y="84" width="58" height="25" rx="4" fill="#E7EBF0" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="192.0" y="101" font-size="11" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">MASK</text>
+<rect x="225" y="84" width="43" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="246.5" y="101" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">.</text>
+<text x="36" y="126" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">live conditional  pᵢ</text>
+<text x="43" y="147" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">clear</text>
+<rect x="101" y="137" width="139" height="12" rx="6" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.7"/>
+<rect x="102" y="138" width="116.45" height="10" rx="5" fill="#285F8F"/>
+<text x="250" y="147" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="end">0.34</text>
+<text x="43" y="169" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">robust</text>
+<rect x="101" y="159" width="139" height="12" rx="6" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.7"/>
+<rect x="102" y="160" width="99.32499999999999" height="10" rx="5" fill="#285F8F"/>
+<text x="250" y="169" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="end">0.29</text>
+<text x="43" y="191" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">stable</text>
+<rect x="101" y="181" width="139" height="12" rx="6" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.7"/>
+<rect x="102" y="182" width="75.35" height="10" rx="5" fill="#285F8F"/>
+<text x="250" y="191" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="end">0.22</text>
+<text x="43" y="213" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">concise</text>
+<rect x="101" y="203" width="139" height="12" rx="6" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.7"/>
+<rect x="102" y="204" width="37.675" height="10" rx="5" fill="#285F8F"/>
+<text x="250" y="213" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="end">0.11</text>
+<text x="155" y="237" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">all are model proposals</text>
+<text x="320" y="93" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">two replayable context views</text>
+<rect x="320" y="101" width="131" height="30" rx="6" fill="#F4F0E8" stroke="#D9BB7B" stroke-width="1"/>
+<text x="331" y="119" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="start">Cᵘ: near context hidden</text>
+<rect x="461" y="101" width="143" height="30" rx="6" fill="#F4F0E8" stroke="#D9BB7B" stroke-width="1"/>
+<text x="472" y="119" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="start">Cᵛ: far context hidden</text>
+<text x="320" y="151" font-size="10" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">candidate</text>
+<text x="469" y="151" font-size="10" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">gᵢ(z)=log pᵛ−log pᵘ</text>
+<text x="587" y="151" font-size="10" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">set</text>
+<text x="326" y="159" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">clear</text>
+<text x="469" y="159" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="middle">−0.71</text>
+<circle cx="587" cy="155" r="8" fill="#F4F0E8" stroke="#8A6D3B" stroke-width="1"/>
+<text x="587" y="159" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="middle">−</text>
+<rect x="319" y="164" width="286" height="17" fill="#F6F8FA"/>
+<text x="326" y="177" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">robust</text>
+<text x="469" y="177" font-size="10.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">+0.54</text>
+<circle cx="587" cy="173" r="8" fill="#EDF3F7" stroke="#285F8F" stroke-width="1"/>
+<text x="587" y="177" font-size="10.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
+<text x="326" y="195" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">stable</text>
+<text x="469" y="195" font-size="10.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">+0.26</text>
+<circle cx="587" cy="191" r="8" fill="#EDF3F7" stroke="#285F8F" stroke-width="1"/>
+<text x="587" y="195" font-size="10.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
+<rect x="319" y="200" width="286" height="17" fill="#F6F8FA"/>
+<text x="326" y="213" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">concise</text>
+<text x="469" y="213" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="middle">−0.19</text>
+<circle cx="587" cy="209" r="8" fill="#F4F0E8" stroke="#8A6D3B" stroke-width="1"/>
+<text x="587" y="213" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="middle">−</text>
+<rect x="320" y="232" width="284" height="8" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="1"/>
+<rect x="321" y="233" width="127" height="6" rx="3" fill="#8A6D3B"/>
+<rect x="448" y="233" width="11" height="6" fill="#697384"/>
+<rect x="459" y="233" width="144" height="6" rx="3" fill="#285F8F"/>
+<text x="320" y="224" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="start">q₋=.45</text>
+<text x="462" y="224" font-size="10.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">q₊=.51</text>
+<text x="604" y="224" font-size="10.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="end">Sᵢ=.90</text>
+<rect x="650" y="85" width="274" height="34" rx="7" fill="#EDF3F7" stroke="#9BC3EA" stroke-width="1"/>
+<text x="663" y="106" font-size="11.5" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="start">secret orientation asks for  +  response</text>
+<text x="650" y="140" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">RAR accepts from the requested set</text>
+<rect x="650" y="149" width="74" height="25" rx="4" fill="#F4F0E8" stroke="#8A6D3B" stroke-width="0.9"/>
+<text x="687.0" y="166" font-size="11" fill="#8A6D3B" font-weight="normal" font-style="normal" text-anchor="middle">clear</text>
+<text x="732" y="166" font-size="14" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="start">×</text>
+<rect x="752" y="149" width="78" height="25" rx="4" fill="#EDF3F7" stroke="#285F8F" stroke-width="0.9"/>
+<text x="791.0" y="166" font-size="11" fill="#1F4668" font-weight="bold" font-style="normal" text-anchor="middle">robust</text>
+<text x="839" y="166" font-size="14" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="start">✓</text>
+<rect x="859" y="149" width="65" height="25" rx="4" fill="#EDF3F7" stroke="#285F8F" stroke-width="0.9"/>
+<text x="891.5" y="166" font-size="11" fill="#1F4668" font-weight="normal" font-style="normal" text-anchor="middle">stable</text>
+<line x1="787" y1="179" x2="787" y2="195" stroke="#596579" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="677" y="198" width="220" height="37" rx="8" fill="#EDF3F7" stroke="#285F8F" stroke-width="1.1"/>
+<text x="787" y="214" font-size="10.5" fill="#285F8F" font-weight="bold" font-style="normal" text-anchor="middle">emit “robust”  •  still a model proposal</text>
+<text x="787" y="229" font-size="10.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="middle">RRV replay: gᵢ(robust)&gt;0  ⇒  mᵢ=1</text>
+<rect x="18" y="255" width="924" height="25" rx="6" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="1"/>
+<text x="34" y="272" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="start">BALANCED</text>
+<rect x="110" y="263" width="96" height="8" rx="4" fill="white" stroke="#CCD3DD" stroke-width="1"/>
+<rect x="111" y="264" width="45" height="6" rx="3" fill="#8A6D3B"/>
+<rect x="160" y="264" width="45" height="6" rx="3" fill="#285F8F"/>
+<text x="217" y="272" font-size="10.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">two-sided  →  carrier</text>
+<text x="458" y="272" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">ONE-SIDED</text>
+<rect x="548" y="263" width="96" height="8" rx="4" fill="white" stroke="#CCD3DD" stroke-width="1"/>
+<rect x="549" y="264" width="8" height="6" rx="3" fill="#8A6D3B"/>
+<rect x="561" y="264" width="82" height="6" rx="3" fill="#285F8F"/>
+<text x="655" y="272" font-size="10.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">sharp  →  BCG skips</text>
+<text x="930" y="272" font-size="10.5" fill="#8A6D3B" font-weight="bold" font-style="normal" text-anchor="end">capacity = min(q₊,q₋)</text>
+</svg>

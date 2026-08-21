@@ -1,73 +1,59 @@
 \section{Introduction}
 \label{sec:intro}
 
-Language-model watermarks usually encode a secret pattern in the generated sequence.
-Red--green methods bias the probability of keyed token subsets
-\citep{kirchenbauer2023watermark}; sampling-based methods correlate token choices with a
-pseudorandom sequence~\citep{kuditipudi2024distortionfree}; and recent methods for
-diffusion language models (DLMs) use denoising order or unresolved context as additional
-embedding channels~\citep{hong2026dgmark}. Their implementations differ, but their
-detectors can evaluate the watermark from token identities and a key without running the
-generator.
+Language-model watermarks usually encode a keyed pattern in token identities: red--green
+methods bias keyed vocabulary subsets~\citep{kirchenbauer2023watermark}, sampling-based
+methods couple choices to pseudorandomness~\citep{kuditipudi2024distortionfree}, and recent
+diffusion language model (DLM) methods exploit unresolved context or denoising order
+\citep{hong2026dgmark}. Their detectors inspect the text and key without rerunning the
+generator. We instead ask whether the model itself can be the verification instrument.
 
-This paper asks whether model inference itself can provide a useful verification signal.
-A masked DLM is trained to predict missing tokens from arbitrary visible context. The same
-operation can therefore be applied to a completed text: hide selected context, run the
-model, and measure how its predictions change. The central question is whether that
-change can be keyed, reproduced by a verifier, and steered during generation.
+A masked DLM can revisit a completed text: hide selected context and observe how the
+likelihood of an emitted token changes. ReTrace compares two replayable context ablations,
+giving each candidate token a signed response. A secret orientation specifies which sign
+counts as a match. Under a key-independent text, orientations are independent fair bits;
+the match count therefore has an exact conditional $\mathrm{Binomial}(n,\tfrac12)$ null,
+without a calibration corpus or Gaussian approximation.
 
-ReTrace implements this idea with paired context ablations. For a generated token $y_i$,
-the verifier masks two different subsets of the already completed context and computes
-\begin{equation}
-g_i(y_i) = \log p_\theta\!\left(y_i \mid C^1_i(y)\right)
-          - \log p_\theta\!\left(y_i \mid C^0_i(y)\right).
-\label{eq:contrast}
-\end{equation}
-The key supplies an independent orientation bit that determines which sign counts as a
-match. ReTrace counts matches only at positions where the two signs both have appreciable
-probability. For a text independent of the key, the orientation bits are fair coins, so
-the conditional null is exactly $\mathrm{Binomial}(n,\tfrac12)$. This guarantee does not
-depend on a calibration corpus or a Gaussian approximation.
-
-Embedding uses the same observable. During the standard blockwise decode, ReTrace draws a
-token from the model and checks whether its contrast has the requested sign. At carrier
-positions it may draw again from the unchanged conditional, up to a budget $R$; after
-exhaustion it commits one unconditional draw. A key-free plausibility floor rejects guided
-proposals whose probability is too small relative to the most likely token. The resulting
-procedure is rejection sampling: it changes token probabilities, but every emitted token
-is an actual model proposal and retries require no additional model evaluation.
+The embedding opportunity is \emph{local conditional ambiguity}. Several plausible tokens
+may coexist at a masked position yet react with opposite signs to the two ablations
+(Figure~\ref{fig:motivation}). If both signs carry probability mass, bounded resampling can
+prefer the requested sign while accepting only model proposals. Small per-position biases
+then accumulate in the detector. A sharp or one-sided conditional offers no choice and is
+skipped rather than forced.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\linewidth]{figures/fig_retrace_pipeline.pdf}
-\caption{\textbf{Overall ReTrace pipeline.} \textbf{(1)} The reference DLM retains its
-native block and confidence schedule. \textbf{(2)} The Reproducible Response Bank (RRB)
-records keyed context-ablation responses, and the Balanced Carrier Gate (BCG) selects
-positions with substantial probability mass on both signs. \textbf{(3)} At those
-carriers, the Response-Aligned Resampler (RAR) accepts a plausible proposal with the
-requested sign, retrying from the unchanged live conditional at most $R$ times before an
-unconditional fallback. \textbf{(4)} Given the final text, model, and key, the
-Response-Replay Verifier (RRV) reconstructs the RRB and applies an exact binomial test.}
-\label{fig:pipeline}
+\includegraphics[width=\linewidth]{figures/fig_retrace_motivation.pdf}
+\caption{\textbf{Where the watermark channel comes from.} A non-degenerate DLM conditional
+contains several plausible proposals. Two replayable context views partition that support
+by response sign into masses $q_+$ and $q_-$. The key requests one side; RAR can select
+from it and RRV can later remeasure the emitted token's sign. Values are illustrative.
+Capacity is limited by the weaker sign mass, so BCG rejects sharp or one-sided positions.}
+\label{fig:motivation}
 \end{figure}
 
-Figure~\ref{fig:pipeline} follows a block from the reference decoder through response-bank
-construction, carrier gating, embedding, and verification. The main contributions are:
-\begin{itemize}[leftmargin=1.3em,itemsep=2pt,topsep=3pt]
-    \item a verifier that derives evidence from a DLM's response to keyed context
-    ablations, rather than from a key--token statistic alone;
-    \item a reproducible carrier construction and a finite-sample exact binomial test
-    under the ideal-PRF model;
-    \item a response-guided resampling embedder with an explicit retry--quality trade-off;
-    and
-    \item an evaluation that reports detection, matched-control perplexity, generation
-    and verification cost, and post-editing failure modes on LLaDA-8B-Instruct.
-\end{itemize}
+ReTrace comprises four modules (Figure~\ref{fig:pipeline}): the RRB, BCG, RAR, and RRV.
+The RAR uses an unconditional fallback after $R$ failed guided proposals and a key-free
+plausibility floor that excludes proposals far below the live argmax. This is rejection
+sampling: it changes the output distribution, although retries reuse one probability row
+and every committed token is drawn from the model.
 
-At 512 tokens, the strongest evaluated ReTrace settings reach $0.70$--$0.80$ TPR at
-$1\%$ FPR with measured perplexity ratios of $0.87\times$--$0.74\times$. These ratios
-partly reflect the plausibility floor's preference for high-probability tokens and should
-not be read as evidence that watermarking improves semantic quality. ReTrace also requires
-144 masked sequence evaluations for verification and is substantially less robust to
-editing than token-based baselines. We present these costs as part of the method's operating
-point, not as secondary caveats.
+ReTrace is not intended to dominate earlier watermarks on every axis. Its advantage is a
+different operating constraint. Applying a prefix-based watermark to a DLM can require
+strict left-to-right decoding, while order-guided methods deliberately change which mask is
+resolved next. ReTrace preserves the model's native block and confidence schedule and
+changes only the sampled proposal at admitted positions. More importantly, its detector
+tests a keyed relation between the final text and a particular model's contextual response,
+rather than a key--token hash alone. The result is checkpoint-bound and expensive, but it
+provides exact conditional false-positive control even though carriers are selected from
+the observed text and model predictions.
+
+Our contributions are: (i) model-response verification with reproducible carriers and an
+exact finite-sample null; (ii) a response-guided embedder with an explicit
+detection--quality--compute trade-off; and (iii) an evaluation on LLaDA-8B-Instruct that
+reports matched-control perplexity, model-evaluation cost, detector checks, and
+post-editing failure modes. At 512 tokens, the strongest evaluated settings reach
+$0.70$--$0.80$ TPR at $1\%$ FPR with measured PPL ratios of $0.87\times$--$0.74\times$,
+but require 144 masked evaluations for verification and are fragile to editing. ReTrace is
+therefore evidence that a model-response channel exists, not a state-of-the-art detector.

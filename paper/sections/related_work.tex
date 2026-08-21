@@ -2,53 +2,36 @@
 \label{sec:related}
 
 \paragraph{Diffusion language models.}
-Continuous diffusion~\citep{ho2020ddpm} was extended to discrete data through structured
-corruption processes~\citep{austin2021d3pm}, score-ratio models, and masked-diffusion
-objectives~\citep{lou2024sedd,sahoo2024mdlm,shi2024simplified,ou2025radd}. More recent
-systems scale this approach to instruction-following language models, including LLaDA
-\citep{nie2025llada,zhu2025llada15} and Dream~\citep{ye2025dream}. ReTrace relies on one
-basic consequence of masked-token training: a completed sequence can be corrupted again
-and scored under several visible-context patterns.
+Discrete and masked diffusion objectives extend diffusion to text
+\citep{austin2021d3pm,lou2024sedd,sahoo2024mdlm,shi2024simplified,ou2025radd} and now
+support instruction-following systems such as LLaDA and Dream
+\citep{nie2025llada,zhu2025llada15,ye2025dream}. Practical decoders complete blocks from
+left to right and use confidence to select positions within a block
+\citep{arriola2025blockdiffusion}; token order affects quality and efficiency
+\citep{kim2025ordering,wu2026fastdllm,wei2026slowfast}. ReTrace preserves this reference
+schedule and uses masked-token reconstruction only to define a replayable response.
 
-Practical DLM decoding is neither fully parallel nor order-invariant. Systems commonly
-complete blocks from left to right and denoise positions within a block
-\citep{arriola2025blockdiffusion}; the unmasking order can affect the resulting text
-\citep{kim2025ordering}. Work on accelerated decoding likewise finds that committing a
-token before sufficient context is available can harm coherence
-\citep{wu2026fastdllm,wei2026slowfast,benhamu2025entropy}. ReTrace therefore preserves the
-model's reference block and confidence schedule. It changes token selection only through
-resampling after the model has produced a conditional distribution.
+\paragraph{Text watermarking.}
+Autoregressive watermarks bias keyed token sets~\citep{kirchenbauer2023watermark} or couple
+sampling to keyed randomness~\citep{aaronson2023gpt,fu2024gumbelsoft,
+kuditipudi2024distortionfree}; subsequent work studies reliability, robustness, and
+undetectability~\citep{kirchenbauer2024reliability,zhao2024provable,
+christ2024undetectable}. These token-only detectors are inexpensive but do not transfer
+unchanged to unresolved DLM contexts. DLM-specific methods instead remove prefix dependence
+\citep{chen2025orderagnostic}, average a red--green bias over unresolved context
+\citep{gloaguen2026watermarking}, use keyed sampling~\citep{bagchi2025discrete}, or exploit
+decoding order~\citep{wu2025dmark,raban2026lrdwm,hong2026dgmark}. We reproduce dgMARK
+locally because it offers a strong order-steering baseline with zero-inference detection.
+ReTrace differs at verification: the detector must rerun the exact DLM checkpoint under
+keyed corruptions. This supplies a model-response statistic but incurs substantial cost.
 
-\paragraph{Watermarks for autoregressive models.}
-The dominant family modifies token probabilities. \citet{kirchenbauer2023watermark} add a
-logit bias to a keyed green subset of the vocabulary, and detection counts green tokens.
-Later work studies the reliability, robustness, and statistical guarantees of this design
-\citep{kirchenbauer2024reliability,zhao2023invisible,zhao2024provable}. Another family
-couples sampling randomness to a keyed pseudorandom sequence, using Gumbel-max sampling
-\citep{aaronson2023gpt,fu2024gumbelsoft} or constructions with distortion-freeness and
-undetectability guarantees~\citep{kuditipudi2024distortionfree,christ2024undetectable}.
-Watermarks can also be placed in model parameters~\citep{block2025gaussmark}. Surveys
-describe the broader design space~\citep{petitcolas1999hiding,liang2026survey}, including
-paraphrase attacks~\citep{krishna2023paraphrasing} and key extraction
-\citep{jovanovic2024stealing}. These methods provide an important efficiency reference:
-their text detectors do not need to execute the generator.
-
-\paragraph{Watermarks beyond left-to-right generation.}
-Autoregressive watermarks cannot always be transferred directly to DLMs because unresolved
-positions do not have a fixed left-to-right prefix. \citet{chen2025orderagnostic} avoid
-prefix dependence when biasing token selection. For DLMs specifically,
-\citet{gloaguen2026watermarking} apply a red--green bias in expectation over unresolved
-context, while \citet{bagchi2025discrete} use keyed Gumbel-max sampling during denoising.
-Other constructions target order-agnostic or efficient watermarking
-\citep{wu2025dmark,raban2026lrdwm}. dgMARK~\citep{hong2026dgmark} instead steers the
-unmasking order toward positions whose preferred token satisfies a keyed parity condition.
-We reproduce dgMARK locally because it is a strong DLM-specific baseline with a different
-embedding channel and a zero-inference detector.
-
-\paragraph{Positioning of ReTrace.}
-ReTrace differs primarily at verification time. Its statistic is not available from token
-identities and the key alone: the verifier must run the DLM under keyed corruptions and
-compare the resulting likelihoods. This model-response signal may expose structure that a
-token hash does not, but it also makes verification substantially more expensive and ties
-the detector to a particular checkpoint. To our knowledge, the cited language-model
-watermarks do not use the generator as a reconstruction oracle in this form.
+The distinction is operational rather than cosmetic. A left-to-right green-list method
+reintroduces a prefix solely to make its key--token partition well defined; dgMARK instead
+uses the DLM-specific freedom to choose which position is committed next. ReTrace leaves
+both the block partition and confidence-based position choice untouched. Its carrier is a
+counterfactual response of the model to visible context, so the selected positions may be
+text- and model-dependent while the secret orientation remains independent. This separation
+is what permits an exact conditional test after adaptive, model-driven carrier selection.
+It also explains why ReTrace should be viewed as complementary to inexpensive token hashes:
+the added semantic binding to a checkpoint is useful only when model-assisted verification
+and exact replay are acceptable deployment costs.
