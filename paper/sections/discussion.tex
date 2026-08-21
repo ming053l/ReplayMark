@@ -52,15 +52,18 @@ function: it is preserving finite-sample validity after model-driven carrier dis
 The measured KGW failure without bigram deduplication illustrates why dependence and trial
 definition cannot be treated as implementation details.
 
-\paragraph{Boundary of the claim.}
-Table~\ref{tab:design-comparison} makes clear that ReTrace is not uniformly superior.
-KGW and dgMARK have zero-inference detectors, stronger local TPR, and token-local evidence
-that is easier to synchronize after edits. ReTrace is preferable only when preserving the
-native DLM schedule, obtaining a replayable model-response statistic, and retaining exact
-conditional calibration are worth an expensive checkpoint-specific verifier. A practical
-system could also combine these channels: a cheap token-local watermark for routine
-screening and RRV as a higher-cost confirmation layer. This composition is a design
-direction, not an evaluated result.
+\paragraph{Practicality is asymmetric.}
+ReTrace is easier to integrate on the \emph{embedding} side when a deployed DLM's block
+and confidence schedule cannot be changed: it requires no training, and retries are sampling
+arithmetic after the RRB has been built. It is substantially less practical on the
+\emph{verification} side. KGW and dgMARK use zero-inference detectors, obtain stronger
+local TPR, and retain token-local evidence that is easier to synchronize after edits;
+ReTrace requires the exact checkpoint and 144 masked evaluations. We therefore claim
+deployment compatibility with an existing block decoder, not superior end-to-end
+practicality. ReTrace is preferable only in controlled provenance settings where
+model-bound evidence and exact conditional calibration justify a high-cost verifier.
+Wall-clock latency, memory, cross-hardware reproducibility, and multi-checkpoint evaluation
+are still needed before making a broader practicality claim.
 
 \paragraph{Limitations.}
 Results cover one checkpoint, one corpus, small samples, and automatic quality proxies.

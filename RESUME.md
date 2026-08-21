@@ -1,72 +1,57 @@
-# RESUME — state at shutdown (2026-08-21 ~16:06 CST)
+# RESUME — state at shutdown (updated 2026-08-21 16:15 CST)
 
-Server is being powered off by the network admin. This file records exactly what was
-running and how to restart the chain. Everything else (paper, code, results to date) is
-committed and pushed to GitHub; the Overleaf project is synced to the same sources.
+Server may be powered off by the network admin. Chain state and relaunch procedure below.
+Paper (NeurIPS template, GPT revision) is pushed to GitHub and synced to Overleaf.
 
-## What was running
+## Chain state
 
-**exp/29_clean.py** (clean graduation run, 1024 tokens, skip=1400, src_min=700, n=16,
-per-doc nonces `g2-{i}`, seed 13000+i):
+- **exp/29 (1024-tok graduation): DONE, saved** (`results/29_clean.json`, git 8acfc12b).
+  Verdict: detection passes, quality flags red —
+  `R16k05 | sync 0.640 | TPR@5/1/0.1% = 0.88/0.88/0.88` but
+  `ratio 0.428 with repetition 0.530 vs control 0.342` (valid n=9). The sub-1.0 ratio is
+  driven by repetitive text at this length; the honest 1024 headline stays R8/kappa=0.1
+  (repetition parity). Do NOT quote 29's ratio as a quality win.
+- **exp/30 (dgMARK @512, n=30 x 3 arms): RUNNING at shutdown risk.** dgMARK writes CSVs
+  at the end of each arm; an interrupted arm must be rerun. Then exp/31 evaluates.
+- **exp/32 (GSM8K): queued** behind run30's `=== DG512 DONE ===` marker in logs/run30.log.
+- **exp/33/34 (robustness improvements): queued** behind run32's `=== GSM8K DONE ===`
+  marker in logs/run32.log. 33 = block-local exact detection (pooled vs Bonferroni-min vs
+  Stouffer) under 5%/10% same-model re-denoise, on 29's saved outputs — no new
+  generation. 34 = ctx_window=128 windowed-conditioning arm @512 (gen+detect), clean and
+  attacked TPR plus paired quality, vs the full-context arm on shared prompts/seeds.
 
-- **control arm: FINISHED.** Log-recorded result (JSON was NOT written — 29 saves only
-  at the very end, so these numbers survive only in `logs/29_clean.log` and here):
-  `control | sync 0.481 | TPR@5% 0.06 @1% 0.00 @0.1% 0.00`  (null clean; the
-  src_min=700 prompt fix works — no repeat of the degenerate-prompt 0.466 pool).
-- **R16k05 arm (s_min=0.5, retries=16, p_floor=0.05): ~10–12/16 done at 486 s/doc,
-  WILL BE LOST at shutdown.** Nothing is persisted per-doc.
-
-**Verdict for restart: rerun exp/29_clean.py from scratch** (~4.5 h). The control arm's
-token ids live only in process memory, and the quality pairing needs them, so partial
-reuse is not possible. The control numbers above are a cross-check that the rerun's
-control arm should reproduce (same seeds/nonces → identical prompts and generations).
-
-## Queue behind it (never started, nothing lost)
-
-1. **exp/run30.sh** → `exp/30_dgmark512.sh` (dgMARK original/k=1/3-beam @512 tok, n=30,
-   same C4 file → `results/baselines/dg512_*.csv`) then `exp/31_dg512_eval.py`
-   (same-axes evaluator → prints TPR@5/1/0.1% + ppl ratio). Gate: GPU free.
-   Writes `=== DG512 DONE ===` marker into `logs/run30.log`.
-2. **exp/run32.sh** → `exp/32_gsm8k.py` (GSM8K downstream task, n=50, 256 tok,
-   control vs R16k05, accuracy + detection; dataset already at
-   `data/gsm8k_test.jsonl`). Gate: waits for the DONE marker in `logs/run30.log`,
-   then GPU free.
-
-## Restart procedure (copy-paste)
+## Relaunch after reboot (in this order)
 
 ```bash
 cd /ssd1/ming/basinmark
-# 1) graduation run first (holds GPU ~4.5 h)
-setsid nohup ./exp/run29.sh > logs/run29.log 2>&1 < /dev/null &
-# 2) dgMARK@512 chain — waits for GPU to free, so safe to launch immediately
-setsid nohup ./exp/run30.sh > logs/run30.log 2>&1 < /dev/null &
-# 3) GSM8K — waits for run30's DONE marker, so safe to launch immediately
-setsid nohup ./exp/run32.sh > logs/run32.log 2>&1 < /dev/null &
+# 29 is done — do not rerun. Start whatever the chain had not finished:
+setsid nohup ./exp/run30.sh > logs/run30.log 2>&1 < /dev/null &   # if 30/31 incomplete
+setsid nohup ./exp/run32.sh > logs/run32.log 2>&1 < /dev/null &   # waits for 30 marker
+setsid nohup ./exp/run33.sh > logs/run33.log 2>&1 < /dev/null &   # waits for 32 marker
 ```
 
-CAUTION: `run30.sh`'s gate is only "GPU free", so do NOT start it without 29 already
-running (or it will jump the queue). Launch order above is correct: start 29 first,
-confirm `nvidia-smi` shows the python process, then launch 30 and 32.
+CAUTION: run30's gate is only "GPU free". If 30 already finished (check
+`ls results/baselines/dg512_*`), skip it and hand-write the DONE marker instead:
+`echo "=== DG512 DONE ===" >> logs/run30.log` so 32 unblocks.
 
-Progress check: `tr '\r' '\n' < logs/29_clean.log | grep -vE 'Loading|it/s|s/it' | tail`
+Progress: `tr '\r' '\n' < logs/<name>.log | grep -vE 'Loading|it/s|s/it' | tail`
 
-## What the chain is for
+## Why 33/34 exist (the practicality plan)
 
-- 29 → the 1024-token confirmatory row (target: TPR@1% ≥ 0.85 at sub-1.0× ratio).
-- 30/31 → the same-budget, length-matched dgMARK comparison the paper's Table 1
-  caption currently apologizes for lacking (512 vs 256 mismatch).
-- 32 → the downstream-task (GSM8K) quality axis for the Discussion/Experiments.
+Practicality is asymmetric (embedding cheap, verification expensive+fragile). Two of the
+three weaknesses have structural fixes now queued:
+1. **Edit fragility from pooling** (33): the pooled count dilutes intact blocks with
+   damaged ones; per-block exact tests (Bonferroni-min) should recover detection when
+   edits are local. Runs on saved outputs.
+2. **Edit fragility from propagation** (34): full-prefix conditioning lets one edit
+   perturb every later block's bank; ctx_window=W bounds damage to ~ceil(W/32)+1 blocks.
+   Costs: shorter context may weaken the contrast — that trade is what 34 measures.
+3. **Detection cost**: unaddressed by these runs; L=4 ablation (5 seqs/block, ~45%
+   cheaper detection) is the next candidate if 33/34 land well.
 
 ## Paper state
 
-- NeurIPS 2026 template (GPT revision, reviewed: all quoted numbers verified against
-  the measurement record). Compiles 10 pages, 0 errors.
-- GitHub: pushed through commit "Adopt GPT revision: NeurIPS 2026 template...".
-- Overleaf project 6a8805111903ef804b4e2eae: synced (branch `main`) with full sources
-  (main.tex, neurips_2026.sty, main.bib, sections/, tables/, figures/*.pdf).
-
-## After results land
-
-Update `tables/baseline_table.tex` (29's 1024 row + dg512 rows at matched length),
-re-check the caption's length-mismatch note, rerun robustness at the frozen R16k05
-config on saved outputs, and push GitHub + Overleaf again.
+NeurIPS 2026 template, 10 pages, compiles clean. GitHub: through "Adopt GPT revision"
+plus this commit. Overleaf 6a8805111903ef804b4e2eae synced (branch main). After
+30/31/32/33/34 land: add dg512 same-budget rows, GSM8K downstream row, and (if positive)
+the robustness-hardening paragraph with measured numbers.

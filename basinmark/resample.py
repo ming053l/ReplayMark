@@ -49,7 +49,7 @@ class ResampleMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=8, ctx_frac=0.20,
                  n_payload_bits=7, sync_frac=0.5, challenge="contrast", s_min=0.5,
                  retries=4, temperature=0.8, fallback="fresh", max_carriers=None, p_floor=0.0,
-                 nonce=None):
+                 nonce=None, ctx_window=None):
         self.M = model
         self.key = key if nonce is None else hmac.new(
             key, str(nonce).encode(), hashlib.sha256).digest()
@@ -73,6 +73,14 @@ class ResampleMark:
         # emitted token -- so the null and the carrier rule are untouched. This lets R
         # grow without the quality budget growing with it.
         self.p_floor = p_floor
+        # Windowed conditioning for edit robustness: when set, the RRB's conditional sees
+        # only the prompt plus the last ctx_window generated tokens before the block; all
+        # other generated context is masked in every arm, and ablations are drawn from the
+        # visible region. An edit then perturbs only blocks whose window covers it, so
+        # damage is proportional to edit density instead of propagating to every later
+        # block. Positional, key-independent, so the verifier reproduces it exactly.
+        self.ctx_window = ctx_window
+        self._p_len = None                 # set by generate()/detect()
 
     # ------------------------------------------------ Reproducible Response Bank (RRB)
     @torch.no_grad()
@@ -84,10 +92,16 @@ class ResampleMark:
         them exactly.
         """
         B = np.arange(lo, lo + self.block_len)
+        region = None
+        if self.ctx_window is not None and self._p_len is not None:
+            w_lo = max(self._p_len, lo - self.ctx_window)
+            region = np.concatenate([np.arange(0, self._p_len), np.arange(w_lo, lo)])
         pats, pairs = block_challenges(self.key, lo, self.block_len, self.n_patterns,
-                                       self.ctx_frac, mode=self.challenge)
+                                       self.ctx_frac, mode=self.challenge, region=region)
         base = x.clone()
         base[0, lo:gen_end] = MASK_ID
+        if region is not None and w_lo > self._p_len:
+            base[0, self._p_len:w_lo] = MASK_ID
         batch = [base.clone() for _ in pats]
         for m, d in zip(batch, pats):
             m[0, torch.tensor(d)] = MASK_ID
@@ -148,6 +162,7 @@ class ResampleMark:
     # -------------------------------------------------------------- detection
     @torch.no_grad()
     def detect(self, ids, prompt_len, gen_len, message=0):
+        self._p_len = prompt_len
         span = np.arange(prompt_len, prompt_len + gen_len)
         eps = orientation_bits(self.key, span)
         tie = tie_bits(self.key, span)
@@ -156,6 +171,7 @@ class ResampleMark:
         hits = np.zeros(self.n_payload_bits, dtype=np.int64)
         tot = np.zeros(self.n_payload_bits, dtype=np.int64)
         hs = ns = 0
+        blocks = []                        # per-block presence (hits, n) for local tests
         for b in range(max(1, gen_len // self.block_len)):
             lo = prompt_len + b * self.block_len
             B, g, S, _, _ = self._build_response_bank(ids, lo, gen_end)
@@ -165,14 +181,16 @@ class ResampleMark:
             e = np.array([eps[int(i)] for i in B], dtype=np.float64)
             tb = np.array([tie[int(i)] for i in B], dtype=np.int64)
             m, _ = score(gv, e, tb)
+            bh = bn = 0
             for k, i in enumerate(B):
                 if not car[k]:
                     continue
                 j = role[int(i)]
                 if j < 0:
-                    ns += 1; hs += int(m[k])
+                    ns += 1; hs += int(m[k]); bn += 1; bh += int(m[k])
                 else:
                     tot[j] += 1; hits[j] += int(m[k])
+            blocks.append((int(bh), int(bn)))
         bits = np.array([int(hits[j] > tot[j] / 2) for j in range(self.n_payload_bits)])
         target = np.array([(message >> t) & 1 for t in range(self.n_payload_bits)])
         na = int(ns + tot.sum())
@@ -184,6 +202,7 @@ class ResampleMark:
                     n=na, rate_aligned=ha / max(na, 1),
                     p_aligned=float(binom.sf(ha - 1, na, 0.5)) if na else 1.0,
                     bits=bits.tolist(), bit_acc=float((bits == target).mean()),
+                    blocks=blocks,
                     n_seqs=int(max(1, gen_len // self.block_len) * (self.n_patterns + 1)))
 
     # -------------------------------------------------------------- generation
@@ -191,6 +210,7 @@ class ResampleMark:
     def generate(self, prompt_ids, gen_len=256, steps=128, message=0, seed=0):
         gen = torch.Generator(device=self.M.device).manual_seed(seed)
         Pn = prompt_ids.shape[1]
+        self._p_len = Pn
         span = np.arange(Pn, Pn + gen_len)
         eps = orientation_bits(self.key, span)
         role = roles(self.key, span, self.n_payload_bits, self.sync_frac)

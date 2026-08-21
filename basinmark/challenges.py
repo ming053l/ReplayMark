@@ -49,7 +49,7 @@ def score(gv, eps, tie):
 
 
 def block_challenges(key, block_lo, block_len, n_patterns, ctx_frac=0.20, min_ctx=4,
-                     mode="random"):
+                     mode="random", region=None):
     """L ablation patterns over the already-final region, and the keyed pairing.
 
     mode="contrast" builds the pair from opposite ends of the context instead of at
@@ -60,7 +60,9 @@ def block_challenges(key, block_lo, block_len, n_patterns, ctx_frac=0.20, min_ct
     unaffected: the exact null needs the *orientation* bit to be a keyed coin, not the
     unordered pair to be content-independent.
     """
-    region = np.arange(0, block_lo)
+    if region is None:
+        region = np.arange(0, block_lo)
+    region = np.asarray(region)
     n_d = max(min_ctx, int(round(ctx_frac * len(region))))
     n_d = min(n_d, max(1, len(region) // 2))
     if mode == "contrast":
