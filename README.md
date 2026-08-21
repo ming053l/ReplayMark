@@ -75,9 +75,9 @@ disadvantage: every baseline detects with **zero** model calls.
 ## 2. The embedder — V2 (archived; see status note for V3, `basinmark/resample.py`)
 
 Decoding follows the reference LLaDA schedule — blocks in order, diffusion within a block.
-At the start of each block the challenge table is built once, with that block *and
-everything after it* masked. Nothing committed inside the block can then enter the table's
-conditioning, so the table stays exact for the block's whole decoding and the detector
+At the start of each block the Reproducible Response Bank (RRB) is built once, with that block *and
+everything after it* masked. Nothing committed inside the block can then enter the RRB's
+conditioning, so the bank stays exact for the block's whole decoding and the detector
 rebuilds it identically from the finished text.
 
 Then, and this is the whole of V2:

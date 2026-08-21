@@ -93,7 +93,7 @@ def steerable_carrier(base_lp, gap_nats=1.0, min_frac=0.0):
     steerable when the model is genuinely undecided there, measured as the top-2 log-prob
     gap under the block-masked context. That context contains none of the block's own
     tokens, so the detector recomputes the identical set from the finished text -- the
-    same isolation argument the challenge table relies on.
+    same isolation argument as the Reproducible Response Bank.
 
     Returns a boolean mask over the block's positions.
     """

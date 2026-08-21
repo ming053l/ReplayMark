@@ -1,219 +1,168 @@
-"""Draw the step-by-step mechanism figure for ReTrace.
+"""Generate the Balanced Carrier Gate mechanism figure as editable SVG and vector PDF.
 
-Outputs
--------
-figures/fig_retrace_mechanism.svg
-figures/fig_retrace_mechanism.pdf
-
-Idiom follows the C4 mechanism figures: horizontal lanes, one per decoding rule, each with a
-header pill and a sequence of step columns; commits are marked with a check badge and a
-deferral with a cross, so the two lanes can be read against each other position by position.
-The two lanes see the *same* model proposals -- that is the point of the figure. Only the
-order of commitment differs, and the bottom strip shows how that order becomes evidence.
+The figure follows the actual ResampleMark implementation: the RRB partitions the
+block-masked base conditional by the sign of g_i, BCG applies the orientation-invariant
+score 2 min(q+, q-), and only admitted positions are consumed by RAR/RRV.
 """
 
+from html import escape
 from pathlib import Path
-
-from reportlab.graphics import renderPDF, renderSVG
-from reportlab.graphics.shapes import Circle, Drawing, Line, Path as RlPath
-from reportlab.graphics.shapes import Polygon, Rect, String
-from reportlab.lib.colors import HexColor, white
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
+import subprocess
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SVG_OUT = ROOT / "fig_retrace_mechanism.svg"
 PDF_OUT = ROOT / "fig_retrace_mechanism.pdf"
+W, H = 960, 318
 
-W, H = 760, 316
-
-FONT_DIR = Path("/usr/share/fonts/truetype/liberation2")
-pdfmetrics.registerFont(TTFont("SaberTimes", str(FONT_DIR / "LiberationSerif-Regular.ttf")))
-pdfmetrics.registerFont(TTFont("SaberTimes-Bold", str(FONT_DIR / "LiberationSerif-Bold.ttf")))
-pdfmetrics.registerFont(TTFont("SaberTimes-Italic", str(FONT_DIR / "LiberationSerif-Italic.ttf")))
-
-INK = HexColor("#17202B")
-MUTED = HexColor("#596579")
-HAIRLINE = HexColor("#D8DEE7")
-
-BASIN = HexColor("#005AB5")
-BASIN_DARK = HexColor("#003C7A")
-BASIN_FILL = HexColor("#E8F1FB")
-BASIN_SOFT = HexColor("#F5F9FE")
-BASIN_LINE = HexColor("#9FC3E8")
-
-PRIOR = HexColor("#7B6651")
-PRIOR_FILL = HexColor("#F7F2EA")
-PRIOR_LINE = HexColor("#CDBDAA")
-
-NEUTRAL_FILL = HexColor("#F5F6F8")
-NEUTRAL_LINE = HexColor("#C8CED7")
-MASK_FILL = HexColor("#E9ECF1")
-
-DEFER = HexColor("#B2182B")
-DEFER_FILL = HexColor("#FBEAEB")
-DEFER_LINE = HexColor("#E3A6AC")
-
-CW, CH, GAP = 24, 18, 3          # token cell geometry, shared by every row
+INK = "#17202B"
+MUTED = "#596579"
+LINE = "#CCD3DD"
+LIGHT = "#F6F8FA"
+BLUE = "#005AB5"
+BLUE_DARK = "#003C7A"
+BLUE_FILL = "#EAF3FC"
+RED = "#B2182B"
+RED_FILL = "#FBEAEC"
+GREEN = "#287A4B"
+GREEN_FILL = "#EAF5EE"
+GOLD = "#9B6A16"
+GOLD_FILL = "#FBF3E3"
+GRAY = "#697384"
 
 
-def label(d, x, y, text, *, size=12, color=INK, font="SaberTimes", anchor="start"):
-    d.add(String(x, y, text, fontName=font, fontSize=size, fillColor=color, textAnchor=anchor))
+class SVG:
+    def __init__(self):
+        self.items = []
+
+    def add(self, value):
+        self.items.append(value)
+
+    def text(self, x, y, value, size=13, fill=INK, weight="normal", anchor="start",
+             style="normal"):
+        self.add(
+            f'<text x="{x}" y="{y}" font-size="{size}" fill="{fill}" '
+            f'font-weight="{weight}" font-style="{style}" text-anchor="{anchor}">'
+            f'{escape(value)}</text>'
+        )
+
+    def rect(self, x, y, w, h, fill="white", stroke=LINE, radius=7, sw=1):
+        self.add(
+            f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{radius}" '
+            f'fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>'
+        )
+
+    def line(self, x1, y1, x2, y2, stroke=LINE, sw=1, marker=False):
+        extra = ' marker-end="url(#arrow)"' if marker else ""
+        self.add(
+            f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" '
+            f'stroke="{stroke}" stroke-width="{sw}"{extra}/>'
+        )
+
+    def circle(self, x, y, r, fill, stroke=None, sw=1):
+        stroke = stroke or fill
+        self.add(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{fill}" '
+                 f'stroke="{stroke}" stroke-width="{sw}"/>')
+
+    def render(self):
+        return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}"
+ viewBox="0 0 {W} {H}">
+<defs>
+  <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4"
+          orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,4 L0,8 z" fill="{MUTED}"/>
+  </marker>
+  <style>text {{ font-family: 'Times New Roman', 'Liberation Serif', serif; }}</style>
+</defs>
+<rect width="100%" height="100%" fill="white"/>
+{"\n".join(self.items)}
+</svg>'''
 
 
-def rounded_card(d, x, y, w, h, *, fill, stroke, radius=6, width=1.0):
-    d.add(Rect(x, y, w, h, rx=radius, ry=radius, fillColor=fill, strokeColor=stroke,
-               strokeWidth=width))
+def panel_header(s, x, width, letter, title, subtitle, color):
+    s.circle(x + 22, 59, 12, color)
+    s.text(x + 22, 63.5, letter, 12, "white", "bold", "middle")
+    s.text(x + 43, 57, title, 15, INK, "bold")
+    s.text(x + 43, 74, subtitle, 10.5, MUTED)
 
 
-def arrow(d, x1, y1, x2, y2, *, color=MUTED, width=1.3, head=5):
-    d.add(Line(x1, y1, x2 - head, y2, strokeColor=color, strokeWidth=width))
-    d.add(Polygon([x2, y2, x2 - head, y2 + head * 0.6, x2 - head, y2 - head * 0.6],
-                  fillColor=color, strokeColor=color))
+def mass_bar(s, x, y, width, qminus, qplus):
+    s.text(x, y - 9, "RRB sign-mass partition of pᵢ(base)", 11, MUTED, "bold")
+    minus_w = width * qminus
+    plus_w = width * qplus
+    s.rect(x, y, width, 34, LIGHT, LINE, 7)
+    s.add(f'<path d="M{x+1},{y+1} h{minus_w-1} v32 h{-minus_w+1} z" fill="{RED}"/>')
+    s.add(f'<path d="M{x+minus_w},{y+1} h{plus_w-1} v32 h{-plus_w+1} z" fill="{BLUE}"/>')
+    if qminus >= .12:
+        s.text(x + minus_w / 2, y + 22, f"q₋ = {qminus:.2f}", 12, "white", "bold", "middle")
+    s.text(x + minus_w + plus_w / 2, y + 22, f"q₊ = {qplus:.2f}", 12, "white", "bold", "middle")
+    s.text(x + 2, y + 49, "gᵢ(z) < 0", 10.5, RED, "bold")
+    s.text(x + width - 2, y + 49, "gᵢ(z) > 0", 10.5, BLUE, "bold", "end")
 
 
-def check(d, x, y, *, color=BASIN, width=1.5):
-    p = RlPath()
-    p.moveTo(x - 3.5, y)
-    p.lineTo(x - 1, y - 2.5)
-    p.lineTo(x + 4, y + 3.5)
-    p.strokeColor, p.strokeWidth, p.fillColor = color, width, None
-    d.add(p)
-
-
-def cross(d, x, y, *, color=DEFER, width=1.5):
-    d.add(Line(x - 3, y - 3, x + 3, y + 3, strokeColor=color, strokeWidth=width))
-    d.add(Line(x - 3, y + 3, x + 3, y - 3, strokeColor=color, strokeWidth=width))
-
-
-def badge(d, x, y, *, color, fill, mark="check", radius=7):
-    d.add(Circle(x, y, radius, fillColor=fill, strokeColor=color, strokeWidth=1.0))
-    (check if mark == "check" else cross)(d, x, y, color=color)
-
-
-def pill(d, x, y, w, text, *, fill, stroke, color, h=17):
-    rounded_card(d, x, y - h / 2, w, h, fill=fill, stroke=stroke, radius=h / 2, width=1.0)
-    label(d, x + w / 2, y - 3.5, text, size=10.5, color=color, anchor="middle")
-
-
-def cells(d, x, y, states):
-    """A block of token cells. Each state is (text, kind), kind in
-    {mask, proposal, committed, wm, defer}."""
-    style = {
-        "mask": (MASK_FILL, NEUTRAL_LINE, MUTED),
-        "proposal": (white, BASIN_LINE, MUTED),
-        "committed": (NEUTRAL_FILL, NEUTRAL_LINE, INK),
-        "wm": (BASIN_FILL, BASIN, BASIN_DARK),
-        "defer": (DEFER_FILL, DEFER_LINE, DEFER),
-    }
-    for k, (text, kind) in enumerate(states):
-        fill, stroke, color = style[kind]
-        cx = x + k * (CW + GAP)
-        rounded_card(d, cx, y, CW, CH, fill=fill, stroke=stroke, radius=3, width=0.9)
-        label(d, cx + CW / 2, y + 5.5, text, size=8, color=color, anchor="middle")
-    return x + len(states) * (CW + GAP) - GAP
-
-
-def lane_header(d, x, y, *, tag, title, subtitle, color, fill, stroke):
-    pill(d, x, y + 24, 96, tag, fill=fill, stroke=stroke, color=color)
-    label(d, x, y - 2, title, size=12, color=INK, font="SaberTimes-Bold")
-    label(d, x, y - 15, subtitle, size=10.5, color=MUTED)
+def orientation_card(s, x, y, width, sign, mass, retries=None):
+    color = BLUE if sign == "+" else RED
+    fill = BLUE_FILL if sign == "+" else RED_FILL
+    s.rect(x, y, width, 38, fill, color, 7, 1)
+    s.text(x + 12, y + 15, f"key asks {sign}", 10.5, color, "bold")
+    s.text(x + 12, y + 30, f"one-draw mass = {mass:.2f}", 10.5, INK)
+    if retries is not None:
+        prob = 1 - (1 - mass) ** retries
+        s.text(x + width - 10, y + 24, f"P₈ = {prob:.2f}", 11, color, "bold", "end")
 
 
 def main():
-    d = Drawing(W, H)
-    d.add(Rect(0, 0, W, H, fillColor=white, strokeColor=None))
-    LX = 24
-    YA, YB, YV = 268, 188, 84
+    s = SVG()
+    s.text(18, 25, "Balanced Carrier Gate (BCG): admit only orientation-robust response channels",
+           15.5, INK, "bold")
+    s.text(942, 25, "computed before εᵢ and wᵢ are consulted", 11, MUTED,
+           anchor="end", style="italic")
 
-    label(d, LX, 304, "Two kinds of position, one rule: sample from the model until the "
-                      "keyed response accepts, at most R times.", size=12, color=MUTED)
+    left_x, right_x, panel_y, panel_w, panel_h = 18, 490, 39, 452, 225
+    s.rect(left_x, panel_y, panel_w, panel_h, "white", LINE, 10, 1.2)
+    s.rect(right_x, panel_y, panel_w, panel_h, "white", LINE, 10, 1.2)
+    panel_header(s, left_x, panel_w, "A", "Two-sided response", "usable for either keyed orientation", BLUE)
+    panel_header(s, right_x, panel_w, "B", "One-sided response", "usable only for one orientation", RED)
 
-    def draw_seq(x, y, seq, note, note_color):
-        cx = x
-        for txt, kind in seq:
-            fill, stroke, col = {
-                "rej": (DEFER_FILL, DEFER_LINE, DEFER),
-                "acc": (BASIN_FILL, BASIN, BASIN_DARK),
-                "nat": (NEUTRAL_FILL, NEUTRAL_LINE, INK)}[kind]
-            rounded_card(d, cx, y - 9, 58, 20, fill=fill, stroke=stroke, radius=4,
-                         width=1.0)
-            label(d, cx + 29, y - 2, txt, size=12, color=col, anchor="middle")
-            if kind == "rej":
-                cross(d, cx + 52, y + 8, color=DEFER, width=1.2)
-            if kind == "acc":
-                check(d, cx + 50, y + 7, color=BASIN, width=1.3)
-            cx += 66
-            if (txt, kind) != seq[-1]:
-                arrow(d, cx - 8, y, cx - 2, y, color=MUTED, width=1.0, head=4)
-        label(d, cx + 6, y - 2, note, size=10.5, color=note_color)
+    # A: balanced response mass.
+    mass_bar(s, left_x + 24, 91, 404, .47, .53)
+    s.rect(left_x + 24, 154, 404, 34, GREEN_FILL, GREEN, 7, 1.1)
+    s.text(left_x + 38, 176, "Sᵢ = 2 min(.53, .47) = .94  >  sₘᵢₙ=.50", 12.5, GREEN, "bold")
+    s.rect(left_x + 328, 160, 89, 22, GREEN, GREEN, 11)
+    s.text(left_x + 372.5, 175, "BCG admits", 10.5, "white", "bold", "middle")
+    orientation_card(s, left_x + 24, 199, 194, "+", .53)
+    orientation_card(s, left_x + 234, 199, 194, "−", .47)
 
-    lane_header(d, LX, YA, tag="two-sided", title="Steerable carrier",
-                subtitle="S > 0.5: both response signs plausible", color=BASIN,
-                fill=BASIN_SOFT, stroke=BASIN_LINE)
-    draw_seq(150, YA, [("sample 1", "rej"), ("sample 2", "rej"), ("sample 3", "acc")],
-             "accepted: still a sample from the model's own conditional", BASIN_DARK)
-    label(d, 150, YA - 26, "counted by the detector; the only positions that can pay "
-                           "quality, less than one bit each", size=12, color=MUTED)
+    # B: response mass concentrated on one sign.
+    mass_bar(s, right_x + 24, 91, 404, .03, .97)
+    s.rect(right_x + 24, 154, 404, 34, LIGHT, GRAY, 7, 1.1)
+    s.text(right_x + 38, 176, "Sᵢ = 2 min(.97, .03) = .06  <  sₘᵢₙ=.50", 12.5, GRAY, "bold")
+    s.rect(right_x + 326, 160, 91, 22, GRAY, GRAY, 11)
+    s.text(right_x + 371.5, 175, "BCG rejects", 10.5, "white", "bold", "middle")
+    orientation_card(s, right_x + 24, 199, 194, "+", .97, retries=8)
+    orientation_card(s, right_x + 234, 199, 194, "−", .03, retries=8)
 
-    lane_header(d, LX, YB, tag="one-sided", title="Key-opposed position",
-                subtitle="target side holds ~no mass", color=DEFER, fill=DEFER_FILL,
-                stroke=DEFER_LINE)
-    draw_seq(150, YB, [("sample 1", "rej"), ("...", "rej"), ("sample R", "rej"),
-                       ("uncond.", "nat")],
-             "exhausted: one unconditional sample committed as-is", MUT if False else MUTED)
-    label(d, 150, YB - 26, "zero quality cost by construction; excluded by the "
-                           "detector's gate", size=12, color=MUTED)
+    # Downstream routing makes the module boundary concrete.
+    s.line(left_x + panel_w/2, 264, left_x + panel_w/2, 277, MUTED, 1.2, marker=True)
+    s.line(right_x + panel_w/2, 264, right_x + panel_w/2, 277, MUTED, 1.2, marker=True)
+    s.rect(left_x, 280, panel_w, 25, GREEN_FILL, GREEN, 12, 1)
+    s.text(left_x + panel_w/2, 297, "RAR may steer  •  RRV counts one Bernoulli trial",
+           11.5, GREEN, "bold", "middle")
+    s.rect(right_x, 280, panel_w, 25, LIGHT, GRAY, 12, 1)
+    s.text(right_x + panel_w/2, 297, "reference sampling  •  no detector trial",
+           11.5, GRAY, "bold", "middle")
 
-    d.add(Line(LX, 140, W - LX, 140, strokeColor=HAIRLINE, strokeWidth=1))
+    s.text(480, 316,
+           "Orientation-free gate: Sᵢ is invariant to swapping the two RRB arms; εᵢ and wᵢ enter only after admission.",
+           10.5, GOLD, "bold", "middle")
 
-    label(d, LX, 120, "Verification", size=12, color=BASIN, font="SaberTimes-Bold")
-    label(d, 116, 120, "from the finished text alone, with no access to the trajectory "
-                       "or the draw sequence", size=10.5, color=MUTED)
-
-    fin = [("the", "committed"), ("model", "committed"), ("fills", "committed"),
-           ("in", "committed"), ("any", "committed"), ("order", "committed")]
-    end = cells(d, LX, YV - 9, fin)
-    label(d, LX, YV - 26, "finished text", size=10.5, color=MUTED)
-    arrow(d, end + 8, YV, end + 34, YV, color=BASIN)
-    msk = [("[M]", "mask"), ("model", "committed"), ("[M]", "mask"),
-           ("in", "committed"), ("[M]", "mask"), ("order", "committed")]
-    end2 = cells(d, end + 40, YV - 9, msk)
-    label(d, end + 40, YV - 26, "re-masked under the key", size=10.5, color=BASIN_DARK)
-    arrow(d, end2 + 8, YV, end2 + 34, YV, color=BASIN)
-    ix = end2 + 40
-    for k, m in enumerate((1, None, 0, None, 1, None)):
-        cx = ix + k * (CW + GAP)
-        if m is None:
-            rounded_card(d, cx, YV - 9, CW, CH, fill=NEUTRAL_FILL, stroke=NEUTRAL_LINE,
-                         radius=3, width=0.9)
-            label(d, cx + CW / 2, YV - 3.5, "\u2014", size=10, color=MUTED,
-                  anchor="middle")
-        else:
-            rounded_card(d, cx, YV - 9, CW, CH, fill=BASIN_FILL if m else DEFER_FILL,
-                         stroke=BASIN if m else DEFER_LINE, radius=3, width=0.9)
-            label(d, cx + CW / 2, YV - 3.5, str(m), size=10.5,
-                  color=BASIN_DARK if m else DEFER, anchor="middle")
-    label(d, ix, YV - 26, "gated indicators", size=10.5, color=MUTED)
-    arrow(d, ix + 6 * (CW + GAP) + 4, YV, ix + 6 * (CW + GAP) + 30, YV, color=BASIN)
-    rounded_card(d, ix + 6 * (CW + GAP) + 36, YV - 15, 104, 30, fill=BASIN_FILL,
-                 stroke=BASIN)
-    label(d, ix + 6 * (CW + GAP) + 88, YV - 1, "count", size=12, color=BASIN_DARK,
-          anchor="middle")
-    label(d, ix + 6 * (CW + GAP) + 88, YV - 12, "Binomial(n, 1/2)", size=10, color=MUTED,
-          anchor="middle")
-
-    renderSVG.drawToFile(d, str(SVG_OUT))
-    svg = SVG_OUT.read_text(encoding="utf-8")
-    for a, b in (("font-family: SaberTimes-Bold;",
-                  "font-family: 'Times New Roman'; font-weight: bold;"),
-                 ("font-family: SaberTimes-Italic;",
-                  "font-family: 'Times New Roman'; font-style: italic;"),
-                 ("font-family: SaberTimes;", "font-family: 'Times New Roman';")):
-        svg = svg.replace(a, b)
-    SVG_OUT.write_text(svg, encoding="utf-8")
-    renderPDF.drawToFile(d, str(PDF_OUT))
+    SVG_OUT.write_text(s.render(), encoding="utf-8")
+    subprocess.run(
+        ["soffice", "--headless", "--convert-to", "pdf", "--outdir", str(ROOT), str(SVG_OUT)],
+        check=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+    )
+    if not PDF_OUT.exists():
+        raise RuntimeError("SVG-to-PDF conversion did not produce the expected file")
     print(SVG_OUT)
     print(PDF_OUT)
 

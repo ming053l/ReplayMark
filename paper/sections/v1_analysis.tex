@@ -1,34 +1,27 @@
-\subsection{Why substitution cannot pay}
+\subsection{Why not substitute tokens after generation?}
 \label{sec:v1}
 
-With the observable and the statistic fixed, the embedder's task sounds elementary:
-make the committed tokens answer with the key. The natural first design does it by
-\emph{substitution} --- generate normally, then at keyed positions replace the model's
-token with an alternative whose contrast points the right way, subject to a per-token
-fluency budget $\tau$ (admissible iff $p(w)/p(w^\star) \geq e^{-\tau}$). Its measured
-failure dictates the final design.
+An earlier design first generated an unwatermarked text and then replaced selected tokens
+with alternatives having the desired contrast sign. A candidate $z$ was admissible only if
+its probability relative to the most likely token satisfied
+$p(z)/p(z^\star)\geq e^{-\tau}$. This approach is simple and uses the same detector, but
+the experiments show that it has too little capacity on the evaluated model.
 
-The first obstacle is that there is usually nothing to substitute. A well-trained
-denoiser's conditionals are sharp: across $36$ configurations spanning three
-carrier-selection rules, three budgets and two guidance weights, the \emph{median} keyed
-position admits exactly one token at $\tau = 3$ ($p(w)/p(w^\star) \geq 0.05$), with no
-truncation of the candidate slate. The best configuration inside a $1.35\times$
-perplexity budget reaches only $\mathrm{TPR}@1\% = 0.10$, against $0.86$ for locally
-reproduced dgMARK at $1.23\times$.
+Across 36 settings covering three carrier rules, three fluency budgets, and two guidance
+weights, the median selected position had only one admissible token at $\tau=3$
+($p(z)/p(z^\star)\geq0.05$). The best setting within a $1.35\times$ perplexity budget
+reached only $0.10$ TPR at $1\%$ FPR, compared with $0.86$ for the local dgMARK
+reproduction at $1.23\times$.
 
-Sharper still, the obstacle grows with model quality. When a confidence-ranking defect
-in our sampler was repaired --- draft perplexity moving from $22.2$ to $9.5$ --- the
-denoiser's entropy halved ($0.655 \to 0.319$) and the admissible sets shrank by
-$34$--$60\,\%$ ($|A(3)|$: $2.5 \to 1.6$; $|A(6)|$: $14.1 \to 5.6$). Substitution buys
-evidence with fluency at a rate set by the sharpness of the model's conditionals, and
-\important{improving a diffusion language model's generation quality reduces its
-post-hoc watermarkability}, because both quantities are governed by the same sharpness.
-Nor does moving the substitution to generation time escape this: a guidance table valid
-during generation needs every non-carrier token final first, and the two-phase schedule
-that forces costs $1.98\times$ perplexity \emph{before any watermark} --- more than
-dgMARK's entire cost.
+A sampler correction made the limitation clearer. Confidence had initially been computed
+from Gumbel-perturbed logits rather than the clean model distribution. Fixing this error
+reduced draft perplexity from $22.2$ to $9.5$ and mean conditional entropy from $0.655$ to
+$0.319$. At the same time, the mean number of admissible alternatives fell from $2.5$ to
+$1.6$ at $\tau=3$ and from $14.1$ to $5.6$ at $\tau=6$. In this setting, sharper
+conditionals improve the base sampler while removing the alternatives needed for post-hoc
+substitution.
 
-What these measurements leave standing is a design constraint rather than a tuning
-problem: an embedder must never override the model's choice --- it may only choose
-\emph{among} tokens the model itself proposes. The next subsection builds exactly that
-embedder.
+This result motivates resampling rather than a universal claim that substitution must fail
+for every DLM. ReTrace makes its choice while the model is already sampling and falls back
+to an unconditional proposal when steering fails; it does not force a replacement after
+the surrounding text has been fixed.

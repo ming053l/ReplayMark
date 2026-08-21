@@ -22,44 +22,41 @@
 \toprule
 & & & & \multicolumn{3}{c}{TPR at FPR $\uparrow$} & & \\
 \cmidrule(lr){5-7}
-Method & Setting & PPL $\downarrow$ & Ratio $\downarrow$ & $5\%$ & $1\%$ & $0.1\%$ & Gen.\ fwd. & Det.\ fwd. \\
+Method & Setting & PPL $\downarrow$ & Ratio $\downarrow$ & $5\%$ & $1\%$ & $0.1\%$ & Gen.\ eval. & Det.\ eval. \\
 \midrule
-\multicolumn{9}{l}{\textit{Budget: one decode per document (Gen.\ fwd.\ $=$ tokens generated)}} \\
+\multicolumn{9}{l}{\textit{Budget: one sequence evaluation per generated token}} \\
 \midrule
 dgMARK \citep{hong2026dgmark} & $k=1$, 256 tok & 15.40 & 1.55$\times$ & 0.88 & 0.74 & 0.62 & 256 & \textbf{0} \\
 \rowcolor{finalres}
 KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 256 tok & 11.96 & \textbf{1.03}$\times$ & 0.97 & \textbf{0.93} & 0.73 & 256 & \textbf{0} \\
 KGW \citep{kirchenbauer2023watermark} & $\delta=3$, 256 tok & 14.05 & 1.21$\times$ & 1.00 & 1.00 & 1.00 & 256 & \textbf{0} \\
-\textcolor{oursemph}{ReTrace V1} & best under $1.35\times$ ppl & 30.5 & 1.17$\times$ & 0.10 & \textcolor{failred}{0.10} & 0.00 & 256 & 9 \\
+Post-hoc substitution & best under $1.35\times$ PPL & 30.5 & 1.17$\times$ & 0.10 & 0.10 & 0.00 & 256 & 9 \\
 \midrule
-\multicolumn{9}{l}{\textit{Budget: $1.28\times$ decode --- ReTrace V3 (decode $+$ one challenge-table pass per block)}} \\
+\multicolumn{9}{l}{\textit{Budget: $1.28\times$ decode --- ReTrace Response Bank plus reference schedule}} \\
 \midrule
-\textcolor{oursemph}{ReTrace V3} & $R{=}1$, 512 tok & 11.0 & \textbf{0.97}$\times$ & 0.57 & 0.43 & 0.20 & 656 & 144 \\
-\textcolor{oursemph}{ReTrace V3} & $R{=}2$, 512 tok, held-out & -- & 1.14$\times$ & 0.83 & 0.73 & 0.63 & 656 & 144 \\
-\textcolor{oursemph}{ReTrace V3} & $R{=}4$, 512 tok, held-out & -- & \textcolor{failred}{1.40$\times$} & 0.90 & 0.83 & 0.77 & 656 & 144 \\
+\textcolor{oursemph}{ReTrace} & $R{=}1$, 512 tok & 11.0 & \textbf{0.97}$\times$ & 0.57 & 0.43 & 0.20 & 656 & 144 \\
+\textcolor{oursemph}{ReTrace} & $R{=}2$, 512 tok, held-out & -- & 1.14$\times$ & 0.83 & 0.73 & 0.63 & 656 & 144 \\
+\textcolor{oursemph}{ReTrace} & $R{=}4$, 512 tok, held-out & -- & \textcolor{failred}{1.40$\times$} & 0.90 & 0.83 & 0.77 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{ReTrace V3} & $R{=}16$, $\kappa{=}0.05$, 512 tok & -- & \textbf{0.74}$\times$ & 0.90 & \textbf{0.80} & 0.60 & 656 & 144 \\
-\textcolor{oursemph}{ReTrace V3} & $R{=}8$, $\kappa{=}0.1$, 512 tok & 5.67 & \textbf{0.87}$\times$ & 0.80 & 0.70 & 0.60 & 656 & 144 \\
+\textcolor{oursemph}{ReTrace} & $R{=}16$, $\kappa{=}0.05$, 512 tok & -- & \textbf{0.74}$\times$ & 0.90 & \textbf{0.80} & 0.60 & 656 & 144 \\
+\textcolor{oursemph}{ReTrace} & $R{=}8$, $\kappa{=}0.1$, 512 tok & 5.67 & \textbf{0.87}$\times$ & 0.80 & 0.70 & 0.60 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{ReTrace V3} & $R{=}8$, $\kappa{=}0.1$, 1024 tok & -- & \textbf{0.83}$\times$ & 0.81 & \textbf{0.75} & \textbf{0.69} & 1312 & 288 \\
+\textcolor{oursemph}{ReTrace} & $R{=}8$, $\kappa{=}0.1$, 1024 tok & -- & \textbf{0.83}$\times$ & 0.81 & \textbf{0.75} & \textbf{0.69} & 1312 & 288 \\
 \midrule
 \multicolumn{9}{l}{\textit{Budget: $\sim\!4\times$ decode (one-step lookahead per candidate)}} \\
 \midrule
 dgMARK \citep{hong2026dgmark} & $+3$-beam, 256 tok & 12.23 & 1.23$\times$ & \textbf{0.92} & \textbf{0.86} & \textbf{0.82} & \textcolor{failred}{$\sim$1024} & \textbf{0} \\
 \end{tabular}%
 }
-\caption{\textbf{Detectability against the quality and compute actually paid, grouped by
-generation budget.} One machine, checkpoint and prompt protocol. \emph{Ratio} is against a
-non-watermarked control run under the same decoding regime (control PPL: block decoding
-$9.94$, left-to-right $11.61$, $T{=}0.8$ full-vocab $26.21$; ReTrace: paired matched-scheduler
-control per sub-group); control arms score $\mathrm{TPR}\leq0.03$ at the $5\%$ threshold and
-$0.00$ below, $|z|\leq0.25$. \emph{Gen.\ fwd.} counts model forwards spent producing the text;
-ReTrace's tier costs $1.28\times$ a plain decode for its per-block challenge tables, and
-dgMARK $3$-beam sits alone at $\sim\!4\times$ for its lookahead. \emph{Det.\ fwd.} counts
-masked evaluations per detection --- zero for token-hash detectors, fixed for ReTrace. KGW is
-scored on distinct bigrams ($37\%$ FPR at $\delta{=}0$ otherwise); its left-to-right regime
-itself costs $1.17\times$ against block decoding. ReTrace prompt sets are disjoint per
-sub-group with per-document keys, $n{=}30$ per 512-token arm ($n{=}20$ for $R{=}16$,
-$n{=}16$ at 1024 tokens; quality pairing on valid documents).}
+\caption{\textbf{Detection, matched-control perplexity, and compute.} Rows are grouped by
+generation budget and use one machine, checkpoint, and prompt protocol. \emph{Ratio} is PPL
+relative to a non-watermarked control under the same decoding regime; a ratio below one
+does not imply better semantic quality. \emph{Eval.} counts sequence evaluations, not
+batched wall-clock invocations. ReTrace uses 144 extra evaluations to construct Response
+Banks during a 512-token decode and 144 more for verification. dgMARK three-beam uses
+approximately four generation evaluations per token. KGW is scored on distinct bigrams;
+without deduplication, its unwatermarked control has $37\%$ FPR. dgMARK arms use $n=50$
+and KGW arms $n=30$; principal 512-token ReTrace rows use $n=30$ ($n=20$ for $R=16$),
+and the 1024-token row uses $n=16$. PPL ratios use only pairs passing the decoded-length rule.}
 \label{tab:baselines}
 \end{table}

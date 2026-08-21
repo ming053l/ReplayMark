@@ -12,7 +12,7 @@ That is the property making dgMARK nearly free, applied to a behavioural observa
 rather than a hash of the token identity.
 
 Decoding follows the reference LLaDA schedule -- blocks in order, diffusion within a
-block. A block's challenge table is built once with that block, and everything after it,
+block. A block's Reproducible Response Bank is built once with that block, and everything after it,
 masked; nothing committed inside the block can then enter the table's conditioning, and
 the detector rebuilds the identical table from the finished text.
 
@@ -48,14 +48,14 @@ class BlockMark:
         self.n_payload_bits, self.sync_frac = n_payload_bits, sync_frac
         self.challenge, self.gap_nats = challenge, gap_nats
 
-    # ---------- challenge table for one block ----------
+    # ---------- Reproducible Response Bank for one block ----------
     @torch.no_grad()
-    def _table(self, x, lo, gen_end):
+    def _build_response_bank(self, x, lo, gen_end):
         """g_i(.) for every position of the block, as a [|B|, V] tensor.
 
         The block AND everything after it are masked, which is the state the generator is
         in while the block is decoded -- so the detector, recomputing this on finished
-        text, gets the identical table. Omitting the tail cost the previous version its
+        text, gets the identical response bank. Omitting the tail cost the previous version its
         entire signal.
         """
         B = np.arange(lo, lo + self.block_len)
@@ -77,6 +77,10 @@ class BlockMark:
         carrier = steerable_carrier(lp[-1], self.gap_nats)
         return B, (lp[v] - lp[u]), carrier            # [|B|, V] float64, [|B|] bool
 
+    # Backward-compatible alias for earlier diagnostic scripts.
+    def _table(self, x, lo, gen_end):
+        return self._build_response_bank(x, lo, gen_end)
+
     def _eps(self, span):
         return orientation_bits(self.key, span)
 
@@ -93,7 +97,7 @@ class BlockMark:
         hs = ns = n_tie = 0
         for b in range(max(1, gen_len // self.block_len)):
             lo = prompt_len + b * self.block_len
-            B, g, car = self._table(ids, lo, gen_end)
+            B, g, car = self._build_response_bank(ids, lo, gen_end)
             y = ids[0, torch.tensor(B)]
             gv = g.gather(1, y[:, None]).squeeze(1).numpy()
             e = np.array([eps[int(i)] for i in B], dtype=np.float64)
@@ -159,7 +163,7 @@ class BlockMark:
 
         for b in range(n_blocks):
             lo = Pn + b * self.block_len
-            B, g, car = self._table(x.cpu(), lo, gen_end)
+            B, g, car = self._build_response_bank(x.cpu(), lo, gen_end)
             gmap = {int(p): g[k] for k, p in enumerate(B)}
             Bt = torch.tensor(B, device=x.device)
             for t in range(steps_pb):

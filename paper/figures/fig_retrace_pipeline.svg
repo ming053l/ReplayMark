@@ -1,116 +1,180 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE svg
-  PUBLIC '-//W3C//DTD SVG 1.0//EN'
-  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
-<svg width="760" height="310" preserveAspectRatio="xMinYMin meet" viewBox="0 0 760 310" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
-	<title>...</title>
-	<desc>...</desc>
-	<clipPath id="clip">
-		<rect x="0" y="0" width="760" height="310"/>
-	</clipPath>
-	<g id="group" transform="scale(1,-1) translate(0,-310)" style="clip-path: url(#clip)">
-		<g transform="">
-			<rect x="0" y="0" width="760" height="310" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
-			<text x="24" y="296" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(0%,35%,70%); stroke:none;" transform="translate(0,592) scale(1,-1)">(a)</text>
-			<text x="46" y="296" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,592) scale(1,-1)">What the verifier reads</text>
-			<text x="24" y="278" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(48%,40%,31%); stroke:none;" transform="translate(0,556) scale(1,-1)">Prior work</text>
-			<rect x="24" y="241" width="96" height="30" rx="7" ry="7" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="50.5078125" y="252" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,504) scale(1,-1)">final text</text>
-			<path d="M 124,256 L 132,256 Z" style="stroke: rgb(48%,40%,31%); stroke-linecap: butt; stroke-width: 1.4;"/>
-			<polygon points="138 256, 132 259.72, 132 252.28" style="stroke: rgb(48%,40%,31%); stroke-linecap: butt; stroke-width: 1; fill: rgb(48%,40%,31%); fill-rule: evenodd;"/>
-			<rect x="140" y="241" width="136" height="30" rx="7" ry="7" style="stroke: rgb(80%,74%,66%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,94%,91%); fill-rule: evenodd;"/>
-			<text x="167.171875" y="258" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(48%,40%,31%); stroke:none;" transform="translate(0,516) scale(1,-1)">hash of token ids</text>
-			<text x="172.280517578125" y="246" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,492) scale(1,-1)">green list / parity</text>
-			<path d="M 280,256 L 616,256 Z" style="stroke: rgb(48%,40%,31%); stroke-linecap: butt; stroke-width: 1.4;"/>
-			<polygon points="622 256, 616 259.72, 616 252.28" style="stroke: rgb(48%,40%,31%); stroke-linecap: butt; stroke-width: 1; fill: rgb(48%,40%,31%); fill-rule: evenodd;"/>
-			<text x="421.42236328125" y="262" style="font-family: 'Times New Roman'; font-style: italic; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,524) scale(1,-1)">no model call</text>
-			<rect x="624" y="241" width="112" height="30" rx="7" ry="7" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="663.341796875" y="252" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,504) scale(1,-1)">verdict</text>
-			<text x="24" y="214" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(0%,35%,70%); stroke:none;" transform="translate(0,428) scale(1,-1)">ReTrace</text>
-			<rect x="24" y="164" width="96" height="44" rx="7" ry="7" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="50.5078125" y="190" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,380) scale(1,-1)">final text</text>
-			<text x="69.3369140625" y="174" style="font-family: 'Times New Roman'; font-style: italic; font-size: 12px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,348) scale(1,-1)">y</text>
-			<rect x="140" y="191" width="136" height="26" rx="7" ry="7" style="stroke: rgb(62%,76%,90%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,97%,99%); fill-rule: evenodd;"/>
-			<text x="165.8856201171875" y="200" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,400) scale(1,-1)">keyed corruption </text>
-			<text x="239.9444580078125" y="200" style="font-family: 'Times New Roman'; font-style: italic; font-size: 10px;fill: rgb(0%,35%,70%); stroke:none;" transform="translate(0,400) scale(1,-1)">C</text>
-			<text x="246.6143798828125" y="197" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,35%,70%); stroke:none;" transform="translate(0,394) scale(1,-1)">u</text>
-			<path d="M 124,186 L 132,204 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<polygon points="138 204, 132 207.72, 132 200.28" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<path d="M 280,204 L 292,186 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<polygon points="298 186, 292 189.72, 292 182.28" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<rect x="140" y="155" width="136" height="26" rx="7" ry="7" style="stroke: rgb(62%,76%,90%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,97%,99%); fill-rule: evenodd;"/>
-			<text x="166.0821533203125" y="164" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,328) scale(1,-1)">keyed corruption </text>
-			<text x="240.1409912109375" y="164" style="font-family: 'Times New Roman'; font-style: italic; font-size: 10px;fill: rgb(0%,35%,70%); stroke:none;" transform="translate(0,328) scale(1,-1)">C</text>
-			<text x="246.8109130859375" y="161" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,35%,70%); stroke:none;" transform="translate(0,322) scale(1,-1)">v</text>
-			<path d="M 124,186 L 132,168 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<polygon points="138 168, 132 171.72, 132 164.28" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<path d="M 280,168 L 292,186 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<polygon points="298 186, 292 189.72, 292 182.28" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<rect x="300" y="164" width="92" height="44" rx="7" ry="7" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(90%,94%,98%); fill-rule: evenodd;"/>
-			<text x="313.8349609375" y="191" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,382) scale(1,-1)">diffusion LM</text>
-			<text x="324.1361083984375" y="177" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,354) scale(1,-1)">re-denoise</text>
-			<path d="M 396,186 L 408,186 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.4;"/>
-			<polygon points="414 186, 408 189.72, 408 182.28" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<text x="416" y="190" style="font-family: 'Times New Roman'; font-style: italic; font-size: 12px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,380) scale(1,-1)">g</text>
-			<text x="422.0" y="187" style="font-family: 'Times New Roman'; font-style: italic; font-size: 8px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,374) scale(1,-1)">i</text>
-			<text x="424.22265625" y="190" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,380) scale(1,-1)"> = log p (y</text>
-			<text x="470.1455078125" y="187" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,374) scale(1,-1)">i</text>
-			<text x="472.09033203125" y="190" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,380) scale(1,-1)"> | C</text>
-			<text x="487.12939453125" y="187" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,374) scale(1,-1)">v</text>
-			<text x="490.236328125" y="190" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,380) scale(1,-1)">) − log p (y</text>
-			<text x="539.822265625" y="187" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,374) scale(1,-1)">i</text>
-			<text x="541.76708984375" y="190" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,380) scale(1,-1)"> | C</text>
-			<text x="556.80615234375" y="187" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,374) scale(1,-1)">u</text>
-			<text x="560.30615234375" y="190" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,380) scale(1,-1)">)</text>
-			<text x="416" y="174" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,348) scale(1,-1)">the model's response, not the symbols</text>
-			<path d="M 608,186 L 616,186 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.4;"/>
-			<polygon points="622 186, 616 189.72, 616 182.28" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<rect x="624" y="171" width="112" height="30" rx="7" ry="7" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(90%,94%,98%); fill-rule: evenodd;"/>
-			<text x="663.341796875" y="182" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,364) scale(1,-1)">verdict</text>
-			<path d="M 24,148 L 736,148 Z" style="stroke: rgb(84%,87%,90%); stroke-linecap: butt; stroke-width: 1;"/>
-			<text x="24" y="128" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(0%,35%,70%); stroke:none;" transform="translate(0,256) scale(1,-1)">(b)</text>
-			<text x="46" y="128" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,256) scale(1,-1)">How the watermark is placed</text>
-			<text x="250" y="128" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,256) scale(1,-1)">every emitted token is drawn from the model's own conditional</text>
-			<rect x="24" y="58" width="118" height="32" rx="7" ry="7" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="39.5087890625" y="79" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,158) scale(1,-1)">model conditional</text>
-			<text x="44.64233398437499" y="65" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,130) scale(1,-1)">p</text>
-			<text x="50.14233398437499" y="62" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,124) scale(1,-1)">θ</text>
-			<text x="53.58081054687499" y="65" style="font-family: 'Times New Roman'; font-size: 9px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,130) scale(1,-1)">( · | x )  unchanged</text>
-			<path d="M 146,74 L 166,74 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1.4;"/>
-			<polygon points="172 74, 166 77.72, 166 70.28" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
-			<rect x="176" y="58" width="92" height="32" rx="7" ry="7" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="190.1748046875" y="79" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,158) scale(1,-1)">sample token</text>
-			<text x="210.134521484375" y="65" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,130) scale(1,-1)">v</text>
-			<text x="215.016845703125" y="65" style="font-family: 'Times New Roman'; font-style: italic; font-size: 10px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,130) scale(1,-1)"> ~ p</text>
-			<text x="230.427001953125" y="62" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,124) scale(1,-1)">θ</text>
-			<path d="M 272,74 L 292,74 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1.4;"/>
-			<polygon points="298 74, 292 77.72, 292 70.28" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
-			<rect x="302" y="56" width="152" height="36" rx="7" ry="7" style="stroke: rgb(62%,76%,90%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(96%,97%,99%); fill-rule: evenodd;"/>
-			<text x="344.916015625" y="77" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,154) scale(1,-1)">w</text>
-			<text x="352.2529296875" y="74" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,148) scale(1,-1)">i</text>
-			<text x="354.19775390625" y="77" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,154) scale(1,-1)"> ε</text>
-			<text x="361.2822265625" y="74" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,148) scale(1,-1)">i</text>
-			<text x="363.22705078125" y="77" style="font-family: 'Times New Roman'; font-style: italic; font-size: 11px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,154) scale(1,-1)"> g</text>
-			<text x="371.47705078125" y="74" style="font-family: 'Times New Roman'; font-style: italic; font-size: 7px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,148) scale(1,-1)">i</text>
-			<text x="373.421875" y="77" style="font-family: 'Times New Roman'; font-size: 11px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,154) scale(1,-1)">(v) &gt; 0 ?</text>
-			<text x="305.3583984375" y="62" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,124) scale(1,-1)">keyed reconstruction response</text>
-			<path d="M 458,80 L 476,104 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.3;"/>
-			<polygon points="482 104, 476 107.72, 476 100.28" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<rect x="486" y="90" width="96" height="28" rx="7" ry="7" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(90%,94%,98%); fill-rule: evenodd;"/>
-			<circle cx="502" cy="104" r="8" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
-			<path d="M 498 104 L 501 101 L 507 108 " style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.5; fill: none; fill-rule: evenodd;"/>
-			<text x="516" y="100" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,200) scale(1,-1)">emit</text>
-			<path d="M 458,68 L 476,44 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.3;"/>
-			<polygon points="482 44, 476 47.72, 476 40.28" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1; fill: rgb(69%,9%,16%); fill-rule: evenodd;"/>
-			<circle cx="494" cy="44" r="8" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
-			<path d="M 490.5,40.5 L 497.5,47.5 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.5;"/>
-			<path d="M 490.5,47.5 L 497.5,40.5 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.5;"/>
-			<text x="506" y="40" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(69%,9%,16%); stroke:none;" transform="translate(0,80) scale(1,-1)">redraw, at most R times</text>
-			<path d="M 494,34 L 222,34 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.1;"/>
-			<path d="M 222,34 L 217,54 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.1;"/>
-			<polygon points="222 54, 217 57.1, 217 50.9" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1; fill: rgb(69%,9%,16%); fill-rule: evenodd;"/>
-			<text x="206.3740234375" y="24" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,48) scale(1,-1)">a retry costs no forward pass: the conditional row is unchanged</text>
-			<text x="590" y="100" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,200) scale(1,-1)">exhausted: one unconditional sample, committed as-is</text>
-		</g>
-	</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360"
+ viewBox="0 0 960 360">
+<defs>
+  <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4"
+          orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,4 L0,8 z" fill="#596579"/>
+  </marker>
+  <style>
+    text { font-family: 'Times New Roman', 'Liberation Serif', serif; }
+  </style>
+</defs>
+<rect width="100%" height="100%" fill="white"/>
+<text x="18" y="24" font-size="15" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">ReTrace: the DLM is both generator and keyed reconstruction probe</text>
+<text x="942" y="24" font-size="11" fill="#596579" font-weight="normal" font-style="italic" text-anchor="end">one block at a time</text>
+<rect x="18" y="40" width="213" height="266" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
+<circle cx="36" cy="61" r="11" fill="#596579" stroke="#596579" stroke-width="1"/>
+<text x="36" y="65" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">1</text>
+<text x="55" y="59" font-size="14" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">Reference DLM</text>
+<text x="55" y="74" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">keep the native block schedule</text>
+<rect x="241" y="40" width="223" height="266" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
+<circle cx="259" cy="61" r="11" fill="#9B6A16" stroke="#9B6A16" stroke-width="1"/>
+<text x="259" y="65" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">2</text>
+<text x="278" y="59" font-size="14" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">Response Bank + Gate</text>
+<text x="278" y="74" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">RRB records; BCG selects</text>
+<rect x="474" y="40" width="223" height="266" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
+<circle cx="492" cy="61" r="11" fill="#005AB5" stroke="#005AB5" stroke-width="1"/>
+<text x="492" y="65" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">3</text>
+<text x="511" y="59" font-size="14" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">RAR embedding</text>
+<text x="511" y="74" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">response-aligned resampling</text>
+<rect x="707" y="40" width="235" height="266" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
+<circle cx="725" cy="61" r="11" fill="#287A4B" stroke="#287A4B" stroke-width="1"/>
+<text x="725" y="65" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">4</text>
+<text x="744" y="59" font-size="14" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">RRV verification</text>
+<text x="744" y="74" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">replay, count, test</text>
+<line x1="233" y1="173" x2="237" y2="173" stroke="#596579" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="466" y1="173" x2="470" y2="173" stroke="#596579" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="699" y1="173" x2="703" y2="173" stroke="#596579" stroke-width="1.4" marker-end="url(#arrow)"/>
+<text x="32" y="99" font-size="11" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">Current state</text>
+<rect x="32" y="108" width="48" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="56.0" y="125" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">prompt</text>
+<rect x="83" y="108" width="39" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="102.5" y="125" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">fixed</text>
+<rect x="125" y="108" width="43" height="25" rx="4" fill="#E7EBF0" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="146.5" y="125" font-size="11.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">MASK</text>
+<rect x="171" y="108" width="43" height="25" rx="4" fill="#E7EBF0" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="192.5" y="125" font-size="11.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">MASK</text>
+<line x1="124" y1="137" x2="124" y2="153" stroke="#596579" stroke-width="1.1" marker-end="url(#arrow)"/>
+<rect x="73" y="156" width="102" height="32" rx="7" fill="#EAF3FC" stroke="#9BC3EA" stroke-width="1"/>
+<text x="124" y="177" font-size="12" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">diffusion LM</text>
+<line x1="124" y1="190" x2="124" y2="203" stroke="#596579" stroke-width="1.1" marker-end="url(#arrow)"/>
+<rect x="58" y="202" width="132" height="80" rx="5" fill="white" stroke="#CCD3DD" stroke-width="1"/>
+<path d="M58,222 H190" stroke="#CCD3DD"/>
+<line x1="134" y1="202" x2="134" y2="282" stroke="#CCD3DD" stroke-width="0.8"/>
+<text x="96.0" y="218" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">candidate</text>
+<text x="162.0" y="218" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">pθ</text>
+<text x="96.0" y="238" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">the</text>
+<text x="162.0" y="238" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">.42</text>
+<rect x="59" y="242" width="130" height="20" fill="#F6F8FA"/>
+<text x="96.0" y="258" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">a</text>
+<text x="162.0" y="258" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">.25</text>
+<text x="96.0" y="278" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">this</text>
+<text x="162.0" y="278" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">.13</text>
+<text x="124" y="297" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">sample once and commit</text>
+<text x="255" y="96" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">Mask block + suffix; ablate the fixed prefix</text>
+<text x="255" y="118" font-size="11" fill="#9B6A16" font-weight="bold" font-style="normal" text-anchor="start">Cᵘ</text>
+<rect x="280" y="103" width="27" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="293.5" y="120" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">·</text>
+<rect x="310" y="103" width="47" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="333.5" y="120" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">fixed</text>
+<rect x="360" y="103" width="49" height="25" rx="4" fill="#E7EBF0" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="384.5" y="120" font-size="11.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">MASK</text>
+<text x="255" y="149" font-size="11" fill="#9B6A16" font-weight="bold" font-style="normal" text-anchor="start">Cᵛ</text>
+<rect x="280" y="134" width="52" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="306.0" y="151" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">prompt</text>
+<rect x="335" y="134" width="27" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="348.5" y="151" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">·</text>
+<rect x="365" y="134" width="49" height="25" rx="4" fill="#E7EBF0" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="389.5" y="151" font-size="11.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">MASK</text>
+<line x1="415" y1="129" x2="435" y2="129" stroke="#596579" stroke-width="1.1" marker-end="url(#arrow)"/>
+<rect x="392" y="155" width="58" height="31" rx="6" fill="#FBF3E3" stroke="#D9BB7B" stroke-width="1"/>
+<text x="421" y="175" font-size="11.5" fill="#9B6A16" font-weight="bold" font-style="normal" text-anchor="middle">DLM</text>
+<text x="255" y="196" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">RRB entry  gᵢ(z)=log pᵛ−log pᵘ</text>
+<rect x="255" y="202" width="172" height="72" rx="5" fill="white" stroke="#CCD3DD" stroke-width="1"/>
+<path d="M255,220 H427" stroke="#CCD3DD"/>
+<line x1="329" y1="202" x2="329" y2="274" stroke="#CCD3DD" stroke-width="0.8"/>
+<line x1="389" y1="202" x2="389" y2="274" stroke="#CCD3DD" stroke-width="0.8"/>
+<text x="292.0" y="218" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">token</text>
+<text x="359.0" y="218" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">gᵢ</text>
+<text x="408.0" y="218" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">sign</text>
+<text x="292.0" y="236" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">the</text>
+<text x="359.0" y="236" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">+.8</text>
+<text x="408.0" y="236" font-size="11" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
+<rect x="256" y="238" width="170" height="18" fill="#F6F8FA"/>
+<text x="292.0" y="254" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">a</text>
+<text x="359.0" y="254" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">−.6</text>
+<text x="408.0" y="254" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="middle">−</text>
+<text x="292.0" y="272" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">this</text>
+<text x="359.0" y="272" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">+.1</text>
+<text x="408.0" y="272" font-size="11" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
+<rect x="255" y="292" width="194" height="8" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="1"/>
+<rect x="256" y="293" width="102" height="6" rx="3" fill="#005AB5"/>
+<rect x="358" y="293" width="90" height="6" rx="3" fill="#B2182B"/>
+<text x="255" y="286" font-size="10.5" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="start">q₊=.53</text>
+<text x="449" y="286" font-size="10.5" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="end">q₋=.47  ⇒  carrier</text>
+<rect x="488" y="91" width="195" height="34" rx="7" fill="#EAF3FC" stroke="#9BC3EA" stroke-width="1"/>
+<text x="500" y="105" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">keyed orientation</text>
+<text x="671" y="113" font-size="13" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="end">wᵢ εᵢ = +1</text>
+<text x="488" y="146" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">Draw from the unchanged live row</text>
+<rect x="488" y="153" width="209" height="75" rx="5" fill="white" stroke="#CCD3DD" stroke-width="1"/>
+<path d="M488,178 H697" stroke="#CCD3DD"/>
+<line x1="514" y1="153" x2="514" y2="228" stroke="#CCD3DD" stroke-width="0.8"/>
+<line x1="569" y1="153" x2="569" y2="228" stroke="#CCD3DD" stroke-width="0.8"/>
+<line x1="613" y1="153" x2="613" y2="228" stroke="#CCD3DD" stroke-width="0.8"/>
+<line x1="644" y1="153" x2="644" y2="228" stroke="#CCD3DD" stroke-width="0.8"/>
+<text x="501.0" y="169" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">try</text>
+<text x="541.5" y="169" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">token</text>
+<text x="591.0" y="169" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">pᵢ</text>
+<text x="628.5" y="169" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">g</text>
+<text x="670.5" y="169" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="middle">decision</text>
+<text x="501.0" y="194" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">1</text>
+<text x="541.5" y="194" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">a</text>
+<text x="591.0" y="194" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">.25</text>
+<text x="628.5" y="194" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="middle">−</text>
+<text x="670.5" y="194" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="middle">reject</text>
+<rect x="489" y="203" width="207" height="25" fill="#F6F8FA"/>
+<text x="501.0" y="219" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">2</text>
+<text x="541.5" y="219" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">the</text>
+<text x="591.0" y="219" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">.42</text>
+<text x="628.5" y="219" font-size="11" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">+</text>
+<text x="670.5" y="219" font-size="11" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">accept</text>
+<text x="488" y="244" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">accept if sign matches and pᵢ ≥ κ max pᵢ</text>
+<text x="488" y="261" font-size="10.5" fill="#B2182B" font-weight="normal" font-style="normal" text-anchor="start">after R misses: one unchecked fallback draw</text>
+<text x="488" y="276" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">Committed block</text>
+<rect x="488" y="280" width="55" height="25" rx="4" fill="#EAF3FC" stroke="#005AB5" stroke-width="0.9"/>
+<text x="515.5" y="297" font-size="11.5" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">the</text>
+<rect x="546" y="280" width="55" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="573.5" y="297" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">next</text>
+<rect x="604" y="280" width="42" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="625.0" y="297" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">…</text>
+<text x="721" y="96" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">Finished text</text>
+<rect x="721" y="103" width="46" height="25" rx="4" fill="#EAF3FC" stroke="#005AB5" stroke-width="0.9"/>
+<text x="744.0" y="120" font-size="11.5" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">the</text>
+<rect x="770" y="103" width="48" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="794.0" y="120" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">next</text>
+<rect x="821" y="103" width="49" height="25" rx="4" fill="#EAF3FC" stroke="#005AB5" stroke-width="0.9"/>
+<text x="845.5" y="120" font-size="11.5" fill="#003C7A" font-weight="bold" font-style="normal" text-anchor="middle">claim</text>
+<rect x="873" y="103" width="32" height="25" rx="4" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="0.9"/>
+<text x="889.0" y="120" font-size="11.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="middle">…</text>
+<line x1="812" y1="132" x2="812" y2="150" stroke="#596579" stroke-width="1.1" marker-end="url(#arrow)"/>
+<rect x="735" y="153" width="154" height="34" rx="7" fill="#EAF5EE" stroke="#A9D1B8" stroke-width="1"/>
+<text x="812" y="168" font-size="10.5" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">re-mask and rebuild</text>
+<text x="812" y="181" font-size="10" fill="#596579" font-weight="normal" font-style="normal" text-anchor="middle">the same Response Bank</text>
+<text x="721" y="208" font-size="10.5" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">Carrier matches mᵢ</text>
+<circle cx="735" cy="225" r="9" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
+<text x="735" y="229" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
+<circle cx="761" cy="225" r="9" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
+<text x="761" y="229" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
+<circle cx="787" cy="225" r="9" fill="#FBEAEC" stroke="#B2182B" stroke-width="1.1"/>
+<text x="787" y="229" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="middle">×</text>
+<circle cx="813" cy="225" r="9" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
+<text x="813" y="229" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
+<circle cx="839" cy="225" r="9" fill="#FBEAEC" stroke="#B2182B" stroke-width="1.1"/>
+<text x="839" y="229" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="middle">×</text>
+<circle cx="865" cy="225" r="9" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
+<text x="865" y="229" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
+<circle cx="891" cy="225" r="9" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
+<text x="891" y="229" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">✓</text>
+<rect x="721" y="246" width="207" height="43" rx="7" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="1"/>
+<text x="732" y="263" font-size="12" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">T = Σᵢ mᵢ</text>
+<text x="732" y="280" font-size="11" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">pdet = Pr[Bin(n, ½) ≥ T]</text>
+<rect x="844" y="252" width="75" height="28" rx="14" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.2"/>
+<text x="881.5" y="270" font-size="11" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">detected</text>
+<rect x="18" y="317" width="924" height="29" rx="6" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="1"/>
+<text x="35" y="336" font-size="10" fill="#9B6A16" font-weight="bold" font-style="normal" text-anchor="start">REPRODUCIBLE</text>
+<text x="124" y="336" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">table uses only the fixed prefix</text>
+<text x="350" y="336" font-size="10" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">MODEL-PROPOSED</text>
+<text x="449" y="336" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">retries reuse one probability row</text>
+<text x="687" y="336" font-size="10" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="start">EXACT NULL</text>
+<text x="756" y="336" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">conditional Binomial(n, ½)</text>
 </svg>

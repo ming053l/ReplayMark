@@ -1,82 +1,73 @@
 \section{Introduction}
 \label{sec:intro}
 
-Existing language-model watermarks encode provenance in \emph{what tokens are produced}.
-Red--green schemes bias the token distribution toward a keyed vocabulary
-partition~\citep{kirchenbauer2023watermark}; distortion-free schemes fix the sampling
-randomness with a keyed pseudorandom sequence; and the watermarks designed for diffusion
-language models exploit the extra freedom those models expose --- unresolved context,
-per-step sampling randomness, global sequence statistics, or the order in which positions
-are unmasked~\citep{hong2026dgmark}. Different as they are, every one of them leaves the
-verifier reading a \emph{surface signature}: a hash of token identities, a frequency, a
-rank. We ask a different question.
+Language-model watermarks usually encode a secret pattern in the generated sequence.
+Red--green methods bias the probability of keyed token subsets
+\citep{kirchenbauer2023watermark}; sampling-based methods correlate token choices with a
+pseudorandom sequence~\citep{kuditipudi2024distortionfree}; and recent methods for
+diffusion language models (DLMs) use denoising order or unresolved context as additional
+embedding channels~\citep{hong2026dgmark}. Their implementations differ, but their
+detectors can evaluate the watermark from token identities and a key without running the
+generator.
 
-\important{Can a watermark be detected from how the model reconstructs a text, rather than
-from the tokens the text contains?}
+This paper asks whether model inference itself can provide a useful verification signal.
+A masked DLM is trained to predict missing tokens from arbitrary visible context. The same
+operation can therefore be applied to a completed text: hide selected context, run the
+model, and measure how its predictions change. The central question is whether that
+change can be keyed, reproduced by a verifier, and steered during generation.
 
-A diffusion language model makes this question answerable in a way an autoregressive model
-does not. Its training objective is to recover masked tokens from arbitrary surviving
-context, so any finished text can be pushed \emph{back} through the operator that produced
-it: corrupt it, re-denoise it, and observe the response. That response is a property of the
-text's relationship to the model, not of its symbols, and it is available to anyone holding
-the model --- but only interpretable by someone holding the key that chose the corruption.
-
-We call the resulting scheme \textbf{ReTrace}, and its verifier is easiest to describe as
-a keyed question posed to every token of the text. The key hides two different parts of
-the text's own context --- say, the sentences nearest a span in one version and the
-farthest in the other --- and the model scores the span's tokens under both corruptions.
-Each token then \emph{answers} the question ``which context do you rely on more?'': the
-sign of
+ReTrace implements this idea with paired context ablations. For a generated token $y_i$,
+the verifier masks two different subsets of the already completed context and computes
 \begin{equation}
-g_i(y_i) \;=\; \log p_\theta\!\left(y_i \mid C^1_i(y)\right) - \log p_\theta\!\left(y_i \mid C^0_i(y)\right).
+g_i(y_i) = \log p_\theta\!\left(y_i \mid C^1_i(y)\right)
+          - \log p_\theta\!\left(y_i \mid C^0_i(y)\right).
 \label{eq:contrast}
 \end{equation}
-The key also fixes, per position, which answer a watermarked text \emph{should} give, and
-the verifier counts agreements. A text written without the key cannot know the questions,
-so each of its answers matches an independent hidden coin: agreements follow an exact
-$\mathrm{Binomial}(n,\tfrac12)$ law, and provenance becomes an ordinary hypothesis test.
-No vocabulary partition, no token hash --- the evidence lives in the model's behaviour.
+The key supplies an independent orientation bit that determines which sign counts as a
+match. ReTrace counts matches only at positions where the two signs both have appreciable
+probability. For a text independent of the key, the orientation bits are fair coins, so
+the conditional null is exactly $\mathrm{Binomial}(n,\tfrac12)$. This guarantee does not
+depend on a calibration corpus or a Gaussian approximation.
 
-How does the watermark get the answers \emph{into} the text? Not by editing tokens after
-generation: on a well-trained denoiser the median position admits exactly one fluent
-token, so there is nothing to edit toward, and the effect \emph{strengthens} as
-generation improves (\S\ref{sec:v1}) --- \important{better diffusion-model generation
-reduces post-hoc watermarkability}, ruling out an entire family of designs.
+Embedding uses the same observable. During the standard blockwise decode, ReTrace draws a
+token from the model and checks whether its contrast has the requested sign. At carrier
+positions it may draw again from the unchanged conditional, up to a budget $R$; after
+exhaustion it commits one unconditional draw. A key-free plausibility floor rejects guided
+proposals whose probability is too small relative to the most likely token. The resulting
+procedure is rejection sampling: it changes token probabilities, but every emitted token
+is an actual model proposal and retries require no additional model evaluation.
 
-What survives is to never override the model at all. ReTrace decodes exactly as the base
-model would, with one added rule: at positions where the keyed question is genuinely
-open --- both answers plausible, which the key can determine on its own --- the model's
-sampled token is checked against the desired answer, and \emph{resampled from the same
-distribution} (at most $R$ times, at no extra forward pass) until an agreeing token comes
-up; if none does, the natural sample is kept. Every committed token is therefore a sample
-the model itself proposed. A key-free \emph{plausibility floor} $p(v) \geq \kappa\,
-p_{\max}$ additionally refuses agreeing-but-unlikely tokens, capping what any single
-position can cost. The measured effect of both guards together is that watermarked
-perplexity sits \emph{at or below} the matched non-watermarked control
-($0.74\times$--$0.87\times$) at $\mathrm{TPR}@1\%$ of $0.70$--$0.80$ on $512$-token
-documents, with the whole embedder costing $1.28\times$ a plain decode.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/fig_retrace_pipeline.pdf}
-\caption{\textbf{Prior verifiers read token identities; ReTrace's verifier runs the
-model.} \textbf{(a)} The finished text is corrupted twice under the key and re-denoised;
-the contrast between the reconstructions of each observed token is the evidence.
-\textbf{(b)} Embedding never leaves the model's conditional: sample, check the keyed
-response, resample at most $R$ times at no forward-pass cost, and commit an
-unconditional sample on exhaustion.}
+\caption{\textbf{Overall ReTrace pipeline.} \textbf{(1)} The reference DLM retains its
+native block and confidence schedule. \textbf{(2)} The Reproducible Response Bank (RRB)
+records keyed context-ablation responses, and the Balanced Carrier Gate (BCG) selects
+positions with substantial probability mass on both signs. \textbf{(3)} At those
+carriers, the Response-Aligned Resampler (RAR) accepts a plausible proposal with the
+requested sign, retrying from the unchanged live conditional at most $R$ times before an
+unconditional fallback. \textbf{(4)} Given the final text, model, and key, the
+Response-Replay Verifier (RRV) reconstructs the RRB and applies an exact binomial test.}
 \label{fig:pipeline}
 \end{figure}
 
-\important{ReTrace places the watermark in resampled tokens and reads it back from the
-model's reconstruction response} (Figure~\ref{fig:pipeline}).
+Figure~\ref{fig:pipeline} follows a block from the reference decoder through response-bank
+construction, carrier gating, embedding, and verification. The main contributions are:
+\begin{itemize}[leftmargin=1.3em,itemsep=2pt,topsep=3pt]
+    \item a verifier that derives evidence from a DLM's response to keyed context
+    ablations, rather than from a key--token statistic alone;
+    \item a reproducible carrier construction and a finite-sample exact binomial test
+    under the ideal-PRF model;
+    \item a response-guided resampling embedder with an explicit retry--quality trade-off;
+    and
+    \item an evaluation that reports detection, matched-control perplexity, generation
+    and verification cost, and post-editing failure modes on LLaDA-8B-Instruct.
+\end{itemize}
 
-In sum: a watermark read from the model's response rather than its tokens, verifiable
-from text, model and key alone (\S\ref{sec:method}); a counting statistic with a
-finite-sample exact binomial null under the ideal-PRF model, false-positive control
-verified at the \emph{worst} of twenty keys (\S\ref{sec:theory}); an embedding that never
-leaves the model's conditional and holds quality at or below its control
-(\S\ref{sec:embedding}); a mechanism-level negative result --- substitution is priced
-out, and better generation makes it worse (\S\ref{sec:v1}); and an evaluation that
-reports what each method pays, not only what it scores --- generation budget and
-detection cost per row, with the advantages \emph{and} the limitations of the design
-stated explicitly against them (\S\ref{sec:baselines}).
+At 512 tokens, the strongest evaluated ReTrace settings reach $0.70$--$0.80$ TPR at
+$1\%$ FPR with measured perplexity ratios of $0.87\times$--$0.74\times$. These ratios
+partly reflect the plausibility floor's preference for high-probability tokens and should
+not be read as evidence that watermarking improves semantic quality. ReTrace also requires
+144 masked sequence evaluations for verification and is substantially less robust to
+editing than token-based baselines. We present these costs as part of the method's operating
+point, not as secondary caveats.

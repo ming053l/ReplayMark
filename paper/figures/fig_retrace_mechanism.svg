@@ -1,115 +1,67 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE svg
-  PUBLIC '-//W3C//DTD SVG 1.0//EN'
-  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
-<svg width="760" height="316" preserveAspectRatio="xMinYMin meet" viewBox="0 0 760 316" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
-	<title>...</title>
-	<desc>...</desc>
-	<clipPath id="clip">
-		<rect x="0" y="0" width="760" height="316"/>
-	</clipPath>
-	<g id="group" transform="scale(1,-1) translate(0,-316)" style="clip-path: url(#clip)">
-		<g transform="">
-			<rect x="0" y="0" width="760" height="316" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
-			<text x="24" y="304" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,608) scale(1,-1)">Two kinds of position, one rule: sample from the model until the keyed response accepts, at most R times.</text>
-			<rect x="24" y="283.5" width="96" height="17.0" rx="8.5" ry="8.5" style="stroke: rgb(62%,76%,90%); stroke-linecap: butt; stroke-width: 1; fill: rgb(96%,97%,99%); fill-rule: evenodd;"/>
-			<text x="51.2947998046875" y="288.5" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(0%,35%,70%); stroke:none;" transform="translate(0,577) scale(1,-1)">two-sided</text>
-			<text x="24" y="266" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,532) scale(1,-1)">Steerable carrier</text>
-			<text x="24" y="253" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,506) scale(1,-1)">S &gt; 0.5: both response signs plausible</text>
-			<rect x="150" y="259" width="58" height="20" rx="4" ry="4" style="stroke: rgb(89%,65%,67%); stroke-linecap: butt; stroke-width: 1; fill: rgb(98%,91%,92%); fill-rule: evenodd;"/>
-			<text x="157.5048828125" y="266" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(69%,9%,16%); stroke:none;" transform="translate(0,532) scale(1,-1)">sample 1</text>
-			<path d="M 199,273 L 205,279 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<path d="M 199,279 L 205,273 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<path d="M 208,268 L 210,268 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1;"/>
-			<polygon points="214 268, 210 270.4, 210 265.6" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
-			<rect x="216" y="259" width="58" height="20" rx="4" ry="4" style="stroke: rgb(89%,65%,67%); stroke-linecap: butt; stroke-width: 1; fill: rgb(98%,91%,92%); fill-rule: evenodd;"/>
-			<text x="223.5048828125" y="266" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(69%,9%,16%); stroke:none;" transform="translate(0,532) scale(1,-1)">sample 2</text>
-			<path d="M 265,273 L 271,279 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<path d="M 265,279 L 271,273 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<path d="M 274,268 L 276,268 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1;"/>
-			<polygon points="280 268, 276 270.4, 276 265.6" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
-			<rect x="282" y="259" width="58" height="20" rx="4" ry="4" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(90%,94%,98%); fill-rule: evenodd;"/>
-			<text x="289.5048828125" y="266" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,532) scale(1,-1)">sample 3</text>
-			<path d="M 328.5 275 L 331 272.5 L 336 278.5 " style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.3; fill: none; fill-rule: evenodd;"/>
-			<text x="354" y="266" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,532) scale(1,-1)">accepted: still a sample from the model's own conditional</text>
-			<text x="150" y="242" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,484) scale(1,-1)">counted by the detector; the only positions that can pay quality, less than one bit each</text>
-			<rect x="24" y="203.5" width="96" height="17.0" rx="8.5" ry="8.5" style="stroke: rgb(89%,65%,67%); stroke-linecap: butt; stroke-width: 1; fill: rgb(98%,91%,92%); fill-rule: evenodd;"/>
-			<text x="51.589599609375" y="208.5" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(69%,9%,16%); stroke:none;" transform="translate(0,417) scale(1,-1)">one-sided</text>
-			<text x="24" y="186" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,372) scale(1,-1)">Key-opposed position</text>
-			<text x="24" y="173" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,346) scale(1,-1)">target side holds ~no mass</text>
-			<rect x="150" y="179" width="58" height="20" rx="4" ry="4" style="stroke: rgb(89%,65%,67%); stroke-linecap: butt; stroke-width: 1; fill: rgb(98%,91%,92%); fill-rule: evenodd;"/>
-			<text x="157.5048828125" y="186" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(69%,9%,16%); stroke:none;" transform="translate(0,372) scale(1,-1)">sample 1</text>
-			<path d="M 199,193 L 205,199 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<path d="M 199,199 L 205,193 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<path d="M 208,188 L 210,188 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1;"/>
-			<polygon points="214 188, 210 190.4, 210 185.6" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
-			<rect x="216" y="179" width="58" height="20" rx="4" ry="4" style="stroke: rgb(89%,65%,67%); stroke-linecap: butt; stroke-width: 1; fill: rgb(98%,91%,92%); fill-rule: evenodd;"/>
-			<text x="240.5" y="186" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(69%,9%,16%); stroke:none;" transform="translate(0,372) scale(1,-1)">...</text>
-			<path d="M 265,193 L 271,199 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<path d="M 265,199 L 271,193 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<path d="M 274,188 L 276,188 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1;"/>
-			<polygon points="280 188, 276 190.4, 276 185.6" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
-			<rect x="282" y="179" width="58" height="20" rx="4" ry="4" style="stroke: rgb(89%,65%,67%); stroke-linecap: butt; stroke-width: 1; fill: rgb(98%,91%,92%); fill-rule: evenodd;"/>
-			<text x="288.5029296875" y="186" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(69%,9%,16%); stroke:none;" transform="translate(0,372) scale(1,-1)">sample R</text>
-			<path d="M 331,193 L 337,199 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<path d="M 331,199 L 337,193 Z" style="stroke: rgb(69%,9%,16%); stroke-linecap: butt; stroke-width: 1.2;"/>
-			<path d="M 340,188 L 342,188 Z" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1;"/>
-			<polygon points="346 188, 342 190.4, 342 185.6" style="stroke: rgb(34%,39%,47%); stroke-linecap: butt; stroke-width: 1; fill: rgb(34%,39%,47%); fill-rule: evenodd;"/>
-			<rect x="348" y="179" width="58" height="20" rx="4" ry="4" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 1; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="357.8369140625" y="186" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,372) scale(1,-1)">uncond.</text>
-			<text x="420" y="186" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,372) scale(1,-1)">exhausted: one unconditional sample committed as-is</text>
-			<text x="150" y="162" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,324) scale(1,-1)">zero quality cost by construction; excluded by the detector's gate</text>
-			<path d="M 24,140 L 736,140 Z" style="stroke: rgb(84%,87%,90%); stroke-linecap: butt; stroke-width: 1;"/>
-			<text x="24" y="120" style="font-family: 'Times New Roman'; font-weight: bold; font-size: 12px;fill: rgb(0%,35%,70%); stroke:none;" transform="translate(0,240) scale(1,-1)">Verification</text>
-			<text x="116" y="120" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,240) scale(1,-1)">from the finished text alone, with no access to the trajectory or the draw sequence</text>
-			<rect x="24" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="31.11328125" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,161) scale(1,-1)">the</text>
-			<rect x="51" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="53.001953125" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,161) scale(1,-1)">model</text>
-			<rect x="78" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="83.77734375" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,161) scale(1,-1)">fills</text>
-			<rect x="105" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="113.888671875" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,161) scale(1,-1)">in</text>
-			<rect x="132" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="138.224609375" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,161) scale(1,-1)">any</text>
-			<rect x="159" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="162.560546875" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,161) scale(1,-1)">order</text>
-			<text x="24" y="58" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,116) scale(1,-1)">finished text</text>
-			<path d="M 191,84 L 212,84 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.3;"/>
-			<polygon points="217 84, 212 87, 212 81" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<rect x="223" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(91%,92%,94%); fill-rule: evenodd;"/>
-			<text x="228.779296875" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,161) scale(1,-1)">[M]</text>
-			<rect x="250" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="252.001953125" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,161) scale(1,-1)">model</text>
-			<rect x="277" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(91%,92%,94%); fill-rule: evenodd;"/>
-			<text x="282.779296875" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,161) scale(1,-1)">[M]</text>
-			<rect x="304" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="312.888671875" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,161) scale(1,-1)">in</text>
-			<rect x="331" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(91%,92%,94%); fill-rule: evenodd;"/>
-			<text x="336.779296875" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,161) scale(1,-1)">[M]</text>
-			<rect x="358" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="361.560546875" y="80.5" style="font-family: 'Times New Roman'; font-size: 8px;fill: rgb(9%,12%,16%); stroke:none;" transform="translate(0,161) scale(1,-1)">order</text>
-			<text x="223" y="58" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,116) scale(1,-1)">re-masked under the key</text>
-			<path d="M 390,84 L 411,84 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.3;"/>
-			<polygon points="416 84, 411 87, 411 81" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<rect x="422" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(90%,94%,98%); fill-rule: evenodd;"/>
-			<text x="431.375" y="80.5" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,161) scale(1,-1)">1</text>
-			<rect x="449" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="456.0" y="80.5" style="font-family: 'Times New Roman'; font-size: 10px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,161) scale(1,-1)">—</text>
-			<rect x="476" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(89%,65%,67%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(98%,91%,92%); fill-rule: evenodd;"/>
-			<text x="485.375" y="80.5" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(69%,9%,16%); stroke:none;" transform="translate(0,161) scale(1,-1)">0</text>
-			<rect x="503" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="510.0" y="80.5" style="font-family: 'Times New Roman'; font-size: 10px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,161) scale(1,-1)">—</text>
-			<rect x="530" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(90%,94%,98%); fill-rule: evenodd;"/>
-			<text x="539.375" y="80.5" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,161) scale(1,-1)">1</text>
-			<rect x="557" y="75" width="24" height="18" rx="3" ry="3" style="stroke: rgb(78%,80%,84%); stroke-linecap: butt; stroke-width: 0.9; fill: rgb(96%,96%,97%); fill-rule: evenodd;"/>
-			<text x="564.0" y="80.5" style="font-family: 'Times New Roman'; font-size: 10px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,161) scale(1,-1)">—</text>
-			<text x="422" y="58" style="font-family: 'Times New Roman'; font-size: 10.5px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,116) scale(1,-1)">gated indicators</text>
-			<path d="M 588,84 L 609,84 Z" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1.3;"/>
-			<polygon points="614 84, 609 87, 609 81" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(0%,35%,70%); fill-rule: evenodd;"/>
-			<rect x="620" y="69" width="104" height="30" rx="6" ry="6" style="stroke: rgb(0%,35%,70%); stroke-linecap: butt; stroke-width: 1; fill: rgb(90%,94%,98%); fill-rule: evenodd;"/>
-			<text x="658.669921875" y="83" style="font-family: 'Times New Roman'; font-size: 12px;fill: rgb(0%,23%,47%); stroke:none;" transform="translate(0,166) scale(1,-1)">count</text>
-			<text x="638.669921875" y="72" style="font-family: 'Times New Roman'; font-size: 10px;fill: rgb(34%,39%,47%); stroke:none;" transform="translate(0,144) scale(1,-1)">Binomial(n, 1/2)</text>
-		</g>
-	</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="318"
+ viewBox="0 0 960 318">
+<defs>
+  <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4"
+          orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L8,4 L0,8 z" fill="#596579"/>
+  </marker>
+  <style>text { font-family: 'Times New Roman', 'Liberation Serif', serif; }</style>
+</defs>
+<rect width="100%" height="100%" fill="white"/>
+<text x="18" y="25" font-size="15.5" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">Balanced Carrier Gate (BCG): admit only orientation-robust response channels</text>
+<text x="942" y="25" font-size="11" fill="#596579" font-weight="normal" font-style="italic" text-anchor="end">computed before εᵢ and wᵢ are consulted</text>
+<rect x="18" y="39" width="452" height="225" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
+<rect x="490" y="39" width="452" height="225" rx="10" fill="white" stroke="#CCD3DD" stroke-width="1.2"/>
+<circle cx="40" cy="59" r="12" fill="#005AB5" stroke="#005AB5" stroke-width="1"/>
+<text x="40" y="63.5" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">A</text>
+<text x="61" y="57" font-size="15" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">Two-sided response</text>
+<text x="61" y="74" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">usable for either keyed orientation</text>
+<circle cx="512" cy="59" r="12" fill="#B2182B" stroke="#B2182B" stroke-width="1"/>
+<text x="512" y="63.5" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">B</text>
+<text x="533" y="57" font-size="15" fill="#17202B" font-weight="bold" font-style="normal" text-anchor="start">One-sided response</text>
+<text x="533" y="74" font-size="10.5" fill="#596579" font-weight="normal" font-style="normal" text-anchor="start">usable only for one orientation</text>
+<text x="42" y="82" font-size="11" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">RRB sign-mass partition of pᵢ(base)</text>
+<rect x="42" y="91" width="404" height="34" rx="7" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="1"/>
+<path d="M43,92 h188.88 v32 h-188.88 z" fill="#B2182B"/>
+<path d="M231.88,92 h213.12 v32 h-213.12 z" fill="#005AB5"/>
+<text x="136.94" y="113" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">q₋ = 0.47</text>
+<text x="338.94" y="113" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">q₊ = 0.53</text>
+<text x="44" y="140" font-size="10.5" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="start">gᵢ(z) &lt; 0</text>
+<text x="444" y="140" font-size="10.5" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="end">gᵢ(z) &gt; 0</text>
+<rect x="42" y="154" width="404" height="34" rx="7" fill="#EAF5EE" stroke="#287A4B" stroke-width="1.1"/>
+<text x="56" y="176" font-size="12.5" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="start">Sᵢ = 2 min(.53, .47) = .94  &gt;  sₘᵢₙ=.50</text>
+<rect x="346" y="160" width="89" height="22" rx="11" fill="#287A4B" stroke="#287A4B" stroke-width="1"/>
+<text x="390.5" y="175" font-size="10.5" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">BCG admits</text>
+<rect x="42" y="199" width="194" height="38" rx="7" fill="#EAF3FC" stroke="#005AB5" stroke-width="1"/>
+<text x="54" y="214" font-size="10.5" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">key asks +</text>
+<text x="54" y="229" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">one-draw mass = 0.53</text>
+<rect x="252" y="199" width="194" height="38" rx="7" fill="#FBEAEC" stroke="#B2182B" stroke-width="1"/>
+<text x="264" y="214" font-size="10.5" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="start">key asks −</text>
+<text x="264" y="229" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">one-draw mass = 0.47</text>
+<text x="514" y="82" font-size="11" fill="#596579" font-weight="bold" font-style="normal" text-anchor="start">RRB sign-mass partition of pᵢ(base)</text>
+<rect x="514" y="91" width="404" height="34" rx="7" fill="#F6F8FA" stroke="#CCD3DD" stroke-width="1"/>
+<path d="M515,92 h11.12 v32 h-11.12 z" fill="#B2182B"/>
+<path d="M526.12,92 h390.88 v32 h-390.88 z" fill="#005AB5"/>
+<text x="722.06" y="113" font-size="12" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">q₊ = 0.97</text>
+<text x="516" y="140" font-size="10.5" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="start">gᵢ(z) &lt; 0</text>
+<text x="916" y="140" font-size="10.5" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="end">gᵢ(z) &gt; 0</text>
+<rect x="514" y="154" width="404" height="34" rx="7" fill="#F6F8FA" stroke="#697384" stroke-width="1.1"/>
+<text x="528" y="176" font-size="12.5" fill="#697384" font-weight="bold" font-style="normal" text-anchor="start">Sᵢ = 2 min(.97, .03) = .06  &lt;  sₘᵢₙ=.50</text>
+<rect x="816" y="160" width="91" height="22" rx="11" fill="#697384" stroke="#697384" stroke-width="1"/>
+<text x="861.5" y="175" font-size="10.5" fill="white" font-weight="bold" font-style="normal" text-anchor="middle">BCG rejects</text>
+<rect x="514" y="199" width="194" height="38" rx="7" fill="#EAF3FC" stroke="#005AB5" stroke-width="1"/>
+<text x="526" y="214" font-size="10.5" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="start">key asks +</text>
+<text x="526" y="229" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">one-draw mass = 0.97</text>
+<text x="698" y="223" font-size="11" fill="#005AB5" font-weight="bold" font-style="normal" text-anchor="end">P₈ = 1.00</text>
+<rect x="724" y="199" width="194" height="38" rx="7" fill="#FBEAEC" stroke="#B2182B" stroke-width="1"/>
+<text x="736" y="214" font-size="10.5" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="start">key asks −</text>
+<text x="736" y="229" font-size="10.5" fill="#17202B" font-weight="normal" font-style="normal" text-anchor="start">one-draw mass = 0.03</text>
+<text x="908" y="223" font-size="11" fill="#B2182B" font-weight="bold" font-style="normal" text-anchor="end">P₈ = 0.22</text>
+<line x1="244.0" y1="264" x2="244.0" y2="277" stroke="#596579" stroke-width="1.2" marker-end="url(#arrow)"/>
+<line x1="716.0" y1="264" x2="716.0" y2="277" stroke="#596579" stroke-width="1.2" marker-end="url(#arrow)"/>
+<rect x="18" y="280" width="452" height="25" rx="12" fill="#EAF5EE" stroke="#287A4B" stroke-width="1"/>
+<text x="244.0" y="297" font-size="11.5" fill="#287A4B" font-weight="bold" font-style="normal" text-anchor="middle">RAR may steer  •  RRV counts one Bernoulli trial</text>
+<rect x="490" y="280" width="452" height="25" rx="12" fill="#F6F8FA" stroke="#697384" stroke-width="1"/>
+<text x="716.0" y="297" font-size="11.5" fill="#697384" font-weight="bold" font-style="normal" text-anchor="middle">reference sampling  •  no detector trial</text>
+<text x="480" y="316" font-size="10.5" fill="#9B6A16" font-weight="bold" font-style="normal" text-anchor="middle">Orientation-free gate: Sᵢ is invariant to swapping the two RRB arms; εᵢ and wᵢ enter only after admission.</text>
 </svg>

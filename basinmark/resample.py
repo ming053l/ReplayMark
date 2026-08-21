@@ -74,11 +74,15 @@ class ResampleMark:
         # grow without the quality budget growing with it.
         self.p_floor = p_floor
 
-    # ------------------------------------------------------------------ table
+    # ------------------------------------------------ Reproducible Response Bank (RRB)
     @torch.no_grad()
-    def _table(self, x, lo, gen_end):
-        """Challenge contrast g and the acceptance masses q+/q-, all from the
-        block-masked conditional so the verifier reproduces them exactly."""
+    def _build_response_bank(self, x, lo, gen_end):
+        """Build the per-block Reproducible Response Bank.
+
+        The RRB stores the selected response contrast g and its two-sided mass statistics,
+        all from the block-masked conditional so the Response-Replay Verifier reconstructs
+        them exactly.
+        """
         B = np.arange(lo, lo + self.block_len)
         pats, pairs = block_challenges(self.key, lo, self.block_len, self.n_patterns,
                                        self.ctx_frac, mode=self.challenge)
@@ -118,6 +122,10 @@ class ResampleMark:
         qm = (p * (g < 0)).sum(1).numpy()
         return B, g, bestS, qp, qm
 
+    # Backward-compatible alias for experiment scripts written before the RRB terminology.
+    def _table(self, x, lo, gen_end):
+        return self._build_response_bank(x, lo, gen_end)
+
     def _carrier(self, S):
         """Positions whose acceptance mass is two-sided enough to be worth counting.
 
@@ -150,7 +158,7 @@ class ResampleMark:
         hs = ns = 0
         for b in range(max(1, gen_len // self.block_len)):
             lo = prompt_len + b * self.block_len
-            B, g, S, _, _ = self._table(ids, lo, gen_end)
+            B, g, S, _, _ = self._build_response_bank(ids, lo, gen_end)
             car = self._carrier(S)
             y = ids[0, torch.tensor(B)]
             gv = g.gather(1, y[:, None]).squeeze(1).numpy()
@@ -204,7 +212,7 @@ class ResampleMark:
 
         for b in range(n_blocks):
             lo = Pn + b * self.block_len
-            B, g, S, qp, qm = self._table(x.cpu(), lo, gen_end)
+            B, g, S, qp, qm = self._build_response_bank(x.cpu(), lo, gen_end)
             car = self._carrier(S)
             gmap = {int(q): g[k] for k, q in enumerate(B)}
             cmask = {int(q): bool(car[k]) for k, q in enumerate(B)}

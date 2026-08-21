@@ -10,6 +10,10 @@
 \usepackage{graphicx}
 \usepackage{caption}
 \captionsetup{labelfont=bf,skip=4pt}
+\usepackage{float}
+\floatstyle{ruled}
+\newfloat{algorithm}{tbp}{loa}
+\floatname{algorithm}{Algorithm}
 \usepackage[section]{placeins}
 \usepackage{enumitem}
 \usepackage{amsthm}
@@ -39,21 +43,23 @@
 \maketitle
 
 \begin{abstract}
-Existing language-model watermarks are detected from token patterns. We detect ours from
-\emph{how a diffusion language model responds when the generated text is partially masked
-and reconstructed}. Because such a model is trained to recover masked tokens from arbitrary
-surviving context, a finished text can be pushed back through the operator that produced
-it: corrupted with a secret key, re-denoised, and its response read. ReTrace places a
-watermark in that response. A keyed pair of context ablations induces a per-position
-log-likelihood contrast, and the watermark asks the sign of that contrast to agree with a
-keyed orientation, giving a test statistic that is a sum of bounded indicators with a
-finite-sample exact $\mathrm{Binomial}(n,\tfrac12)$ null. Embedding never overrides the
-model: decoding follows the reference block schedule, and the watermark only decides
-whether a sampled proposal is committed or resampled. We also report the
-negative result that motivated this design --- post-hoc token substitution is priced out on
-a well-trained diffusion language model, and, because both are governed by the sharpness of
-the same conditionals, \emph{improving generation quality reduces post-hoc
-watermarkability}.
+Most language-model watermarks verify a keyed pattern in the emitted token sequence. We
+study a different signal for masked diffusion language models: how the model reconstructs
+a completed text after keyed parts of its context are hidden. ReTrace compares the
+log-likelihood of each observed token under two context ablations. A secret orientation bit
+specifies the desired sign of this contrast, and the detector counts sign agreements. With
+domain-separated pseudorandom functions, this count has an exact finite-sample
+$\mathrm{Binomial}(n,\tfrac12)$ null for any text generated independently of the key.
+During blockwise decoding, ReTrace rejection-samples model proposals at reproducible
+carrier positions and uses an unconditional fallback after a fixed retry budget. This
+changes the sampling distribution and is not claimed to be distortion-free, but it never
+inserts a token that the model did not propose. On LLaDA-8B-Instruct, the best evaluated
+512-token settings obtain $0.70$--$0.80$ TPR at $1\%$ FPR with GPT-2 perplexity ratios of
+$0.87\times$--$0.74\times$ relative to matched controls; verification requires 144 masked
+sequence evaluations. Detection remains below strong token-based baselines and falls from
+$0.35$ to $0.05$ after same-model re-denoising of $10\%$ of positions. Finally, a post-hoc
+substitution ablation explains the design choice: sharper, better-performing denoising
+conditionals leave fewer plausible alternatives and therefore less room for substitution.
 \end{abstract}
 
 \input{sections/introduction}
@@ -65,21 +71,20 @@ watermarkability}.
 \section{Conclusion}
 \label{sec:conclusion}
 
-ReTrace turns the fact that a diffusion language model can be \emph{applied} to a
-finished text into a verification channel: corrupt the text under a secret key,
-re-denoise, and read whether the reconstruction response agrees with a keyed orientation. Embedding is a keyed rejection-resampling that never leaves the
-model's own conditional; with a key-free plausibility floor on acceptance it holds
-sub-control perplexity even at high retry budgets --- $\mathrm{TPR}@1\% = 0.70$ at
-$0.87\times$ with repetition at parity ($R{=}8$, $\kappa{=}0.1$, held-out). The frontier position is honest rather than dominant
---- locally reproduced dgMARK ($0.86$ at $1.23\times$) still leads on detection, but
-nothing in the comparison reaches this quality region at any strength --- and the null is
-exact per document, holding empirically at the worst of twenty keys.
+ReTrace uses a diffusion language model as part of the verifier. It masks a completed text
+under two keyed context ablations and tests whether the model's likelihood contrast agrees
+with secret orientation bits. Domain separation gives the resulting count an exact
+binomial null, while block masking lets the verifier reconstruct the same challenges used
+during generation without access to the decoding trajectory.
 
-What separates ReTrace from the watermarks it is compared against is the object verified:
-token hashes read symbols, ReTrace reads the model's response, and \S\ref{sec:baselines}
-keeps the explicit ledger of what that buys and costs. The open item on that ledger is
-post-editing robustness; hardening the response channel against edits is the next thing
-this line of work must address.
+The experiments establish a trade-off rather than a uniformly better watermark. Guided
+resampling yields useful detection at low measured perplexity cost, and a plausibility
+floor prevents large retry budgets from selecting very unlikely proposals. In return,
+verification requires model inference and the watermark is fragile to post-editing. The
+evaluation is also limited to one model and modest sample sizes. These limitations make
+ReTrace most appropriate as a proof of concept for model-response verification, not yet as
+a replacement for inexpensive token-based detectors. Improving edit robustness and
+validating the response channel across model families are the main next steps.
 
 \bibliographystyle{iclr2025_conference}
 \bibliography{main}

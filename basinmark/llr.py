@@ -8,7 +8,7 @@ the fresh fallback emits the natural sample (zero quality cost, m=0 almost surel
 extremes carry near-maximal evidence -- one positive, one negative -- and the measured
 bimodality of q (quartiles 0.02/0.60/0.98) says most positions are extremes.
 
-Per position the detector knows, from the block-masked table (verifier-reproducible):
+Per position the detector knows, from the block-masked Response Bank (verifier-reproducible):
 q+ and q- (masses of each contrast side under the base conditional at temperature),
 g(y_i), and the tie coin. Given eps_i, the watermark's acceptance mass is q_hat = q+ if
 eps>0 else q-, and
