@@ -149,6 +149,16 @@ a support statement rather than a distortion-free claim.
 
 \subsection{Watermark Detection}
 \label{sec:theory}
+% REVIEWER-PROBE (from the detector survey, 2026-08-22): two things this subsection should
+% state explicitly before submission.
+% 1. Whether the verifier needs the original PROMPT to rebuild the probes, or only the
+%    finished text + key + checkpoint. Christ--Gunn--Zamir argue a realistic detector cannot
+%    have the prompt; if replay is prompt-free, say so prominently — it is a real advantage
+%    over LLR-style model-access detection (hu2024unbiased). If it is not, that is a stronger
+%    assumption than needing the model and must be stated.
+% 2. Replay determinism: same text + checkpoint + dtype + batch size must reproduce the same
+%    probe outcomes, or GPU nondeterminism silently inflates FPR. The validity table already
+%    measures the null through the real inference stack — say that here in one sentence.
 
 Given a completed text $y$, the verifier re-masks each block and suffix, rebuilds the probe from
 the fixed prefix, reapplies the gate, and evaluates $m_i=m_i(y_i)$ at the admitted positions, so

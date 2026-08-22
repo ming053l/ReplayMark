@@ -34,10 +34,28 @@ Shibboleth spends nothing from the schedule and instead has the verifier rerun t
 buying a statistic bound to model behaviour at the price of a detector that no longer runs on
 text alone.
 
+\paragraph{Detector statistics.}
+Detector design has moved past the asymptotic $z$-test: exact tails (binomial for green
+counts, Gamma for Gumbel sums) close the gap between nominal and empirical FPR that Gaussian
+approximations leave open at small $\alpha$~\citep{fernandez2023bricks}, permutation tests give
+non-asymptotic $p$-values for otherwise intractable alignment
+statistics~\citep{kuditipudi2024distortionfree}, and windowed maxima must either pay an explicit
+union-bound correction or be calibrated empirically~\citep{kirchenbauer2024reliability}. When
+edits leave watermark evidence in only a fraction of the text, sum-based pooling is provably
+dominated by statistics that concentrate on the surviving fraction~\citep{li2025editrobust}.
+Shibboleth's binomial tail belongs to the exact-test family, and its block structure admits the
+same sparse-signal hardening, which Section~\ref{sec:calibration} records as an open direction
+rather than a measured result.
+
 \paragraph{Detection that consults the model.}
-Verifiers needing more than the text are not new, since GaussMark places its key in a Gaussian
-perturbation of the model's own weights~\citep{block2025gaussmark}, and watermarks built to
-expose model theft assume the verifier can query the suspect
-system~\citep{zhao2023invisible}. Unlike GaussMark, which ships a perturbed checkpoint, Shibboleth
-leaves the released weights as they are and puts the key in the questions asked of them, and one
-deployed model therefore serves every document key.
+Every DLM watermark above detects from the text and key alone, but detectors that pay more for
+their evidence are not new. Kuditipudi et al.'s edit-distance detector costs quadratic
+alignment under thousands of permutation resamples~\citep{kuditipudi2024distortionfree}; with
+model access, the Neyman--Pearson score strictly dominates the key-only Gumbel
+statistic~\citep{fernandez2023bricks}, and log-likelihood-ratio detection reads both the
+watermarked and base conditionals~\citep{hu2024unbiased}. GaussMark places its key in a
+Gaussian perturbation of the weights and verifies with one forward--backward pass of the
+generator~\citep{block2025gaussmark}, and watermarks built to expose model theft assume the
+verifier can query the suspect system~\citep{zhao2023invisible}. Unlike GaussMark, which ships
+a perturbed checkpoint, Shibboleth leaves the released weights as they are and puts the key in
+the questions asked of them, and one deployed model therefore serves every document key.

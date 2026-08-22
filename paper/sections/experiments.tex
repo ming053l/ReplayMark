@@ -78,7 +78,10 @@ three-beam dgMARK; every baseline row costs perplexity, whereas the floor discar
 low-probability draws a proxy scorer punishes. KGW additionally requires strict left-to-right
 decoding, and its repeated bigram events must be deduplicated, without which its control
 measured $37\%$ FPR. Shibboleth alone, against all of that, spends 144 masked evaluations to
-detect at all. Cohorts of twenty to fifty documents
+detect at all, although paying for detection is not unprecedented: edit-distance detection
+runs a quadratic alignment under thousands of permutation
+resamples~\citep{kuditipudi2024distortionfree}, and GaussMark verifies with a forward--backward
+pass of the generator itself~\citep{block2025gaussmark}. Cohorts of twenty to fifty documents
 leave a standard error near $0.08$ on a TPR of $0.80$, and two rows separated by
 less than about a tenth should accordingly be read as a tie.
 
@@ -101,3 +104,14 @@ one of synchronisation rather than signal strength, because an early edit alters
 prefix from which every later probe is rebuilt, and a single change thus invalidates every
 carrier after it. That cohort uses $R=1$, and the headline setting at $R=16$ consequently
 remains unattacked, which we record as an open gap rather than as evidence of resilience.
+The pooled statistic also dilutes intact blocks with damaged ones, which is exactly the regime
+where sum-based pooling is dominated by tests that concentrate on the surviving
+fraction~\citep{li2025editrobust}; a per-block exact test combined by Bonferroni over the
+$16$ blocks keeps the document-level guarantee by union bound and should recover detection
+when edits are local, and bounding the conditioning window caps how far one edit propagates.
+Both repairs are under measurement and neither is claimed here.
+% TODO(exp33): block-local detection (pooled vs Bonferroni-min vs Stouffer) under 5%/10%
+% same-model re-denoising on exp/29's saved outputs — replace the previous sentence's
+% "under measurement" with the measured comparison and fill tables/robustness_table.tex.
+% TODO(exp34): ctx_window=128 arm @512 (clean + attacked TPR, paired quality) — the
+% propagation-bounding counterpart.

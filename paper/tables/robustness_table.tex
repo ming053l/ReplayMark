@@ -1,12 +1,22 @@
-% Post-editing attacks.  A security venue reads this as the attack surface, so the table is
-% laid out by attack family and strength rather than folded into a sentence.
+% Post-editing attacks, laid out to the menu the field now expects (survey 2026-08-22):
+% substitution (random AND context-aware), deletion, insertion, paraphrase (DIPPER + an
+% instruct LLM), copy-paste CP-k-p% (Kirchenbauer et al. 2306.04634's parameterization —
+% the experiment where block-local pooling should beat the global statistic), roundtrip
+% translation, and the dLLM-specific re-denoising attack. TPR@{1%, 0.1%} columns follow
+% DMark/dgMARK convention.
 %
 % ONLY THREE CELLS ARE MEASURED, all on the same 20 R=1 documents:
-%   clean 0.35 at 1% FPR, argmax re-denoising of 10% of positions 0.05,
-%   deletion of 10% 0.05.  Everything else is \tbd and needs a run.
+%   clean 0.35 @1% FPR; same-model argmax re-denoising of 10% of positions 0.05;
+%   deletion of 10% 0.05. Everything else is \tbd.
 %
-% The insertion, substitution and paraphrase rows are here because a reader at a security
-% venue will look for them; delete any row you do not intend to run rather than leaving it.
+% Fill order: exp/33 adds re-denoising at 5%/10% under pooled vs Bonferroni-min vs Stouffer
+% detection (add a "detector" column or a second block if the block-local rows land);
+% exp/34's ctx_window=128 arm gives the windowed-conditioning counterpart. Delete any row
+% that will not be run rather than leaving \tbd at submission.
+%
+% NOTE(design): re-denoising is the attack no key-only dLLM watermark paper reports.
+% Running it against dgMARK/KGW on the same documents, not only against Shibboleth,
+% would be the strongest single result this table could hold.
 \begin{table}[t]
 \centering
 \small
@@ -19,21 +29,23 @@ Attack & Strength & $1\%$ & $0.1\%$ \\
 \midrule
 None & --- & 0.35 & \tbd \\
 \midrule
-Re-denoising (same model, argmax) & $10\%$ of positions & 0.05 & \tbd \\
-                                  & $30\%$ of positions & \tbd & \tbd \\
+Re-denoising (same model, argmax) & $5\%$ of positions & \tbd & \tbd \\
+                                  & $10\%$ of positions & 0.05 & \tbd \\
 \addlinespace[1.5pt]
 Deletion & $10\%$ of positions & 0.05 & \tbd \\
-\addlinespace[1.5pt]
 Insertion & $10\%$ of positions & \tbd & \tbd \\
-Substitution & $10\%$ of positions & \tbd & \tbd \\
+Substitution (random) & $10\%$ of positions & \tbd & \tbd \\
+Substitution (masked-LM) & $10\%$ of positions & \tbd & \tbd \\
 \addlinespace[1.5pt]
-Paraphrase & sentence level & \tbd & \tbd \\
+Copy--paste & $25\%$ kept, 1 segment & \tbd & \tbd \\
+Paraphrase (DIPPER)~\citep{krishna2023paraphrasing} & lex $20$, order $0$ & \tbd & \tbd \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Robustness to post-editing.} Detection after each attack, measured on 20
-documents generated at $R=1$ and scored against the same analytic thresholds as
+\caption{\textbf{Robustness to post-editing.} Detection after each attack on 20 documents
+generated at $R=1$, scored against the same analytic thresholds as
 Table~\ref{tab:baselines}. Evidence written into a replayable probe is synchronised to the
-prefix, so an edit early in the document invalidates every carrier after it, and the collapse is
-correspondingly abrupt.}
+prefix, so an edit early in the document invalidates every carrier after it, and the collapse
+under the pooled detector is correspondingly abrupt; block-local detection, which pools only
+the blocks an edit spared, is the designed repair and is measured separately.}
 \label{tab:robustness}
 \end{table}
