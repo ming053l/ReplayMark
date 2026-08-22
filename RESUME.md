@@ -1,4 +1,32 @@
-# RESUME — state as of 2026-08-22 (post-reboot, chain relaunched)
+# RESUME — state at 2026-08-22 15:30 shutdown (admin power-off)
+
+## Relaunch after reboot (do this first)
+
+run30 was interrupted mid-chain again. Before relaunching, check arm completeness:
+`python3 -c "import csv;print({f:sum(1 for _ in csv.reader(open('results/baselines/'+f)))-1 for f in ['dg512_original_original.csv','dg512_watermark_watermark.csv']})"`
+- original arm: COMPLETE (30 rows, finished 14:18).
+- watermark arm: was at ~26/30 at shutdown — if <30 rows it must be rerun; beam arm never started.
+Edit `exp/30_dgmark512.sh`: remove `original` from the `for M in ...` loop (done arms), keep
+`watermark` if incomplete, keep the beam command. Then:
+```bash
+cd /ssd2/ming/basinmark
+setsid nohup ./exp/run30.sh > logs/run30.log 2>&1 < /dev/null &
+setsid nohup ./exp/run32.sh > logs/run32.log 2>&1 < /dev/null &
+setsid nohup ./exp/run33.sh > logs/run33.log 2>&1 < /dev/null &
+setsid nohup ./exp/run35.sh > logs/run35.log 2>&1 < /dev/null &
+setsid nohup ./exp/run36.sh > logs/run36.log 2>&1 < /dev/null &
+```
+(Each gates on the previous stage's DONE marker + free GPU; safe to start all five.)
+NOTE: exp/31's eval needs ALL THREE dg512 CSVs; run30.sh runs it automatically at the end.
+
+## Next build task (user-approved 2026-08-22): exp/40 MMLU + exp/41 HumanEval harness
+
+Quality table is now the full dgMARK-style grid (all \tbd). Needs harnesses for MMLU and
+HumanEval plus task-prompt drivers for KGW/dgMARK arms and a greedy-reference Shibboleth mode
+(argmax reference decoder, carriers still draw R proposals from the live conditional).
+Several GPU-days; queue after run36. GSM8K cells come free from exp/32 (LLaDA) / exp/39 (Dream).
+
+# Earlier state (2026-08-22 morning, post-reboot relaunch)
 
 Repo and hf_cache now live under **/ssd2/ming** (moved from /ssd1 after the admin reboot).
 Chain scripts for exp/30–34 and basinmark/{data,model}.py were rewritten to /ssd2; other

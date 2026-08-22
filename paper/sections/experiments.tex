@@ -40,7 +40,7 @@ KGW~\citep{kirchenbauer2023watermark} under left-to-right decoding and
 dgMARK~\citep{hong2026dgmark} under confidence decoding.
 
 \input{tables/baseline_table}
-% \input{tables/quality_table}   % GSM8K downstream table: held back until exp/32 lands.
+\input{tables/quality_table}
 
 \subsection{Main Results and Analysis}
 \label{sec:mainresults}
@@ -102,7 +102,7 @@ $0.0000$ at nominal $0.10$, $0.05$ and $0.01$, and the worst individual key give
 $0.0250$ and $0.0000$, and control consequently holds for every key rather than on average
 alone, which is what binds when one key serves many documents.
 
-% \input{tables/robustness_table}   % attack table, held back for now
+\input{tables/robustness_table}
 \paragraph{Post-editing.}
 Edit robustness is the channel's principal failure mode, and it degrades abruptly, since
 same-model argmax re-denoising of a random $10\%$ of token positions takes TPR at $1\%$ FPR from

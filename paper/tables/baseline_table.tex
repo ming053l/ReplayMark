@@ -32,6 +32,7 @@
 \cmidrule(lr){4-5}\cmidrule(lr){6-7}
 Method & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Generation & Detection \\
 \midrule
+\multicolumn{7}{@{}l}{\emph{LLaDA-8B-Instruct}}\\
 KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 256 tok & 1.03$\times$ & \textbf{0.93} & 0.73 & 256 & \textbf{0} \\
 dgMARK \citep{hong2026dgmark} & $k=1$, 256 tok & 1.55$\times$ & 0.74 & 0.62 & 256 & \textbf{0} \\
 dgMARK \citep{hong2026dgmark} & $+3$-beam, 256 tok & 1.23$\times$ & 0.86 & \textbf{0.82} & $\sim$1024 & \textbf{0} \\
@@ -44,14 +45,16 @@ dgMARK \citep{hong2026dgmark} & $+3$-beam, 256 tok & 1.23$\times$ & 0.86 & \text
 \textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$, 512 tok & 0.87$\times$ & 0.70 & 0.60 & 656 & 144 \\
 \textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$, 512 tok & \textbf{0.74}$\times$ & 0.80 & 0.60 & 656 & 144 \\
 % ---- Dream-7B-Instruct block: fill ONLY from the runs listed in the header comment ----
-% \midrule
-% \multicolumn{7}{@{}l}{\emph{Dream-7B-Instruct}}\\
-% KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/37
-% dgMARK \citep{hong2026dgmark} & $k=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/38
-% dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & \tbd & \tbd & \tbd & $\sim$2048 & \textbf{0} \\  % exp/38
-% \textcolor{oursemph}{Shibboleth} & $R=1$, 512 tok & \tbd & \tbd & \tbd & 656 & 144 \\  % exp/36
-% \textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$, 512 tok & \tbd & \tbd & \tbd & 656 & 144 \\  % exp/36
-% \textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$, 512 tok & \tbd & \tbd & \tbd & 656 & 144 \\  % exp/36
+\midrule
+\multicolumn{7}{@{}l}{\emph{Dream-7B-Instruct}}\\
+KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/37
+dgMARK \citep{hong2026dgmark} & $k=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/38
+dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & \tbd & \tbd & \tbd & $\sim$2048 & \textbf{0} \\  % exp/38
+\addlinespace[1.5pt]
+\textcolor{oursemph}{Shibboleth} & $R=1$, 512 tok & \tbd & \tbd & \tbd & 656 & 144 \\  % exp/36
+\rowcolor{finalres}
+\textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$, 512 tok & \tbd & \tbd & \tbd & 656 & 144 \\  % exp/36
+\textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$, 512 tok & \tbd & \tbd & \tbd & 656 & 144 \\  % exp/36
 \bottomrule
 \end{tabular}%
 }
@@ -61,6 +64,8 @@ reproductions on one checkpoint and prompt protocol, but Shibboleth uses 512-tok
 the token-based baselines use 256, and each block keeps its own decoding regime, so ratios are
 comparable within a method and indicative across methods. A PPL ratio below one is not evidence
 of better semantics. Principal Shibboleth rows use $n=30$ documents ($n=20$ for $R=16$); dgMARK
-uses $n=50$. Here $\delta$ is KGW's green-list logit bias and $k$ is dgMARK's candidate count.}
+uses $n=50$. Here $\delta$ is KGW's green-list logit bias and $k$ is dgMARK's candidate count.
+Cells marked \tbd\ are pending runs already queued (Dream block; 512-token baseline reruns
+that will replace the 256-token rows).}
 \label{tab:baselines}
 \end{table}

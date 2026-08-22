@@ -1,37 +1,48 @@
-% Downstream task quality (the "generated text quality" table). NOT yet \input anywhere —
-% un-comment the \input in sections/experiments.tex once at least the LLaDA block is filled.
-%
-% The earlier GPT draft's version held a 2-model x 3-benchmark x 2-decoder grid whose numbers
-% could not be traced to any run; it was deleted. Do not restore it from git history.
-% Regenerate cells ONLY from:
-%   LLaDA block  <- exp/32, results/32_gsm8k.json   (running in the chain)
-%   Dream block  <- exp/39, results/39_dream_gsm8k.json (queued, run36.sh)
-%
-% Shared design: 50 GSM8K test problems, 256 generated tokens, matched unwatermarked control
-% vs the watermarked R=16/kappa=0.05 arm under the identical decoding schedule; accuracy is
-% exact match on the final number; detection (TPR@1%) is run on both arms — the control must
-% sit at the null, and short docs mean the watermark arm's TPR here is not the headline.
-% MMLU / HumanEval columns can be added later only if runs exist; do not pre-fill them.
+% Generated-text quality: the full dgMARK-style grid (user request 2026-08-22), all \tbd
+% until each cell's run exists. NO CELL may be filled from the deleted GPT draft — its grid
+% was untraceable to any run. Fill map:
+%   GSM8K, multinomial, control & Shibboleth rows:
+%     LLaDA  <- exp/32, results/32_gsm8k.json      (queued in chain)
+%     Dream  <- exp/39, results/39_dream_gsm8k.json (queued, run36.sh)
+%   MMLU / HumanEval / greedy columns / KGW / dgMARK rows:
+%     harness not yet built — exp/40 (MMLU) and exp/41 (HumanEval) planned after run36;
+%     KGW/dgMARK task arms need their generators driven on task prompts (several GPU-days
+%     on the TITAN RTX; user approved building them, keep \tbd until measured).
+% Greedy for Shibboleth means: reference decoder fixed to argmax, carriers still draw their
+% R proposals from the live conditional (repeated argmax draws would coincide and leave no
+% channel) — implement exactly this before labelling any greedy cell.
 \begin{table}[t]
 \centering
 \small
-\renewcommand{\arraystretch}{0.8}
-\begin{tabular}{llrr}
+\renewcommand{\arraystretch}{0.76}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrr}
 \toprule
-Model & Arm & GSM8K Acc $\uparrow$ & TPR at $1\%$ FPR \\
+& & \multicolumn{3}{c}{Greedy decoding} & \multicolumn{3}{c}{Multinomial decoding} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+& & MMLU & GSM8K & HumanEval & MMLU & GSM8K & HumanEval \\
+Model & Method & Acc $\uparrow$ & Acc $\uparrow$ & Pass@1 $\uparrow$
+                & Acc $\uparrow$ & Acc $\uparrow$ & Pass@1 $\uparrow$ \\
 \midrule
-LLaDA-8B-Instruct & Unwatermarked control & \tbd & \tbd \\
+LLaDA-8B-Instruct & Non-watermarked & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
+      & KGW \citep{kirchenbauer2023watermark} & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
+      & dgMARK \citep{hong2026dgmark} & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
+      & dgMARK $+3$-beam & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
 \rowcolor{finalres}
-      & \textcolor{oursemph}{Shibboleth} $R=16,\kappa=0.05$ & \tbd & \tbd \\
+      & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
 \midrule
-Dream-7B-Instruct & Unwatermarked control & \tbd & \tbd \\
+Dream-7B-Instruct & Non-watermarked & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
+      & KGW & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
+      & dgMARK & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
+      & dgMARK $+3$-beam & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
 \rowcolor{finalres}
-      & \textcolor{oursemph}{Shibboleth} $R=16,\kappa=0.05$ & \tbd & \tbd \\
+      & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
 \bottomrule
-\end{tabular}
-\caption{\textbf{Downstream task preservation.} GSM8K~\citep{cobbe2021gsm8k} accuracy on 50
-test problems at 256 tokens under the watermark against a matched unwatermarked control on the
-identical decoding schedule, with detection run on both arms. \tbd\ pending exp/32 (LLaDA) and
-exp/39 (Dream).}
+\end{tabular}%
+}
+\caption{\textbf{Text generation quality.} Accuracy on MMLU~\citep{hendrycks2021mmlu} and
+GSM8K~\citep{cobbe2021gsm8k} and pass@1 on HumanEval~\citep{chen2021humaneval} under greedy
+and multinomial decoding, with the unwatermarked run of each model as the reference row of
+its block. Shibboleth uses $R=16,\kappa=0.05$; all cells are pending measured runs.}
 \label{tab:quality}
 \end{table}
