@@ -129,9 +129,15 @@ document-level guarantee by union bound, yet it never beats pooling here — $0.
 $0.50$ at $1\%$ FPR under the $10\%$ attack, and $0.69$ against $0.88$ clean — because
 uniformly random edits damage every block, so the sparse-signal regime in which
 concentration-type tests dominate sum-based ones~\citep{li2025editrobust} never arises.
-The honest reading is that random re-denoising is the dense-damage case; localized edits
-and copy--paste, where a min-statistic should win, remain unmeasured.
+Bounding the conditioning window is the corresponding structural repair on the embedding
+side: with a 128-token window the response bank reads only the prompt and the last 128
+generated tokens, so one edit can perturb at most five blocks' banks instead of every later
+one. Measured at $R=16,\kappa=0.05$ and 512 tokens on shared prompts and seeds ($n=16$), the
+window costs nothing clean — $0.69$ TPR at $1\%$ FPR in both arms, at a comparable perplexity
+ratio — but buys nothing under random $10\%$ re-denoising either ($0.44$ against $0.50$, a
+one-document difference), and for the same reason: the window bounds propagation, while
+uniformly random edits already damage every window. Both structural repairs therefore stand
+or fall on the localized-edit test, which is the one still outstanding.
 % TODO(exp33b): localized (contiguous-span) re-denoise on the same saved outputs — the
-% regime where Bonferroni-min should finally win; queued behind the Dream block.
-% TODO(exp34): ctx_window=128 arm @512 (clean + attacked TPR, paired quality) — the
-% propagation-bounding counterpart.
+% regime where Bonferroni-min and the window should finally win; queued behind the Dream
+% block (results/33b_localized.json).
