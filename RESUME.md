@@ -17,6 +17,15 @@ exp/ scripts still hardcode /ssd1 and will fail if rerun as-is.
   `=== DG512 DONE ===` in logs/run30.log. Writes `results/32_gsm8k.json`.
 - **exp/33 (block-local exact detection) + exp/34 (ctx_window=128): queued** behind
   `=== GSM8K DONE ===` in logs/run32.log (both inside run33.sh).
+- **exp/35 (KGW @512, deltas 0/1, n=30): queued** behind `=== ROBUST DONE ===` in
+  logs/run33.log (run35.sh). Writes `results/kgw512.json`.
+
+## LENGTH POLICY (user, 2026-08-22)
+
+All method comparisons are locked to **512 tokens** from now on. The 256-token KGW/dgMARK
+rows in the baseline table are interim: when exp/31 (dgMARK@512) and exp/35 (KGW@512) land,
+REPLACE the 256-tok rows (do not keep both), drop the dual-length caveats from the caption
+and the setup paragraph, and re-bold columns. Any future baseline must be run at 512.
 
 Progress: `tr '\r' '\n' < logs/<name>.log | grep -vE 'Loading|it/s|s/it' | tail`
 

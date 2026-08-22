@@ -3,10 +3,13 @@
 % DELETED: no Dream run exists, and its cells had been filled in without one. If Dream is ever
 % run, rebuild that block from the run's own CSVs, not from this one.
 %
-% Token lengths are deliberately unequal and the caption says so: token-based baselines were
-% reproduced at 256 tokens under their own decoding regimes, Shibboleth at 512. exp/30--31
-% (dgMARK at 512 tokens, n=30) is running; when it lands, fill the two commented rows below
-% and consider retiring the 256-token dgMARK rows.
+% POLICY (user, 2026-08-22): the comparison is LOCKED TO 512 TOKENS from here on. The
+% 256-token baseline rows below are interim — they are the only measured numbers today and
+% must stay until their 512-token replacements land, then they are REPLACED, not kept:
+%   dgMARK k=1 @512 and +3-beam @512  <- exp/30--31 (running)
+%   KGW delta=1 @512                  <- exp/35 (queued behind run33)
+% When all three land, delete the 256-tok rows, drop the dual-length caveat from the caption
+% and from the setup paragraph in sections/experiments.tex, and re-bold each column.
 %
 % Cost accounting: detection replays L+1=9 masked evaluations per 32-token block, so 512
 % tokens cost 16*9=144 and generation costs 512+144=656. dgMARK 3-beam decodes ~4 sequence
@@ -26,6 +29,7 @@ Method & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Generation & Detec
 KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 256 tok & 1.03$\times$ & \textbf{0.93} & 0.73 & 256 & \textbf{0} \\
 dgMARK \citep{hong2026dgmark} & $k=1$, 256 tok & 1.55$\times$ & 0.74 & 0.62 & 256 & \textbf{0} \\
 dgMARK \citep{hong2026dgmark} & $+3$-beam, 256 tok & 1.23$\times$ & 0.86 & \textbf{0.82} & $\sim$1024 & \textbf{0} \\
+% KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/35, results/kgw512.json
 % dgMARK \citep{hong2026dgmark} & $k=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/31
 % dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & \tbd & \tbd & \tbd & $\sim$2048 & \textbf{0} \\  % exp/31
 \addlinespace[1.5pt]

@@ -12,8 +12,10 @@ method's own decoding regime, and the table states both lengths rather than pret
 protocol. On top of the reference sampler, Shibboleth adds $L=8$ probe patterns, threshold
 $s_{\min}=0.5$, retry budget $R$, and an optional floor $\kappa$, and we test provenance
 detection ($w_i=+1$) rather than payload recovery.
-% TODO(dg512): exp/30--31 rerun dgMARK at 512 tokens (n=30) for length-matched rows; swap the
-% caption and this paragraph to the matched protocol once those land.
+% POLICY (user, 2026-08-22): all comparisons are being locked to 512 tokens. exp/30--31
+% (dgMARK@512) and exp/35 (KGW@512) rerun the baselines at 512; once they land, replace the
+% 256-tok rows in tables/baseline_table.tex and rewrite the sentence above to the single
+% matched protocol ("every row decodes 512 tokens" becomes TRUE only then).
 % TODO(gsm8k): exp/32 measures GSM8K accuracy (50 problems, 256 tokens, matched control vs
 % watermarked arm); reintroduce the downstream-quality table only from that run's numbers.
 % Dream-7B-Instruct was removed from this draft: no Dream run exists.
