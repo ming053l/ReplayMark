@@ -5,17 +5,13 @@
 We evaluate \texttt{GSAI-ML/LLaDA-8B-Instruct}~\citep{nie2025llada} in fp16 on a single TITAN
 RTX. Detectability is measured
 on C4 \texttt{realnewslike}~\citep{raffel2020c4} prompts truncated to 300 characters as dgMARK's
-protocol prescribes. Shibboleth runs produce 512 tokens in 32-token blocks at one denoising step
-per token under the native confidence schedule with full-vocabulary multinomial sampling at
-temperature $0.8$; the token-based baselines are local reproductions at 256 tokens under each
-method's own decoding regime, and the table states both lengths rather than pretending to one
-protocol. On top of the reference sampler, Shibboleth adds $L=8$ probe patterns, threshold
+protocol prescribes. Every row decodes 512 tokens in 32-token blocks at one denoising step
+per token, each method under its own decoding regime: Shibboleth and dgMARK on the native
+confidence schedule with full-vocabulary multinomial sampling at
+temperature $0.8$ (dgMARK with top-$k{=}3$), KGW strictly left-to-right as its green list
+requires. On top of the reference sampler, Shibboleth adds $L=8$ probe patterns, threshold
 $s_{\min}=0.5$, retry budget $R$, and an optional floor $\kappa$, and we test provenance
 detection ($w_i=+1$) rather than payload recovery.
-% POLICY (user, 2026-08-22): all comparisons are being locked to 512 tokens. exp/30--31
-% (dgMARK@512) and exp/35 (KGW@512) rerun the baselines at 512; once they land, replace the
-% 256-tok rows in tables/baseline_table.tex and rewrite the sentence above to the single
-% matched protocol ("every row decodes 512 tokens" becomes TRUE only then).
 % TODO(gsm8k): exp/32 (LLaDA) and exp/39 (Dream) measure GSM8K accuracy (50 problems, 256
 % tokens, matched control vs watermarked arm); fill tables/quality_table.tex from those
 % runs only, then un-comment its \input below and the downstream paragraph's numbers.
@@ -77,17 +73,20 @@ on 50 test problems at 256 tokens, comparing the watermarked sampler against its
 unwatermarked control under the identical decoding schedule; results are \tbd\ pending the run.
 
 \paragraph{Cost against token-local detectors.}
-Detection trails the strongest token-based detectors: at the length-matched 512 tokens,
-dgMARK's three-beam variant reaches $0.93$ TPR at both $1\%$ and $0.1\%$ FPR against $0.80$
+Detection trails the token-based detectors at matched length: dgMARK's three-beam variant
+reaches $0.93$ TPR at both $1\%$ and $0.1\%$ FPR against $0.80$
 and $0.60$ for Shibboleth, its direct variant reaches $0.83$ and $0.80$, and KGW reaches
-$0.93$ at $1\%$ in its 256-token reproduction. Shibboleth instead carries the only perplexity
+$0.90$ and $0.83$. Shibboleth instead carries the only perplexity
 ratio in the comparison that reads below
-its own unwatermarked baseline, $0.74\times$ against $1.03\times$ for KGW, $1.45\times$ for
+its own unwatermarked baseline, $0.74\times$ against $1.22\times$ for KGW, $1.45\times$ for
 direct dgMARK and $1.21\times$ for
 three-beam dgMARK; every baseline row costs perplexity, whereas the floor discards exactly the
 low-probability draws a proxy scorer punishes. KGW additionally requires strict left-to-right
-decoding, and its repeated bigram events must be deduplicated, without which its control
-measured $37\%$ FPR. Shibboleth alone, against all of that, spends 144 masked evaluations to
+decoding, under which this checkpoint repeats itself heavily, and its repeated bigram events
+must be deduplicated: without deduplication its control measured $37\%$ FPR, and even with it
+two of thirty 512-token null documents cross the $0.1\%$ threshold, a residual calibration
+failure of exactly the kind an exact conditional null rules out by
+construction~\citep{fernandez2023bricks}. Shibboleth alone, against all of that, spends 144 masked evaluations to
 detect at all, although paying for detection is not unprecedented: edit-distance detection
 runs a quadratic alignment under thousands of permutation
 resamples~\citep{kuditipudi2024distortionfree}, and GaussMark verifies with a forward--backward

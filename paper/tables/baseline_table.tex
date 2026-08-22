@@ -9,12 +9,13 @@
 % When those land, un-comment the block, add a "\multicolumn{7}{@{}l}{\emph{...}}" header per
 % model, and restate the Dream sample sizes in the caption.
 %
-% POLICY (user, 2026-08-22): the comparison is LOCKED TO 512 TOKENS.
-% dgMARK rows REPLACED with the 512-token rerun (exp/30-31, landed 2026-08-22 evening,
-% logs/31_dg512eval.log: watermark n=30 ppl x1.445 TPR .90/.83/.80; beam3 n=30 ppl x1.208
-% TPR .93/.93/.93; control ppl 6.55, z +0.10). The KGW row is the LAST interim 256-token
-% row: replace from exp/35 (results/kgw512.json, running next in runcp) and then drop the
-% dual-length caveat here, in the caption, and in the setup paragraph of experiments.tex.
+% POLICY (user, 2026-08-22): the comparison is LOCKED TO 512 TOKENS — the LLaDA block is
+% now fully length-matched. Provenance:
+%   dgMARK@512 <- exp/30-31 (logs/31_dg512eval.log): watermark n=30 ppl x1.445 TPR
+%     .90/.83/.80; beam3 n=30 ppl x1.208 TPR .93/.93/.93; control ppl 6.55, z +0.10.
+%   KGW@512    <- exp/35 (results/kgw512.json): delta=1 n=30 ppl x1.22 TPR .93/.90/.83
+%     (dedup); control z +0.21 BUT 2/30 nulls cross even the 0.1% threshold (dup bigrams
+%     0.45 at 512 LTR) — quoted in the analysis text as the z-test calibration caveat.
 %
 % Cost accounting: detection replays L+1=9 masked evaluations per 32-token block, so 512
 % tokens cost 16*9=144 and generation costs 512+144=656. dgMARK 3-beam decodes ~4 sequence
@@ -32,8 +33,7 @@
 Method & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Generation & Detection \\
 \midrule
 \multicolumn{7}{@{}l}{\emph{LLaDA-8B-Instruct}}\\
-KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 256 tok & 1.03$\times$ & \textbf{0.93} & 0.73 & 256 & \textbf{0} \\
-% ^ interim 256-tok row: replace from exp/35 (results/kgw512.json) when it lands.
+KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 512 tok & 1.22$\times$ & 0.90 & 0.83 & 512 & \textbf{0} \\
 dgMARK \citep{hong2026dgmark} & $k=1$, 512 tok & 1.45$\times$ & 0.83 & 0.80 & 512 & \textbf{0} \\
 dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & 1.21$\times$ & \textbf{0.93} & \textbf{0.93} & $\sim$2048 & \textbf{0} \\
 \addlinespace[1.5pt]
@@ -57,12 +57,11 @@ dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & \tbd & \tbd & \tbd & $\sim$
 }
 \caption{\textbf{Watermark detectability.} Detection rate, perplexity against each method's own
 matched unwatermarked baseline, and compute in sequence evaluations. All rows are local
-reproductions on one checkpoint and prompt protocol at 512 tokens, except the KGW row, still
-its interim 256-token reproduction; each block keeps its own decoding regime, so ratios are
+reproductions on one checkpoint and prompt protocol at 512 tokens; each method keeps its own
+decoding regime, so PPL ratios are
 comparable within a method and indicative across methods. A PPL ratio below one is not evidence
-of better semantics. Principal Shibboleth rows use $n=30$ documents ($n=20$ for $R=16$);
-dgMARK@512 uses $n=30$. Here $\delta$ is KGW's green-list logit bias and $k$ is dgMARK's
-candidate count. Cells marked \tbd\ are pending runs already queued (Dream block; the KGW
-512-token rerun).}
+of better semantics. LLaDA rows use $n=30$ documents ($n=20$ for $R=16$).
+Here $\delta$ is KGW's green-list logit bias and $k$ is dgMARK's
+candidate count. Cells marked \tbd\ are the queued Dream-7B-Instruct runs.}
 \label{tab:baselines}
 \end{table}
