@@ -1,22 +1,15 @@
-% Post-editing attacks, laid out to the menu the field now expects (survey 2026-08-22):
-% substitution (random AND context-aware), deletion, insertion, paraphrase (DIPPER + an
-% instruct LLM), copy-paste CP-k-p% (Kirchenbauer et al. 2306.04634's parameterization —
-% the experiment where block-local pooling should beat the global statistic), roundtrip
-% translation, and the dLLM-specific re-denoising attack. TPR@{1%, 0.1%} columns follow
-% DMark/dgMARK convention.
-%
-% ONLY THREE CELLS ARE MEASURED, all on the same 20 R=1 documents:
-%   clean 0.35 @1% FPR; same-model argmax re-denoising of 10% of positions 0.05;
-%   deletion of 10% 0.05. Everything else is \tbd.
-%
-% Fill order: exp/33 adds re-denoising at 5%/10% under pooled vs Bonferroni-min vs Stouffer
-% detection (add a "detector" column or a second block if the block-local rows land);
-% exp/34's ctx_window=128 arm gives the windowed-conditioning counterpart. Delete any row
-% that will not be run rather than leaving \tbd at submission.
-%
-% NOTE(design): re-denoising is the attack no key-only dLLM watermark paper reports.
-% Running it against dgMARK/KGW on the same documents, not only against Shibboleth,
-% would be the strongest single result this table could hold.
+% Post-editing attacks, two panels:
+%   Panel A: weakest setting (R=1, 512 tok, n=20) — the original fragility measurement.
+%   Panel B: strongest setting (R=16, kappa=0.05, 1024 tok, n=16) — exp/33 (2026-08-22),
+%            results/33_robust.json, POOLED detector. Same-model argmax re-denoising of a
+%            random 5%/10% of generated positions; FPR held on attacked controls for all
+%            aggregations (worst cell 1/16 at nominal 5%).
+% Detector-pooling comparison (in text, not this table): Bonferroni-min NEVER beats pooled
+% under random re-denoising (rd10 @1%: 0.38 vs 0.50; clean @1%: 0.69 vs 0.88) — random
+% edits damage every block, so the sparse-signal regime never arises. The localized-edit /
+% copy-paste test where block-local should win is exp/33b (queued behind the Dream block).
+% Remaining \tbd rows: insertion/substitution/copy-paste/paraphrase not yet run; delete any
+% row that will not be run before submission.
 \begin{table}[t]
 \centering
 \small
@@ -27,25 +20,26 @@
 \cmidrule(lr){3-4}
 Attack & Strength & $1\%$ & $0.1\%$ \\
 \midrule
+\multicolumn{4}{@{}l}{\emph{Weakest setting: $R=1$, 512 tokens ($n=20$)}}\\
 None & --- & 0.35 & \tbd \\
-\midrule
-Re-denoising (same model, argmax) & $5\%$ of positions & \tbd & \tbd \\
-                                  & $10\%$ of positions & 0.05 & \tbd \\
-\addlinespace[1.5pt]
+Re-denoising (same model, argmax) & $10\%$ of positions & 0.05 & \tbd \\
 Deletion & $10\%$ of positions & 0.05 & \tbd \\
 Insertion & $10\%$ of positions & \tbd & \tbd \\
 Substitution (random) & $10\%$ of positions & \tbd & \tbd \\
-Substitution (masked-LM) & $10\%$ of positions & \tbd & \tbd \\
-\addlinespace[1.5pt]
 Copy--paste & $25\%$ kept, 1 segment & \tbd & \tbd \\
 Paraphrase (DIPPER)~\citep{krishna2023paraphrasing} & lex $20$, order $0$ & \tbd & \tbd \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Strongest setting: $R=16,\kappa=0.05$, 1024 tokens ($n=16$)}}\\
+None & --- & 0.88 & 0.88 \\
+Re-denoising (same model, argmax) & $5\%$ of positions & 0.88 & 0.75 \\
+                                  & $10\%$ of positions & 0.50 & 0.38 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Robustness to post-editing.} Detection after each attack on 20 documents
-generated at $R=1$, scored against the same analytic thresholds as
-Table~\ref{tab:baselines}. Evidence written into a replayable probe is synchronised to the
-prefix, so an edit early in the document invalidates every carrier after it, and the collapse
-under the pooled detector is correspondingly abrupt; block-local detection, which pools only
-the blocks an edit spared, is the designed repair and is measured separately.}
+\caption{\textbf{Robustness to post-editing.} Detection after each attack under the deployed
+pooled detector, scored against the same analytic thresholds as Table~\ref{tab:baselines}.
+Evidence written into a replayable probe is synchronised to the prefix, so at $R=1$ a
+$10\%$ edit invalidates nearly every carrier; at the strongest setting the carrier
+redundancy absorbs a $5\%$ edit outright and a $10\%$ edit halves detection rather than
+erasing it. Small cohorts: one document is $0.05$ ($n=20$) or $0.06$ ($n=16$) of TPR.}
 \label{tab:robustness}
 \end{table}

@@ -111,14 +111,19 @@ one of synchronisation rather than signal strength, because an early edit alters
 prefix from which every later probe is rebuilt, and a single change thus invalidates every
 carrier after it. That cohort uses $R=1$, and the headline setting at $R=16$ consequently
 remains unattacked, which we record as an open gap rather than as evidence of resilience.
-The pooled statistic also dilutes intact blocks with damaged ones, which is exactly the regime
-where sum-based pooling is dominated by tests that concentrate on the surviving
-fraction~\citep{li2025editrobust}; a per-block exact test combined by Bonferroni over the
-$16$ blocks keeps the document-level guarantee by union bound and should recover detection
-when edits are local, and bounding the conditioning window caps how far one edit propagates.
-Both repairs are under measurement and neither is claimed here.
-% TODO(exp33): block-local detection (pooled vs Bonferroni-min vs Stouffer) under 5%/10%
-% same-model re-denoising on exp/29's saved outputs — replace the previous sentence's
-% "under measurement" with the measured comparison and fill tables/robustness_table.tex.
+Redundancy, however, changes the picture: attacking the strongest setting
+($R=16,\kappa=0.05$ at 1024 tokens, $n=16$) rather than the weakest, re-denoising $5\%$ of
+positions leaves TPR at $1\%$ FPR unchanged at $0.88$ and re-denoising $10\%$ halves it to
+$0.50$ instead of erasing it, with false-positive control holding on the identically
+attacked controls. We also measured the block-local repair the pooled statistic seems to
+invite: a per-block exact test combined by Bonferroni over the blocks keeps the
+document-level guarantee by union bound, yet it never beats pooling here — $0.38$ against
+$0.50$ at $1\%$ FPR under the $10\%$ attack, and $0.69$ against $0.88$ clean — because
+uniformly random edits damage every block, so the sparse-signal regime in which
+concentration-type tests dominate sum-based ones~\citep{li2025editrobust} never arises.
+The honest reading is that random re-denoising is the dense-damage case; localized edits
+and copy--paste, where a min-statistic should win, remain unmeasured.
+% TODO(exp33b): localized (contiguous-span) re-denoise on the same saved outputs — the
+% regime where Bonferroni-min should finally win; queued behind the Dream block.
 % TODO(exp34): ctx_window=128 arm @512 (clean + attacked TPR, paired quality) — the
 % propagation-bounding counterpart.

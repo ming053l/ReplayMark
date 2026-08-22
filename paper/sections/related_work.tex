@@ -44,8 +44,9 @@ union-bound correction or be calibrated empirically~\citep{kirchenbauer2024relia
 edits leave watermark evidence in only a fraction of the text, sum-based pooling is provably
 dominated by statistics that concentrate on the surviving fraction~\citep{li2025editrobust}.
 Shibboleth's binomial tail belongs to the exact-test family, and its block structure admits the
-same sparse-signal hardening, which Section~\ref{sec:calibration} records as an open direction
-rather than a measured result.
+same sparse-signal statistics; Section~\ref{sec:calibration} measures them and finds that under
+uniformly random edits the damage is dense and pooling wins, exactly the boundary the theory
+draws.
 
 \paragraph{Detection that consults the model.}
 Every DLM watermark above detects from the text and key alone, but detectors that pay more for
