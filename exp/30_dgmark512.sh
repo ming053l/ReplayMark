@@ -5,12 +5,6 @@ C4=/ssd2/ming/basinmark/data/c4-validation.json.gz
 P=/home/ming0531/miniconda3/envs/mmada/bin/python
 OUT=/ssd2/ming/basinmark/results/baselines
 cd /ssd2/ming/basinmark/baselines/dgmark-watermarking
-for M in original watermark; do
-  $P scripts/generate.py --method $M --num_samples 30 --gen_length 512 \
-    --block_length 32 --sampling_strategy multinomial --top_k 3 \
-    --model_name "$LLADA" --cache_dir /ssd2/ming/hf_cache \
-    --dataset_path "$C4" --output_prefix "$OUT/dg512_$M" || echo "dg512 $M FAILED"
-done
 $P scripts/generate.py --method beam --beam_size 3 --num_samples 30 --gen_length 512 \
   --block_length 32 --sampling_strategy multinomial --top_k 3 \
   --model_name "$LLADA" --cache_dir /ssd2/ming/hf_cache \

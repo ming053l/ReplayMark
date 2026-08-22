@@ -1,6 +1,18 @@
-# RESUME — state at 2026-08-22 15:30 shutdown (admin power-off)
+# RESUME — 2026-08-22 evening: runcp.sh RUNNING (CP-ordered chain)
 
-## Relaunch after reboot (do this first)
+After the reboot the chain was relaunched as ONE sequential script, `exp/runcp.sh`
+(`logs/runcp.log`), cheapest-per-cell first — the old five-runner gate structure is
+superseded:
+1. exp/33 block-local detector (detection-only, robustness rows)  → results/33_robust.json
+2. dg512 beam arm only (original+watermark already banked) + exp/31 eval
+3. exp/35 KGW@512 → results/kgw512.json  (completes the LLaDA 512 lock)
+4. exp/32 GSM8K LLaDA → results/32_gsm8k.json
+5. exp/34 ctx_window=128 arm → results/34_window.json
+6. Dream block: exp/36 → 37 → 38(gen+eval) → 39
+If interrupted again: check which "=== NN exit ===" markers are in logs/runcp.log, comment
+out the finished stages in exp/runcp.sh, and relaunch it the same way.
+
+## (superseded) Relaunch plan written at the 15:30 shutdown
 
 Verified at shutdown (15:15): dg512 **original COMPLETE (30 rows)**, **watermark COMPLETE
 (30 rows)**, beam arm interrupted partway (partial CSV exists — delete
