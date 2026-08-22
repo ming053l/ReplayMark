@@ -77,10 +77,13 @@ on 50 test problems at 256 tokens, comparing the watermarked sampler against its
 unwatermarked control under the identical decoding schedule; results are \tbd\ pending the run.
 
 \paragraph{Cost against token-local detectors.}
-Detection trails the strongest token-based detector: KGW reaches $0.93$ TPR at $1\%$ FPR against
-$0.80$ for Shibboleth, and dgMARK's three-beam variant reaches $0.82$ at $0.1\%$ FPR against
-$0.60$. Shibboleth instead carries the only perplexity ratio in the comparison that reads below
-its own unwatermarked baseline, $0.74\times$ against $1.03\times$ for KGW and $1.23\times$ for
+Detection trails the strongest token-based detectors: at the length-matched 512 tokens,
+dgMARK's three-beam variant reaches $0.93$ TPR at both $1\%$ and $0.1\%$ FPR against $0.80$
+and $0.60$ for Shibboleth, its direct variant reaches $0.83$ and $0.80$, and KGW reaches
+$0.93$ at $1\%$ in its 256-token reproduction. Shibboleth instead carries the only perplexity
+ratio in the comparison that reads below
+its own unwatermarked baseline, $0.74\times$ against $1.03\times$ for KGW, $1.45\times$ for
+direct dgMARK and $1.21\times$ for
 three-beam dgMARK; every baseline row costs perplexity, whereas the floor discards exactly the
 low-probability draws a proxy scorer punishes. KGW additionally requires strict left-to-right
 decoding, and its repeated bigram events must be deduplicated, without which its control

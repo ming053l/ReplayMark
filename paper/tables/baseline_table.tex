@@ -9,17 +9,16 @@
 % When those land, un-comment the block, add a "\multicolumn{7}{@{}l}{\emph{...}}" header per
 % model, and restate the Dream sample sizes in the caption.
 %
-% POLICY (user, 2026-08-22): the comparison is LOCKED TO 512 TOKENS from here on. The
-% 256-token baseline rows below are interim — they are the only measured numbers today and
-% must stay until their 512-token replacements land, then they are REPLACED, not kept:
-%   dgMARK k=1 @512 and +3-beam @512  <- exp/30--31 (running)
-%   KGW delta=1 @512                  <- exp/35 (queued behind run33)
-% When all three land, delete the 256-tok rows, drop the dual-length caveat from the caption
-% and from the setup paragraph in sections/experiments.tex, and re-bold each column.
+% POLICY (user, 2026-08-22): the comparison is LOCKED TO 512 TOKENS.
+% dgMARK rows REPLACED with the 512-token rerun (exp/30-31, landed 2026-08-22 evening,
+% logs/31_dg512eval.log: watermark n=30 ppl x1.445 TPR .90/.83/.80; beam3 n=30 ppl x1.208
+% TPR .93/.93/.93; control ppl 6.55, z +0.10). The KGW row is the LAST interim 256-token
+% row: replace from exp/35 (results/kgw512.json, running next in runcp) and then drop the
+% dual-length caveat here, in the caption, and in the setup paragraph of experiments.tex.
 %
 % Cost accounting: detection replays L+1=9 masked evaluations per 32-token block, so 512
 % tokens cost 16*9=144 and generation costs 512+144=656. dgMARK 3-beam decodes ~4 sequence
-% evaluations per token at 256 tokens, hence ~1024.
+% evaluations per token, hence ~2048 at 512 tokens.
 \begin{table}[t]
 \centering
 \small
@@ -34,11 +33,9 @@ Method & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Generation & Detec
 \midrule
 \multicolumn{7}{@{}l}{\emph{LLaDA-8B-Instruct}}\\
 KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 256 tok & 1.03$\times$ & \textbf{0.93} & 0.73 & 256 & \textbf{0} \\
-dgMARK \citep{hong2026dgmark} & $k=1$, 256 tok & 1.55$\times$ & 0.74 & 0.62 & 256 & \textbf{0} \\
-dgMARK \citep{hong2026dgmark} & $+3$-beam, 256 tok & 1.23$\times$ & 0.86 & \textbf{0.82} & $\sim$1024 & \textbf{0} \\
-% KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/35, results/kgw512.json
-% dgMARK \citep{hong2026dgmark} & $k=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/31
-% dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & \tbd & \tbd & \tbd & $\sim$2048 & \textbf{0} \\  % exp/31
+% ^ interim 256-tok row: replace from exp/35 (results/kgw512.json) when it lands.
+dgMARK \citep{hong2026dgmark} & $k=1$, 512 tok & 1.45$\times$ & 0.83 & 0.80 & 512 & \textbf{0} \\
+dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & 1.21$\times$ & \textbf{0.93} & \textbf{0.93} & $\sim$2048 & \textbf{0} \\
 \addlinespace[1.5pt]
 \textcolor{oursemph}{Shibboleth} & $R=1$, 512 tok & 0.97$\times$ & 0.43 & 0.20 & 656 & 144 \\
 \rowcolor{finalres}
@@ -60,12 +57,12 @@ dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & \tbd & \tbd & \tbd & $\sim$
 }
 \caption{\textbf{Watermark detectability.} Detection rate, perplexity against each method's own
 matched unwatermarked baseline, and compute in sequence evaluations. All rows are local
-reproductions on one checkpoint and prompt protocol, but Shibboleth uses 512-token outputs while
-the token-based baselines use 256, and each block keeps its own decoding regime, so ratios are
+reproductions on one checkpoint and prompt protocol at 512 tokens, except the KGW row, still
+its interim 256-token reproduction; each block keeps its own decoding regime, so ratios are
 comparable within a method and indicative across methods. A PPL ratio below one is not evidence
-of better semantics. Principal Shibboleth rows use $n=30$ documents ($n=20$ for $R=16$); dgMARK
-uses $n=50$. Here $\delta$ is KGW's green-list logit bias and $k$ is dgMARK's candidate count.
-Cells marked \tbd\ are pending runs already queued (Dream block; 512-token baseline reruns
-that will replace the 256-token rows).}
+of better semantics. Principal Shibboleth rows use $n=30$ documents ($n=20$ for $R=16$);
+dgMARK@512 uses $n=30$. Here $\delta$ is KGW's green-list logit bias and $k$ is dgMARK's
+candidate count. Cells marked \tbd\ are pending runs already queued (Dream block; the KGW
+512-token rerun).}
 \label{tab:baselines}
 \end{table}
