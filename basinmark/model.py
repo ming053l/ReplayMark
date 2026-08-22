@@ -10,6 +10,8 @@ MASK_ID = 126336
 
 
 class BasinModel:
+    mask_id = MASK_ID
+
     def __init__(self, path=SNAP, dtype=torch.float16, device="cuda"):
         os.environ.setdefault("HF_HOME", "/ssd2/ming/hf_cache")
         from transformers import AutoModel, AutoTokenizer
@@ -45,7 +47,7 @@ class BasinModel:
 
     def corrupt(self, ids, positions):
         out = ids.clone()
-        out[..., positions] = MASK_ID
+        out[..., positions] = self.mask_id
         return out
 
     # ---------- generation ----------
@@ -66,15 +68,17 @@ class BasinModel:
         """
         g = torch.Generator(device=self.device).manual_seed(seed)
         B, P = prompt_ids.shape
-        x = torch.full((B, P + gen_len), MASK_ID, dtype=torch.long, device=self.device)
+        x = torch.full((B, P + gen_len), self.mask_id, dtype=torch.long,
+                       device=self.device)
         x[:, :P] = prompt_ids.to(self.device)
         n_blocks = max(1, gen_len // block_len)
         steps_pb = max(1, steps // n_blocks)
         for b in range(n_blocks):
             lo, hi = P + b * block_len, P + (b + 1) * block_len
-            per_step = _split_evenly((x[:, lo:hi] == MASK_ID).sum(1, keepdim=True), steps_pb)
+            per_step = _split_evenly((x[:, lo:hi] == self.mask_id).sum(1, keepdim=True),
+                                     steps_pb)
             for t in range(steps_pb):
-                m_idx = x == MASK_ID
+                m_idx = x == self.mask_id
                 logits = self.model(x).logits
                 if temperature > 0:
                     u = torch.rand(logits.shape, device=logits.device, dtype=torch.float64,

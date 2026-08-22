@@ -19,6 +19,17 @@ exp/ scripts still hardcode /ssd1 and will fail if rerun as-is.
   `=== GSM8K DONE ===` in logs/run32.log (both inside run33.sh).
 - **exp/35 (KGW @512, deltas 0/1, n=30): queued** behind `=== ROBUST DONE ===` in
   logs/run33.log (run35.sh). Writes `results/kgw512.json`.
+- **exp/36–39 (Dream-7B-Instruct block, user request 2026-08-22): queued** behind
+  `=== KGW512 DONE ===` in logs/run35.log (run36.sh):
+  36 = Shibboleth detectability (control/R1/R8k10/R16k05 @512; preflight asserts the port
+  before burning hours) → `results/36_dream.json`;
+  37 = KGW@512 on Dream (vocab 152064) → `results/kgw512_dream.json`;
+  38 = dgMARK@512 on Dream (3 arms; repo patched with --mask_id/--shift_logits/--eot_id)
+  → `results/baselines/dgdream_*.csv` + eval in logs/38_dgdream_eval.log;
+  39 = Dream GSM8K (control vs R16k05) → `results/39_dream_gsm8k.json`.
+  Dream port: `basinmark/dream_model.py` (mask 151666, SHIFTED logits — Dream reads
+  position i from raw logits i-1); ResampleMark/kgw/BasinModel now use `model.mask_id`.
+  CPU smoke test passed (shift verified, "capital of France → Paris" at first mask).
 
 ## LENGTH POLICY (user, 2026-08-22)
 

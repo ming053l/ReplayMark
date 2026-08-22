@@ -80,6 +80,9 @@ class ResampleMark:
         # damage is proportional to edit density instead of propagating to every later
         # block. Positional, key-independent, so the verifier reproduces it exactly.
         self.ctx_window = ctx_window
+        # The mask token is a model property (LLaDA 126336, Dream 151666); models that
+        # declare .mask_id override the LLaDA default so the pipeline stays model-agnostic.
+        self.mask_id = getattr(model, "mask_id", MASK_ID)
         self._p_len = None                 # set by generate()/detect()
 
     # ------------------------------------------------ Reproducible Response Bank (RRB)
@@ -99,12 +102,12 @@ class ResampleMark:
         pats, pairs = block_challenges(self.key, lo, self.block_len, self.n_patterns,
                                        self.ctx_frac, mode=self.challenge, region=region)
         base = x.clone()
-        base[0, lo:gen_end] = MASK_ID
+        base[0, lo:gen_end] = self.mask_id
         if region is not None and w_lo > self._p_len:
-            base[0, self._p_len:w_lo] = MASK_ID
+            base[0, self._p_len:w_lo] = self.mask_id
         batch = [base.clone() for _ in pats]
         for m, d in zip(batch, pats):
-            m[0, torch.tensor(d)] = MASK_ID
+            m[0, torch.tensor(d)] = self.mask_id
         batch.append(base)
         lp = self.M.logprobs_rows(torch.cat(batch, 0), torch.tensor(B), chunk=2,
                                   dtype=torch.float64)
@@ -219,7 +222,8 @@ class ResampleMark:
         n_blocks = max(1, gen_len // self.block_len)
         steps_pb = max(1, steps // n_blocks)
         gen_end = Pn + gen_len
-        x = torch.full((1, Pn + gen_len), MASK_ID, dtype=torch.long, device=self.M.device)
+        x = torch.full((1, Pn + gen_len), self.mask_id, dtype=torch.long,
+                       device=self.M.device)
         x[:, :Pn] = prompt_ids.to(self.M.device)
         self.stats = dict(committed=0, carrier=0, accepted=0, draws=0, exhausted=0,
                           # S comes from the block-masked conditional, but sampling happens
@@ -240,7 +244,7 @@ class ResampleMark:
             qpm = {int(q): (float(qp[k]), float(qm[k])) for k, q in enumerate(B)}
             Bt = torch.tensor(B, device=x.device)
             for t in range(steps_pb):
-                live = Bt[x[0, Bt] == MASK_ID]
+                live = Bt[x[0, Bt] == self.mask_id]
                 if live.numel() == 0:
                     break
                 k = int(np.ceil(live.numel() / (steps_pb - t)))

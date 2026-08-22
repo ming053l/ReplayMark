@@ -43,7 +43,8 @@ def kgw_generate(M, prompt_ids, gen_len=256, gamma=0.5, delta=2.0, key=b"kgw",
     """Left-to-right decoding with a dLLM: exactly one position is unmasked per step."""
     gen = torch.Generator(device=M.device).manual_seed(seed)
     P = prompt_ids.shape[1]
-    x = torch.full((1, P + gen_len), MASK_ID, dtype=torch.long, device=M.device)
+    x = torch.full((1, P + gen_len), getattr(M, "mask_id", MASK_ID), dtype=torch.long,
+                   device=M.device)
     x[:, :P] = prompt_ids.to(M.device)
     for t in range(gen_len):
         i = P + t

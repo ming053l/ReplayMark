@@ -16,9 +16,14 @@ detection ($w_i=+1$) rather than payload recovery.
 % (dgMARK@512) and exp/35 (KGW@512) rerun the baselines at 512; once they land, replace the
 % 256-tok rows in tables/baseline_table.tex and rewrite the sentence above to the single
 % matched protocol ("every row decodes 512 tokens" becomes TRUE only then).
-% TODO(gsm8k): exp/32 measures GSM8K accuracy (50 problems, 256 tokens, matched control vs
-% watermarked arm); reintroduce the downstream-quality table only from that run's numbers.
-% Dream-7B-Instruct was removed from this draft: no Dream run exists.
+% TODO(gsm8k): exp/32 (LLaDA) and exp/39 (Dream) measure GSM8K accuracy (50 problems, 256
+% tokens, matched control vs watermarked arm); fill tables/quality_table.tex from those
+% runs only, then un-comment its \input below and the downstream paragraph's numbers.
+% TODO(dream): the Dream-7B-Instruct block is NOW QUEUED for real (run36.sh: exp/36
+% detectability, exp/37 KGW@512, exp/38 dgMARK@512, exp/39 GSM8K). Once results/36_dream.json
+% etc. exist, restore Dream to this paragraph, the abstract, intro contribution, and the
+% "covering one masked diffusion model" sentence in the conclusion — from measured numbers
+% only, never from the deleted GPT draft.
 
 \paragraph{Metrics and baselines.}
 Detectability is TPR at analytic FPR thresholds from Eq.~\eqref{eq:test}, and quality is
