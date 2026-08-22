@@ -1,0 +1,30 @@
+% Downstream task quality. THIS TABLE IS NOT YET \input ANYWHERE: it is the skeleton for the
+% run that actually exists in the experiment queue (exp/32), and nothing else.
+%
+% The previous draft's version of this file held a 2-model x 3-benchmark x 2-decoder grid
+% (MMLU / GSM8K / HumanEval on LLaDA and Dream under greedy and multinomial). NONE of those
+% numbers came from a local run — the grid was supplied ready-made and could not be traced to
+% any result file — so the whole table was replaced with this stub. Do not restore it from
+% git history; regenerate cells only from results/32_gsm8k.json.
+%
+% exp/32's design: 50 GSM8K test problems, 256 generated tokens, LLaDA-8B-Instruct only,
+% matched unwatermarked control vs the watermarked arm under the identical decoding schedule;
+% accuracy is exact match on the final number, and detection is also run on both arms.
+\begin{table}[t]
+\centering
+\small
+\renewcommand{\arraystretch}{0.8}
+\begin{tabular}{lrr}
+\toprule
+Arm & GSM8K Acc $\uparrow$ & TPR at $1\%$ FPR \\
+\midrule
+Unwatermarked control & \tbd & \tbd \\
+\rowcolor{finalres}
+\textcolor{oursemph}{Shibboleth} & \tbd & \tbd \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Downstream task preservation.} GSM8K~\citep{cobbe2021gsm8k} accuracy on 50
+test problems at 256 tokens under the watermark against a matched unwatermarked control on the
+identical decoding schedule, with detection run on both arms. \tbd\ pending exp/32.}
+\label{tab:quality}
+\end{table}

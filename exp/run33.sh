@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-cd /ssd1/ming/basinmark
+cd /ssd2/ming/basinmark
 while ! grep -q "=== GSM8K DONE ===" logs/run32.log 2>/dev/null; do sleep 60; done
 while nvidia-smi --query-compute-apps=pid --format=csv,noheader | grep -q .; do sleep 30; done
 /home/ming0531/miniconda3/envs/mmada/bin/python exp/33_robust_detector.py > logs/33_robust.log 2>&1

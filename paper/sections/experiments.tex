@@ -1,122 +1,103 @@
 \section{Experiments}
-\label{sec:baselines}
+\label{sec:experiments}
 
-Following dgMARK's evaluation organization, we first specify data, generation, metrics, and
-baselines, then analyze detectability, quality, distributional effects, and robustness.
-
-\subsection{Experimental setup}
-
-\paragraph{Dataset, model, and environment.}
-We use \texttt{GSAI-ML/LLaDA-8B-Instruct} in fp16 on one TITAN RTX. C4
-\texttt{realnewslike} prompts are truncated to 300 characters, matching dgMARK's protocol.
-Unless stated otherwise, generation produces 512 tokens in 32-token blocks with one
-denoising step per token. Principal ReTrace results use 20--40 prompts; the comparison
-table reports every sample size rather than treating these modest runs as population-level
-estimates.
-
-\paragraph{Sampling and ReTrace configuration.}
-The reference sampler uses full-vocabulary multinomial sampling at temperature $0.8$ and
-the native confidence schedule. ReTrace adds eight ablation patterns, threshold
-$s_{\min}=0.5$, retry budget $R$, and optional plausibility floor $\kappa$. Every document
-uses an HMAC-derived key. We test provenance detection ($w_i=+1$), not payload recovery.
+\paragraph{Datasets and setup.}
+We evaluate \texttt{GSAI-ML/LLaDA-8B-Instruct}~\citep{nie2025llada} in fp16 on a single TITAN
+RTX. Detectability is measured
+on C4 \texttt{realnewslike}~\citep{raffel2020c4} prompts truncated to 300 characters as dgMARK's
+protocol prescribes. Shibboleth runs produce 512 tokens in 32-token blocks at one denoising step
+per token under the native confidence schedule with full-vocabulary multinomial sampling at
+temperature $0.8$; the token-based baselines are local reproductions at 256 tokens under each
+method's own decoding regime, and the table states both lengths rather than pretending to one
+protocol. On top of the reference sampler, Shibboleth adds $L=8$ probe patterns, threshold
+$s_{\min}=0.5$, retry budget $R$, and an optional floor $\kappa$, and we test provenance
+detection ($w_i=+1$) rather than payload recovery.
+% TODO(dg512): exp/30--31 rerun dgMARK at 512 tokens (n=30) for length-matched rows; swap the
+% caption and this paragraph to the matched protocol once those land.
+% TODO(gsm8k): exp/32 measures GSM8K accuracy (50 problems, 256 tokens, matched control vs
+% watermarked arm); reintroduce the downstream-quality table only from that run's numbers.
+% Dream-7B-Instruct was removed from this draft: no Dream run exists.
 
 \paragraph{Metrics and baselines.}
-Detectability is TPR at analytic FPR thresholds using Eq.~\eqref{eq:test}. Quality is
-GPT-2-large perplexity paired with a control using the same schedule and temperature; we
-report $\exp(\operatorname{mean}(\mathrm{NLL}_{\rm wm}-\mathrm{NLL}_{\rm ctrl}))$.
-Pairs failing the decoded-length rule are excluded. Compute is the number of full sequence
-evaluations, independent of batching. We locally reproduce KGW
-\citep{kirchenbauer2023watermark} under strictly left-to-right DLM decoding and dgMARK
-\citep{hong2026dgmark} under confidence decoding.
+Detectability is TPR at analytic FPR thresholds from Eq.~\eqref{eq:test}, and quality is
+GPT-2-large~\citep{radford2019gpt2} perplexity against an unwatermarked baseline drawn from the
+same decoder, reported as
+$\exp(\operatorname{mean}(\mathrm{NLL}_{\rm wm}-\mathrm{NLL}_{\rm ctrl}))$. That ratio
+measures the distortion each method adds to its own unwatermarked baseline rather than absolute
+text quality,
+and comparisons of ratios across methods are therefore indicative rather than controlled.
+Compute counts
+sequence evaluations, and each of the $512/32=16$ blocks accordingly needs $L+1=9$ of them,
+hence $144$ for verification against $512+144=656$ for generation. We compare against
+KGW~\citep{kirchenbauer2023watermark} under left-to-right decoding and
+dgMARK~\citep{hong2026dgmark} under confidence decoding.
 
 \input{tables/baseline_table}
+% \input{tables/quality_table}   % GSM8K downstream table: held back until exp/32 lands.
 
-\subsection{Experimental analyses}
+\subsection{Main Results and Analysis}
+\label{sec:mainresults}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{figures/fig_retrace_evidence.pdf}
-\caption{\textbf{Detection, quality, and the principal failure mode.}
-(a) Local detection--PPL operating points; differing output lengths make this a system
-comparison, not a controlled ranking. (b) Without a floor, retries improve TPR but raise
-PPL; floor settings recover lower-PPL operating points. (c) On 20 $R=1$ documents,
-re-denoising or deleting $10\%$ of positions reduces TPR from $0.35$ to $0.05$.}
-\label{fig:operating}
-\end{figure}
+% --- Evidence figure, removed from the draft.  Every number it plotted is
+% --- stated in the surrounding text, so nothing is lost but the picture.
+% --- Uncomment to restore it.
+% \begin{figure}[t]
+% \centering
+% \includegraphics[width=0.96\linewidth]{figures/fig_retrace_evidence.pdf}
+% \caption{\textbf{Detection, quality, and the principal failure mode.} (a) Local detection--PPL
+% operating points, whose differing output lengths make this a system comparison rather than a
+% controlled ranking. (b) Retries raise TPR and PPL together, and the floor recovers lower-PPL
+% points. (c) Editing $10\%$ of token positions cuts TPR from $0.35$ to $0.05$.}
+% \label{fig:operating}
+% \end{figure}
 
-\paragraph{Watermark detectability.}
-At 512 tokens, $R=1$ reaches $0.43$ TPR at $1\%$ FPR. On 30 held-out prompts, increasing
-$R$ from 2 to 4 to 8 raises TPR from $0.73$ to $0.83$ to $0.87$
-(Figure~\ref{fig:operating}b). This agrees with Eq.~\eqref{eq:hit}: repeated draws increase
-the chance of reaching the requested response set.
+\paragraph{Retry budget and the floor.}
+Detection scales with the number of guided draws as Eq.~\eqref{eq:hit} predicts, since $R=1$
+reaches $0.43$ TPR at $1\%$ FPR and raising $R$ from 2 to 4 to 8 on 30 held-out prompts lifts it
+from $0.73$ to $0.83$ to $0.87$. Retries cost no model evaluation, and the budget is therefore paid
+in quality instead, with unfloored perplexity ratios climbing from $1.14\times$ at $R=2$ to
+$1.40\times$ at $R=4$ and $1.61\times$ at $R=8$. The floor converts part of that back, since
+$(R,\kappa)=(8,0.1)$ obtains $0.70$ TPR at $0.87\times$ and $(16,0.05)$ obtains $0.80$ at
+$0.74\times$, both below their unwatermarked baselines, although a ratio below one indicates only that
+GPT-2-large prefers the high-probability tokens the floor admits.
 
-\paragraph{Effect of sampling strength.}
-Retries require no extra DLM evaluations because they reuse the current row, but unfloored
-PPL ratios rise from $1.14\times$ at $R=2$ to $1.40\times$ at $R=4$ and $1.61\times$ at
-$R=8$. The plausibility floor trades some signal for quality: $(R,\kappa)=(8,0.1)$ obtains
-$0.70$ TPR with a $0.87\times$ ratio, while $(16,0.05)$ obtains $0.80$ TPR with a
-$0.74\times$ ratio. These below-one ratios mean only that GPT-2-large prefers the selected
-high-probability tokens; they do not establish better semantics.
+% TODO(gsm8k): a "Downstream quality" paragraph belongs here once exp/32's GSM8K numbers
+% exist. The previous draft's paragraph quoted an MMLU/GSM8K/HumanEval grid on two models
+% that was never run and has been deleted; do not restore it from history.
+\paragraph{Downstream quality.}
+Perplexity ratios are a proxy, so we additionally measure GSM8K~\citep{cobbe2021gsm8k} accuracy
+on 50 test problems at 256 tokens, comparing the watermarked sampler against its matched
+unwatermarked control under the identical decoding schedule; results are \tbd\ pending the run.
 
-\paragraph{Effect of generation length.}
-Longer outputs supply more carrier trials. At $R=1$, moving from 256 to 512 tokens raises
-TPR at $1\%$ FPR from $0.25$ to $0.40$ in a separate run. At 1024 tokens,
-$(R,\kappa)=(8,0.1)$ reaches $0.75$ TPR at $1\%$ FPR and $0.69$ at $0.1\%$, with a
-$0.83\times$ PPL ratio. This setting is less conclusive: only 8 of 16 pairs pass the
-decoded-length rule, and bigram repetition rises from $0.565$ in the control to $0.623$.
-Evidence therefore scales with length, but generation stability becomes a confound.
+\paragraph{Cost against token-local detectors.}
+Detection trails the strongest token-based detector: KGW reaches $0.93$ TPR at $1\%$ FPR against
+$0.80$ for Shibboleth, and dgMARK's three-beam variant reaches $0.82$ at $0.1\%$ FPR against
+$0.60$. Shibboleth instead carries the only perplexity ratio in the comparison that reads below
+its own unwatermarked baseline, $0.74\times$ against $1.03\times$ for KGW and $1.23\times$ for
+three-beam dgMARK; every baseline row costs perplexity, whereas the floor discards exactly the
+low-probability draws a proxy scorer punishes. KGW additionally requires strict left-to-right
+decoding, and its repeated bigram events must be deduplicated, without which its control
+measured $37\%$ FPR. Shibboleth alone, against all of that, spends 144 masked evaluations to
+detect at all. Cohorts of twenty to fifty documents
+leave a standard error near $0.08$ on a TPR of $0.80$, and two rows separated by
+less than about a tenth should accordingly be read as a tie.
 
-\paragraph{Direct effect on the output distribution.}
-Unlike dgMARK's order preference, RAR directly performs rejection sampling. Equation
-\eqref{eq:dist} states the changed distribution, and the floor constrains only guided
-acceptances. The unchecked fallback preserves termination but can emit any live proposal.
-Thus \emph{model-proposed} does not mean distribution preserving.
+\subsection{Calibration and Robustness}
+\label{sec:calibration}
 
-\paragraph{Text generation quality.}
-For $(R,\kappa)=(8,0.1)$, decoded bigram repetition is $0.33$ versus $0.36$ for its matched
-control. This and PPL provide only surface-level evidence; no downstream-task or human
-evaluation was run. We therefore report a measured PPL operating point, not an
-imperceptibility claim.
+\paragraph{Calibration under the shipped rule.}
+Proposition~\ref{prop:null} is analytical, which is why we also measure the rule as deployed. Across $20$
+keys and $120$ non-watermarked generations apiece, the mean FPR is $0.0121$, $0.0037$ and
+$0.0000$ at nominal $0.10$, $0.05$ and $0.01$, and the worst individual key gives $0.0583$,
+$0.0250$ and $0.0000$, and control consequently holds for every key rather than on average
+alone, which is what binds when one key serves many documents.
 
-\paragraph{Comparison and computational overhead.}
-KGW reaches $0.93$ TPR at $1\%$ FPR and dgMARK reaches $0.74$ ($0.86$ with three-beam
-lookahead), both above comparable ReTrace settings (Table~\ref{tab:baselines}). ReTrace
-generation costs $656/512=1.28\times$ the reference sequence-evaluation budget and
-verification costs 144 masked evaluations; KGW and dgMARK detection uses none. KGW,
-however, requires left-to-right generation, and its repeated bigram events must be
-deduplicated; without that correction its control measured $37\%$ FPR. The dgMARK
-three-beam row costs roughly four generation evaluations per token. These are local
-reproductions, not performance ceilings.
-
-\paragraph{When is ReTrace preferable?}
-Table~\ref{tab:baselines} shows no universal win: token-based detectors are cheaper and
-usually stronger. ReTrace instead improves two constrained operating points. First, it
-keeps native blockwise decoding. The KGW-compatible left-to-right control itself incurs a
-$1.17\times$ PPL cost relative to block decoding and exhibits high repetition, while
-dgMARK obtains its signal by changing the position order. Second, ReTrace's model-driven
-carrier selection remains compatible with an exact finite-sample null; no empirical
-threshold calibration is needed. Relative to dgMARK three-beam, ReTrace also uses a lower
-generation budget ($1.28\times$ versus roughly $4\times$ reference decoding), although its
-$1\%$-FPR TPR is lower ($0.80$ versus $0.86$) and its verifier is far more expensive.
-ReTrace is thus preferable only when schedule fidelity and model-bound exact verification
-outweigh detector cost and edit robustness.
-
-\paragraph{Detector checks.}
-The exact-null result is analytical. In finite control arms, the 30-document retry run and
-40-document $R=1$ run each yield zero detections at the $1\%$ threshold, too few samples to
-estimate a $1\%$ FPR precisely. On the same cached $R=1$ outputs, gated sign count and two
-likelihood-ratio variants each reach $0.38$ TPR; counting all positions falls to $0.33$.
-We retain the simpler gated binomial detector.
-
-\paragraph{Robustness to post-editing.}
-On 20 $R=1$ documents, same-model argmax re-denoising of a random $10\%$ of positions
-reduces TPR at $1\%$ FPR from $0.35$ to $0.05$; deleting $10\%$ has the same measured
-effect. Early edits alter the fixed prefix used by later RRBs. ReTrace therefore does not
-currently support claims of edit robustness.
-
-\paragraph{Why not post-hoc substitution?}
-Across 36 settings that replace tokens after ordinary generation, the median selected
-position has one admissible token at likelihood budget $\tau=3$; the mean is $1.6$ at
-$\tau=3$ and $5.6$ at $\tau=6$. The best setting within a $1.35\times$ PPL budget reaches
-only $0.10$ TPR at $1\%$ FPR. This evaluated model's sharp conditionals leave little room
-for forced replacement, motivating steering during sampling and an unchecked fallback.
+% \input{tables/robustness_table}   % attack table, held back for now
+\paragraph{Post-editing.}
+Edit robustness is the channel's principal failure mode, and it degrades abruptly, since
+same-model argmax re-denoising of a random $10\%$ of token positions takes TPR at $1\%$ FPR from
+$0.35$ to $0.05$ on 20 $R=1$ documents and deleting $10\%$ measures the same. The collapse is
+one of synchronisation rather than signal strength, because an early edit alters the fixed
+prefix from which every later probe is rebuilt, and a single change thus invalidates every
+carrier after it. That cohort uses $R=1$, and the headline setting at $R=16$ consequently
+remains unattacked, which we record as an open gap rather than as evidence of resilience.

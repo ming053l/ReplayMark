@@ -4,14 +4,14 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-SNAP = ("/ssd1/ming/hf_cache/hub/models--GSAI-ML--LLaDA-8B-Instruct/"
+SNAP = ("/ssd2/ming/hf_cache/hub/models--GSAI-ML--LLaDA-8B-Instruct/"
         "snapshots/08b83a6feb34df1a6011b80c3c00c7563e963b07")
 MASK_ID = 126336
 
 
 class BasinModel:
     def __init__(self, path=SNAP, dtype=torch.float16, device="cuda"):
-        os.environ.setdefault("HF_HOME", "/ssd1/ming/hf_cache")
+        os.environ.setdefault("HF_HOME", "/ssd2/ming/hf_cache")
         from transformers import AutoModel, AutoTokenizer
         self.tok = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
         self.model = AutoModel.from_pretrained(

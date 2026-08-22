@@ -2,36 +2,42 @@
 \label{sec:related}
 
 \paragraph{Diffusion language models.}
-Discrete and masked diffusion objectives extend diffusion to text
-\citep{austin2021d3pm,lou2024sedd,sahoo2024mdlm,shi2024simplified,ou2025radd} and now
-support instruction-following systems such as LLaDA and Dream
-\citep{nie2025llada,zhu2025llada15,ye2025dream}. Practical decoders complete blocks from
-left to right and use confidence to select positions within a block
-\citep{arriola2025blockdiffusion}; token order affects quality and efficiency
-\citep{kim2025ordering,wu2026fastdllm,wei2026slowfast}. ReTrace preserves this reference
-schedule and uses masked-token reconstruction only to define a replayable response.
+Discrete and masked diffusion objectives carry diffusion~\citep{ho2020ddpm} over to text
+\citep{austin2021d3pm,lou2024sedd,sahoo2024mdlm,shi2024simplified,ou2025radd} and now support
+instruction-following systems such as LLaDA and Dream
+\citep{nie2025llada,zhu2025llada15,ye2025dream}, with commercial deployments following the same
+recipe~\citep{labs2025mercury}. Because the order in which positions commit
+affects quality and throughput \citep{arriola2025blockdiffusion,kim2025ordering,wu2026fastdllm,
+wei2026slowfast,benhamu2025entropy}, and because a run can equally be stopped before its step
+budget is spent~\citep{lee2026commitlocallyexitglobally}, accelerators treat the whole schedule
+as a tunable degree of freedom. Shibboleth, by contrast, treats it as
+an invariant and draws on masked-token reconstruction only to define a probe it can later
+repeat.
 
-\paragraph{Text watermarking.}
-Autoregressive watermarks bias keyed token sets~\citep{kirchenbauer2023watermark} or couple
+\paragraph{Watermarking autoregressive text.}
+Autoregressive watermarks bias keyed token subsets~\citep{kirchenbauer2023watermark} or couple
 sampling to keyed randomness~\citep{aaronson2023gpt,fu2024gumbelsoft,
-kuditipudi2024distortionfree}; subsequent work studies reliability, robustness, and
-undetectability~\citep{kirchenbauer2024reliability,zhao2024provable,
-christ2024undetectable}. These token-only detectors are inexpensive but do not transfer
-unchanged to unresolved DLM contexts. DLM-specific methods instead remove prefix dependence
-\citep{chen2025orderagnostic}, average a red--green bias over unresolved context
-\citep{gloaguen2026watermarking}, use keyed sampling~\citep{bagchi2025discrete}, or exploit
-decoding order~\citep{wu2025dmark,raban2026lrdwm,hong2026dgmark}. We reproduce dgMARK
-locally because it offers a strong order-steering baseline with zero-inference detection.
-ReTrace differs at verification: the detector must rerun the exact DLM checkpoint under
-keyed corruptions. This supplies a model-response statistic but incurs substantial cost.
+kuditipudi2024distortionfree}, with later work characterising their reliability and
+undetectability~\citep{kirchenbauer2024reliability,zhao2024provable,christ2024undetectable}. Detectors of this family are inexpensive precisely because a
+key--token hash needs no generator, yet that hash is defined over a resolved prefix and does not
+transfer unchanged to a context in which most token positions are still masked.
 
-The distinction is operational rather than cosmetic. A left-to-right green-list method
-reintroduces a prefix solely to make its key--token partition well defined; dgMARK instead
-uses the DLM-specific freedom to choose which position is committed next. ReTrace leaves
-both the block partition and confidence-based position choice untouched. Its carrier is a
-counterfactual response of the model to visible context, so the selected positions may be
-text- and model-dependent while the secret orientation remains independent. This separation
-is what permits an exact conditional test after adaptive, model-driven carrier selection.
-It also explains why ReTrace should be viewed as complementary to inexpensive token hashes:
-the added semantic binding to a checkpoint is useful only when model-assisted verification
-and exact replay are acceptable deployment costs.
+\paragraph{Watermarking diffusion language models.}
+DLM-specific methods restore a well-defined keyed partition by other means, whether by removing
+prefix dependence~\citep{chen2025orderagnostic}, by averaging a red--green bias over unresolved
+context~\citep{gloaguen2026watermarking}, by keyed sampling~\citep{bagchi2025discrete}, or by
+exploiting the decoding order itself~\citep{wu2025dmark,raban2026lrdwm,hong2026dgmark}. We
+compare against dgMARK, the strongest order-steering baseline with a zero-inference
+detector. Shibboleth differs from all of them in where the evidence resides, since
+dgMARK spends the DLM's freedom over commit order and reads the outcome off the text, whereas
+Shibboleth spends nothing from the schedule and instead has the verifier rerun the exact checkpoint,
+buying a statistic bound to model behaviour at the price of a detector that no longer runs on
+text alone.
+
+\paragraph{Detection that consults the model.}
+Verifiers needing more than the text are not new, since GaussMark places its key in a Gaussian
+perturbation of the model's own weights~\citep{block2025gaussmark}, and watermarks built to
+expose model theft assume the verifier can query the suspect
+system~\citep{zhao2023invisible}. Unlike GaussMark, which ships a perturbed checkpoint, Shibboleth
+leaves the released weights as they are and puts the key in the questions asked of them, and one
+deployed model therefore serves every document key.

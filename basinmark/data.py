@@ -8,7 +8,7 @@ uses; the baseline's published protocol wins, since it is the one that was publi
 import gzip, json
 import torch
 
-C4 = "/ssd1/ming/basinmark/data/c4-validation.json.gz"
+C4 = "/ssd2/ming/basinmark/data/c4-validation.json.gz"
 
 
 def c4_prompts(tok, n, max_chars=300, min_tokens=20, skip=0, src_min=0):

@@ -1,9 +1,9 @@
 """Length-matched dgMARK evaluation at 512 tokens, same axes as ReTrace's rows."""
 import sys, csv, glob, json
-sys.path.insert(0, "/ssd1/ming/basinmark")
+sys.path.insert(0, "/ssd2/ming/basinmark")
 import numpy as np, torch
-OUT = "/ssd1/ming/basinmark/results/baselines"
-import os; os.environ["HF_HOME"] = "/ssd1/ming/hf_cache"
+OUT = "/ssd2/ming/basinmark/results/baselines"
+import os; os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 from transformers import AutoModelForCausalLM, AutoTokenizer
 tk = AutoTokenizer.from_pretrained("openai-community/gpt2-large")
 gm = AutoModelForCausalLM.from_pretrained("openai-community/gpt2-large",

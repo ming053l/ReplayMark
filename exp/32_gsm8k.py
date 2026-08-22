@@ -12,14 +12,14 @@ Accuracy = exact match on the final number. Detection is run on both arms: the w
 arm should detect (short docs -> fewer carriers, so TPR here is not the headline number),
 the control arm must sit at the null."""
 import sys, json, re, time, subprocess, os, urllib.request
-sys.path.insert(0, "/ssd1/ming/basinmark")
-os.environ["HF_HOME"] = "/ssd1/ming/hf_cache"
+sys.path.insert(0, "/ssd2/ming/basinmark")
+os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
 from basinmark.model import BasinModel
 from basinmark.resample import ResampleMark
 
 KEY, GEN, BLK, NS = b"retrace-key-A", 256, 32, 50
-DATA = "/ssd1/ming/basinmark/data/gsm8k_test.jsonl"
+DATA = "/ssd2/ming/basinmark/data/gsm8k_test.jsonl"
 URL = ("https://raw.githubusercontent.com/openai/grade-school-math/master/"
        "grade_school_math/data/test.jsonl")
 if not os.path.exists(DATA):
@@ -78,10 +78,10 @@ print(f"paired: control {a.mean():.3f} vs wm {b.mean():.3f} | "
       f"wm-only-wrong {int(((a == 1) & (b == 0)).sum())} "
       f"wm-only-right {int(((a == 0) & (b == 1)).sum())}", flush=True)
 sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
-                     cwd="/ssd1/ming/basinmark").stdout.strip()
+                     cwd="/ssd2/ming/basinmark").stdout.strip()
 json.dump(dict(sha=sha, gen=GEN, n=NS, pls=pls,
                ids={k: [r["ids"] for r in v] for k, v in out.items()},
                stats={k: [{kk: vv for kk, vv in r.items() if kk != "ids"} for r in v]
                       for k, v in out.items()}),
-          open("/ssd1/ming/basinmark/results/32_gsm8k.json", "w"))
+          open("/ssd2/ming/basinmark/results/32_gsm8k.json", "w"))
 print(f"saved with git {sha[:8]}")

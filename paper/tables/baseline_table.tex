@@ -1,29 +1,47 @@
+% One model block. Every number below is a measured local reproduction on LLaDA-8B-Instruct
+% (results/ in the experiment repo). The Dream-7B-Instruct block from the previous draft was
+% DELETED: no Dream run exists, and its cells had been filled in without one. If Dream is ever
+% run, rebuild that block from the run's own CSVs, not from this one.
+%
+% Token lengths are deliberately unequal and the caption says so: token-based baselines were
+% reproduced at 256 tokens under their own decoding regimes, Shibboleth at 512. exp/30--31
+% (dgMARK at 512 tokens, n=30) is running; when it lands, fill the two commented rows below
+% and consider retiring the 256-token dgMARK rows.
+%
+% Cost accounting: detection replays L+1=9 masked evaluations per 32-token block, so 512
+% tokens cost 16*9=144 and generation costs 512+144=656. dgMARK 3-beam decodes ~4 sequence
+% evaluations per token at 256 tokens, hence ~1024.
 \begin{table}[t]
 \centering
 \small
-\renewcommand{\arraystretch}{0.86}
+\renewcommand{\arraystretch}{0.76}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llrrrrr}
 \toprule
-& & & \multicolumn{2}{c}{TPR at FPR $\uparrow$} & & \\
-\cmidrule(lr){4-5}
-Method & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Gen.\ eval. & Det.\ eval. \\
+& & & \multicolumn{2}{c}{TPR at FPR $\uparrow$}
+    & \multicolumn{2}{c}{Sequence evaluations $\downarrow$} \\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Method & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Generation & Detection \\
 \midrule
 KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 256 tok & 1.03$\times$ & \textbf{0.93} & 0.73 & 256 & \textbf{0} \\
 dgMARK \citep{hong2026dgmark} & $k=1$, 256 tok & 1.55$\times$ & 0.74 & 0.62 & 256 & \textbf{0} \\
 dgMARK \citep{hong2026dgmark} & $+3$-beam, 256 tok & 1.23$\times$ & 0.86 & \textbf{0.82} & $\sim$1024 & \textbf{0} \\
-\midrule
-\textcolor{oursemph}{ReTrace} & $R=1$, 512 tok & 0.97$\times$ & 0.43 & 0.20 & 656 & 144 \\
+% dgMARK \citep{hong2026dgmark} & $k=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/31
+% dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & \tbd & \tbd & \tbd & $\sim$2048 & \textbf{0} \\  % exp/31
+\addlinespace[1.5pt]
+\textcolor{oursemph}{Shibboleth} & $R=1$, 512 tok & 0.97$\times$ & 0.43 & 0.20 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{ReTrace} & $R=8,\kappa=0.1$, 512 tok & 0.87$\times$ & 0.70 & 0.60 & 656 & 144 \\
-\textcolor{oursemph}{ReTrace} & $R=16,\kappa=0.05$, 512 tok & \textbf{0.74}$\times$ & 0.80 & 0.60 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$, 512 tok & 0.87$\times$ & 0.70 & 0.60 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$, 512 tok & \textbf{0.74}$\times$ & 0.80 & 0.60 & 656 & 144 \\
 \bottomrule
 \end{tabular}%
 }
-\caption{\textbf{Detection, matched-control perplexity, and compute.} All rows are local
-reproductions on one checkpoint and prompt protocol, but ReTrace uses 512-token outputs
-while token-based baselines use 256. PPL ratio compares with the matched unwatermarked
-sampler; below one is not evidence of better semantics. Eval.\ counts sequence evaluations.
-Principal rows use $n=30$ documents ($n=20$ for $R=16$); dgMARK uses $n=50$.}
+\caption{\textbf{Watermark detectability.} Detection rate, perplexity against each method's own
+matched unwatermarked baseline, and compute in sequence evaluations. All rows are local
+reproductions on one checkpoint and prompt protocol, but Shibboleth uses 512-token outputs while
+the token-based baselines use 256, and each block keeps its own decoding regime, so ratios are
+comparable within a method and indicative across methods. A PPL ratio below one is not evidence
+of better semantics. Principal Shibboleth rows use $n=30$ documents ($n=20$ for $R=16$); dgMARK
+uses $n=50$. Here $\delta$ is KGW's green-list logit bias and $k$ is dgMARK's candidate count.}
 \label{tab:baselines}
 \end{table}

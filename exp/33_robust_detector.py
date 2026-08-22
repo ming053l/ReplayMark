@@ -12,15 +12,15 @@ No new generation: texts are results/29_clean.json (1024 tok, nonce g2-{i}); att
 same-model argmax re-denoising of a random 5%/10% of generated positions. The control arm
 goes through the identical pipeline so every aggregation's FPR is checked, not assumed."""
 import sys, json, subprocess, os
-sys.path.insert(0, "/ssd1/ming/basinmark")
-os.environ["HF_HOME"] = "/ssd1/ming/hf_cache"
+sys.path.insert(0, "/ssd2/ming/basinmark")
+os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
 from scipy.stats import binom, norm
 from basinmark.model import BasinModel
 from basinmark.resample import ResampleMark, MASK_ID
 
 KEY, GEN, BLK = b"retrace-key-A", 1024, 32
-D = json.load(open("/ssd1/ming/basinmark/results/29_clean.json"))
+D = json.load(open("/ssd2/ming/basinmark/results/29_clean.json"))
 pls = D["pls"]
 M = BasinModel()
 rng = np.random.default_rng(3300)
@@ -67,7 +67,7 @@ for arm in ("control", "R16k05"):
             print(f"{arm:<8} {tag:<6} {agg:<9} TPR@5% {np.mean(ps<.05):.2f} "
                   f"@1% {np.mean(ps<.01):.2f} @0.1% {np.mean(ps<.001):.2f}", flush=True)
 sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
-                     cwd="/ssd1/ming/basinmark").stdout.strip()
+                     cwd="/ssd2/ming/basinmark").stdout.strip()
 json.dump(dict(sha=sha, source="29_clean", rows=out),
-          open("/ssd1/ming/basinmark/results/33_robust.json", "w"))
+          open("/ssd2/ming/basinmark/results/33_robust.json", "w"))
 print(f"saved with git {sha[:8]}")

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-cd /ssd1/ming/basinmark
+cd /ssd2/ming/basinmark
 # gate: run30.sh must have finished (marker in its nohup log), then GPU free
 while ! grep -q "=== DG512 DONE ===" logs/run30.log 2>/dev/null; do sleep 60; done
 while nvidia-smi --query-compute-apps=pid --format=csv,noheader | grep -q .; do sleep 30; done

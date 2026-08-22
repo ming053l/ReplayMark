@@ -1,0 +1,39 @@
+% Post-editing attacks.  A security venue reads this as the attack surface, so the table is
+% laid out by attack family and strength rather than folded into a sentence.
+%
+% ONLY THREE CELLS ARE MEASURED, all on the same 20 R=1 documents:
+%   clean 0.35 at 1% FPR, argmax re-denoising of 10% of positions 0.05,
+%   deletion of 10% 0.05.  Everything else is \tbd and needs a run.
+%
+% The insertion, substitution and paraphrase rows are here because a reader at a security
+% venue will look for them; delete any row you do not intend to run rather than leaving it.
+\begin{table}[t]
+\centering
+\small
+\renewcommand{\arraystretch}{0.86}
+\begin{tabular}{llrr}
+\toprule
+& & \multicolumn{2}{c}{TPR at FPR $\uparrow$} \\
+\cmidrule(lr){3-4}
+Attack & Strength & $1\%$ & $0.1\%$ \\
+\midrule
+None & --- & 0.35 & \tbd \\
+\midrule
+Re-denoising (same model, argmax) & $10\%$ of positions & 0.05 & \tbd \\
+                                  & $30\%$ of positions & \tbd & \tbd \\
+\addlinespace[1.5pt]
+Deletion & $10\%$ of positions & 0.05 & \tbd \\
+\addlinespace[1.5pt]
+Insertion & $10\%$ of positions & \tbd & \tbd \\
+Substitution & $10\%$ of positions & \tbd & \tbd \\
+\addlinespace[1.5pt]
+Paraphrase & sentence level & \tbd & \tbd \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Robustness to post-editing.} Detection after each attack, measured on 20
+documents generated at $R=1$ and scored against the same analytic thresholds as
+Table~\ref{tab:baselines}. Evidence written into a replayable probe is synchronised to the
+prefix, so an edit early in the document invalidates every carrier after it, and the collapse is
+correspondingly abrupt.}
+\label{tab:robustness}
+\end{table}

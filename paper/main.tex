@@ -2,8 +2,18 @@
 
 \PassOptionsToPackage{numbers,sort&compress}{natbib}
 \PassOptionsToPackage{dvipsnames,table}{xcolor}
-\usepackage[main]{neurips_2026}
-\usepackage[table]{xcolor}
+\usepackage[dblblindworkshop]{neurips_2026}
+\hyphenation{GaussMark dgMARK Shibboleth LLaDA}
+\workshoptitle{Foundations of Language Model Security}
+% The style file uses \@trackname only for camera-ready, so the submission notice
+% would otherwise still read "Submitted to 40th Conference ... (NeurIPS 2026)".
+\makeatletter
+\renewcommand{\@noticestring}{%
+  Submitted to the NeurIPS \@neuripsyear\ Workshop on Foundations of Language Model Security.
+  Do not distribute.%
+}
+\makeatother
+\usepackage{xcolor}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -19,37 +29,52 @@
 \usepackage{amsthm}
 \newtheorem{proposition}{Proposition}
 \usepackage{microtype}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,decorations.pathreplacing}
+
+% Float spacing: NeurIPS defaults leave ~20pt around every float.
+\setlength{\textfloatsep}{14pt plus 2pt minus 2pt}
+\setlength{\intextsep}{12pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{6pt}
 
 % Restrained, grayscale-safe accents shared by figures and tables.
 \definecolor{oursemph}{RGB}{24,84,140}
-\definecolor{failred}{RGB}{112,94,70}
-\definecolor{newres}{RGB}{232,238,244}
-\definecolor{notmeasured}{RGB}{105,105,105}
 \definecolor{finalres}{RGB}{242,239,232}
 
 \usepackage[breaklinks,colorlinks,linkcolor=oursemph,citecolor=oursemph,urlcolor=oursemph]{hyperref}
 \usepackage{url}
 
-\title{ReTrace: Model-Response Watermarking\\for Diffusion Language Models}
+% Draft placeholder for a cell that has no measurement yet.
+\newcommand{\tbd}{\textcolor{BrickRed}{\textbf{??}}}
+\newcommand{\needcite}{\textcolor{BrickRed}{\textbf{[cite?]}}}
+
+\title{Shibboleth: Probe-and-Replay Model-Response\\Watermarking for Diffusion Language Models}
 \author{Anonymous}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We study a watermark for masked diffusion language models whose detector reruns the model
-instead of inspecting token identities alone. ReTrace compares each observed token's
-likelihood under two replayable context ablations; a keyed orientation determines which
-response sign counts as a match. Reproducible, orientation-independent carrier selection
-gives the match count an exact conditional $\mathrm{Binomial}(n,\tfrac12)$ null. During
-blockwise decoding, bounded rejection sampling favors model proposals with the requested
-sign and falls back to an unchecked draw. On LLaDA-8B-Instruct, the best evaluated
-512-token settings obtain $0.70$--$0.80$ TPR at $1\%$ FPR with matched-control GPT-2
-perplexity ratios of $0.87\times$--$0.74\times$. The channel is useful but costly: detection
-requires 144 masked sequence evaluations, trails strong token-based baselines, and drops
-from $0.35$ to $0.05$ after re-denoising $10\%$ of positions. ReTrace establishes a
-model-response verification channel while exposing its quality, compute, and robustness
-limits.
+We propose Shibboleth, a model-response watermarking method for masked diffusion language models
+(DLMs). Unlike an autoregressive sampler, a masked DLM can be re-evaluated on its own output
+under an arbitrary remasking of the context. Because a practical DLM, unlike an ideal predictor, shifts the likelihood
+of an emitted token by an amount its own weights determine, a watermarking channel opens in the
+relation between a text and the model rather than in the tokens. Shibboleth evaluates a keyed family of context probes
+against each masked block, admits as carriers only the unresolved positions whose block-masked
+conditional retains mass on both response signs, and resamples at those carriers from the live
+conditional until the requested sign is committed. Unlike logit-bias methods it
+leaves the model's probabilities untouched and conditions only on which model-drawn proposal is
+accepted, and unlike order-steering methods it spends none of the decoding schedule. Because the admitting gate is invariant to swapping two probes, it stays blind to the sign the
+key will request, and carriers may therefore be discovered adaptively without disturbing the
+null.
+Detection re-masks the finished text, rebuilds the identical probes and carriers, and counts
+keyed sign matches, whose distribution on text written without the key is exactly binomial, and
+$p$-values are therefore exact at finite sample size and under carriers the method itself chose,
+which no threshold fitted to a corpus can promise. On LLaDA-8B-Instruct it
+reaches $0.80$ TPR at $1\%$ FPR, below the strongest token-based detector but at the only
+perplexity ratio in the comparison that reads below its own unwatermarked baseline. Verification in exchange costs one rerun of the
+checkpoint, and evidence written against a prefix does not survive editing, leaving the method
+suited to a verifier that holds the checkpoint rather than to open screening.
 \end{abstract}
 
 \input{sections/introduction}
@@ -57,17 +82,43 @@ limits.
 \input{sections/preliminaries}
 \input{sections/method}
 \input{sections/experiments}
-\input{sections/discussion}
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-ReTrace shows that keyed, replayable changes in a DLM's predictions can form a watermark
-channel with an exact conditional null. Balanced gating identifies usable positions,
-resampling embeds sign evidence, and re-masking reconstructs it without a generation log.
-The current operating point is a proof of concept: verification is expensive, evidence is
-edit-fragile, and evaluation covers one checkpoint. Scaling response replay and anchoring
-challenges to content are the principal next steps.
+Shibboleth argues provenance from a keyed probe that a masked DLM answers about its own output
+rather than from a pattern left in the tokens, and because the gate is settled before the key
+names the sign it accepts, carriers may be discovered adaptively at no cost to the detector's
+exact $p$-values. That trade is worth making where the decoding
+schedule must not change and the evidence wanted is of the kind a specified model can vouch for,
+which a key--token hash cannot supply, since anyone holding the key can compute it without the
+generator. Absent either constraint, a token-local watermark is cheaper and easier to
+resynchronise after edits.
+
+\paragraph{Limitations.}
+That guarantee is nevertheless one-sided, since soundness holds for any text written without the
+key while nothing is claimed in the other direction, and a single same-model denoising pass over
+a tenth of the positions accordingly takes detection from $0.35$ to $0.05$ at $R=1$, leaving
+Shibboleth with no claim of robustness to editing at any setting. Cost is the second boundary, since 144 masked evaluations per document rule out
+screening a corpus. The evidence is bound to one checkpoint as well, and a verifier holding
+different weights, or the same weights at a different precision, consequently cannot reproduce
+the responses at all. Finally, the evaluation is itself narrow, covering one masked diffusion
+model, one prompt corpus, cohorts of twenty to fifty documents, quality proxies read as ratios
+against each method's own unwatermarked baseline, and provenance detection only, with the
+payload construction of Section~\ref{sec:theory} never measured.
+
+\paragraph{Future work.}
+Each boundary suggests its own repair. Anchoring probe patterns to content rather than to
+absolute positions would stop an edit from desynchronising every carrier after it, which is the
+single change most likely to turn an abrupt collapse into a graceful decline, and the same study
+should attack the strongest configuration rather than the weakest one. Verification cost
+is the easier target, since the binomial tail is monotone in the matches so far and a sequential
+test could stop once the evidence is decisive.
+Loosening the checkpoint requirement in turn asks for a contrast quantised coarsely enough that numerical
+drift cannot flip a sign, trading a little capacity for portability. Adaptive adversaries deserve
+their own study, since a detector answering queries leaks something about its key.
+Table~\ref{tab:baselines} finally argues for composition rather than a winner, with a cheap
+token-local screen deciding what is worth a model-response check.
 
 \clearpage
 \bibliographystyle{plainnat}

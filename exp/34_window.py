@@ -9,8 +9,8 @@ Arms share prompts/seeds; the windowed arm uses ctx_window in BOTH generation an
 detection (the bank must be the same function on both sides). Fresh prompts (skip=1700,
 src_min=700), per-doc nonces w-{i}."""
 import sys, json, time, subprocess, os
-sys.path.insert(0, "/ssd1/ming/basinmark")
-os.environ["HF_HOME"] = "/ssd1/ming/hf_cache"
+sys.path.insert(0, "/ssd2/ming/basinmark")
+os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
 from basinmark.model import BasinModel
 from basinmark.data import c4_prompts
@@ -74,10 +74,10 @@ for name in ("full", "win128"):
     dn = np.array([out[name][k]["nll"][0] - ctl[k]["nll"][0] for k in ok])
     print(f"{name}: valid {len(ok)} | ratio {np.exp(dn.mean()):.3f}", flush=True)
 sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True,
-                     cwd="/ssd1/ming/basinmark").stdout.strip()
+                     cwd="/ssd2/ming/basinmark").stdout.strip()
 json.dump(dict(sha=sha, gen=GEN, window=W, skip=1700, pls=pls,
                ids={k: [r["ids"] for r in v] for k, v in out.items()},
                stats={k: [{kk: vv for kk, vv in r.items() if kk != "ids"} for r in v]
                       for k, v in out.items()}),
-          open("/ssd1/ming/basinmark/results/34_window.json", "w"))
+          open("/ssd2/ming/basinmark/results/34_window.json", "w"))
 print(f"saved with git {sha[:8]}")

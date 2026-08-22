@@ -1,0 +1,83 @@
+% Pipeline overview, three panels in the manner of dgMARK's Figure 1.
+% Each panel carries a picture, one equation, and one line of text; the explanation
+% belongs to Section 3, not to the figure.
+\begin{figure}[tb]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize, >=Stealth,
+  panel/.style ={draw=black!25, rounded corners=2.5pt, fill=black!2},
+  ttl/.style   ={font=\scriptsize\bfseries, anchor=west},
+  badge/.style ={circle, draw=oursemph, fill=finalres, inner sep=0.9pt,
+                 font=\tiny\bfseries, text=oursemph},
+  tok/.style   ={draw=black!40, fill=white, minimum width=2.5mm,
+                 minimum height=2.5mm, inner sep=0pt},
+  hid/.style   ={tok, fill=black!50, draw=black!50},
+  msk/.style   ={tok, fill=black!10, draw=black!30},
+  ctok/.style  ={tok, draw=oursemph, fill=finalres, line width=0.6pt},
+  lgd/.style   ={font=\tiny, text=black!55},
+  eq/.style    ={anchor=north west, inner sep=0pt},
+  note/.style  ={font=\tiny, text=black!60, anchor=north west, inner sep=0pt,
+                 text width=3.9cm, align=left},
+  big/.style   ={->, draw=oursemph, line width=0.9pt}
+]
+
+\def\ph{2.54}
+
+% ===================== 1. probe =====================
+\draw[panel] (0,0) rectangle (4.25,-\ph);
+\node[badge] at (0.32,-0.30) {1};
+\node[ttl]   at (0.54,-0.30) {Probe the model};
+
+\foreach \i in {0,...,9}{\node[tok] at ({0.45+0.30*\i},-0.92) {};}
+\node[hid] at (0.75,-0.92) {};
+\node[hid] at (1.35,-0.92) {};
+\foreach \i in {4,...,9}{\node[msk] at ({0.45+0.30*\i},-0.92) {};}
+\node[lgd, anchor=west] at (3.40,-0.92) {$\times(L{+}1)$};
+\node[lgd, anchor=north] at (0.90,-1.12) {prefix};
+\node[lgd, anchor=north] at (2.55,-1.12) {block $+$ suffix};
+
+\node[eq]   at (0.22,-1.60) {$g_i=\lambda_{i,\ell'}-\lambda_{i,\ell}$};
+\node[note] at (0.22,-2.06) {the model's response to two hidings};
+
+% ===================== 2. gate, then write =====================
+\draw[panel] (4.82,0) rectangle (9.07,-\ph);
+\node[badge] at (5.14,-0.30) {2};
+\node[ttl]   at (5.36,-0.30) {Gate, then write};
+
+\fill[oursemph!55] (5.32,-0.84) rectangle (6.42,-1.00);
+\node[lgd, anchor=west] at (6.52,-0.92) {$q_{i,+}$};
+\fill[black!30]    (5.32,-1.08) rectangle (6.18,-1.24);
+\node[lgd, anchor=west] at (6.52,-1.16) {$q_{i,-}$};
+
+\node[eq]   at (5.04,-1.60) {$S_i=2\min(q_{i,+},q_{i,-})>s_{\min}$};
+\node[note] at (5.04,-2.06)
+  {blind to the requested sign; then draw ${\leq}R$};
+
+% ===================== 3. replay and test =====================
+\draw[panel] (9.64,0) rectangle (13.89,-\ph);
+\node[badge] at (9.96,-0.30) {3};
+\node[ttl]   at (10.18,-0.30) {Replay and test};
+
+\foreach \i in {0,...,9}{\node[tok] at ({10.09+0.30*\i},-0.92) {};}
+\node[hid]  at (10.39,-0.92) {};
+\node[hid]  at (10.99,-0.92) {};
+\node[ctok] at (11.89,-0.92) {};
+\node[ctok] at (12.79,-0.92) {};
+\node[lgd, text=oursemph] at (11.89,-1.20) {$m_i$};
+\node[lgd, text=oursemph] at (12.79,-1.20) {$m_i$};
+
+\node[eq]   at (9.86,-1.60)
+  {$T\sim\mathrm{Binomial}(|P|,\tfrac12)$};
+\node[note] at (9.86,-2.06) {an exact $p$-value, with no calibration};
+
+% ===================== flow =====================
+\draw[big] (4.34,-1.27) -- (4.74,-1.27);
+\draw[big] (9.16,-1.27) -- (9.56,-1.27);
+
+\end{tikzpicture}
+\caption{\textbf{How Shibboleth writes a mark and reads it back.} The same three steps run at
+generation and at verification, which is what makes the evidence replayable, and the gate in the
+middle step is settled before the key names the sign it accepts, which is what keeps its
+$p$-values exact.}
+\label{fig:pipeline}
+\end{figure}

@@ -1,57 +1,46 @@
-# RESUME — state at shutdown (updated 2026-08-21 16:15 CST)
+# RESUME — state as of 2026-08-22 (post-reboot, chain relaunched)
 
-Server may be powered off by the network admin. Chain state and relaunch procedure below.
-Paper (NeurIPS template, GPT revision) is pushed to GitHub and synced to Overleaf.
+Repo and hf_cache now live under **/ssd2/ming** (moved from /ssd1 after the admin reboot).
+Chain scripts for exp/30–34 and basinmark/{data,model}.py were rewritten to /ssd2; other
+exp/ scripts still hardcode /ssd1 and will fail if rerun as-is.
 
 ## Chain state
 
 - **exp/29 (1024-tok graduation): DONE, saved** (`results/29_clean.json`, git 8acfc12b).
-  Verdict: detection passes, quality flags red —
-  `R16k05 | sync 0.640 | TPR@5/1/0.1% = 0.88/0.88/0.88` but
-  `ratio 0.428 with repetition 0.530 vs control 0.342` (valid n=9). The sub-1.0 ratio is
-  driven by repetitive text at this length; the honest 1024 headline stays R8/kappa=0.1
-  (repetition parity). Do NOT quote 29's ratio as a quality win.
-- **exp/30 (dgMARK @512, n=30 x 3 arms): RUNNING at shutdown risk.** dgMARK writes CSVs
-  at the end of each arm; an interrupted arm must be rerun. Then exp/31 evaluates.
-- **exp/32 (GSM8K): queued** behind run30's `=== DG512 DONE ===` marker in logs/run30.log.
-- **exp/33/34 (robustness improvements): queued** behind run32's `=== GSM8K DONE ===`
-  marker in logs/run32.log. 33 = block-local exact detection (pooled vs Bonferroni-min vs
-  Stouffer) under 5%/10% same-model re-denoise, on 29's saved outputs — no new
-  generation. 34 = ctx_window=128 windowed-conditioning arm @512 (gen+detect), clean and
-  attacked TPR plus paired quality, vs the full-context arm on shared prompts/seeds.
-
-## Relaunch after reboot (in this order)
-
-```bash
-cd /ssd1/ming/basinmark
-# 29 is done — do not rerun. Start whatever the chain had not finished:
-setsid nohup ./exp/run30.sh > logs/run30.log 2>&1 < /dev/null &   # if 30/31 incomplete
-setsid nohup ./exp/run32.sh > logs/run32.log 2>&1 < /dev/null &   # waits for 30 marker
-setsid nohup ./exp/run33.sh > logs/run33.log 2>&1 < /dev/null &   # waits for 32 marker
-```
-
-CAUTION: run30's gate is only "GPU free". If 30 already finished (check
-`ls results/baselines/dg512_*`), skip it and hand-write the DONE marker instead:
-`echo "=== DG512 DONE ===" >> logs/run30.log` so 32 unblocks.
+  Verdict unchanged: detection passes, quality flags red at 1024; the honest 1024 headline
+  stays R8/kappa=0.1. Do NOT quote 29's ratio as a quality win.
+- **exp/30 (dgMARK @512, n=30 x 3 arms): RELAUNCHED 2026-08-22 ~13:30** (`logs/run30.log`,
+  arm log `logs/30_dg512.log`). The pre-shutdown partial CSV (12/30 rows) is being
+  overwritten. ~90 s/sample → roughly 45 min/arm plus model load.
+- **exp/31 (dg512 eval): runs inside run30.sh** after the arms; prints ppl ratio + TPR rows.
+- **exp/32 (GSM8K, 50 problems, 256 tok, control vs watermark): queued** behind
+  `=== DG512 DONE ===` in logs/run30.log. Writes `results/32_gsm8k.json`.
+- **exp/33 (block-local exact detection) + exp/34 (ctx_window=128): queued** behind
+  `=== GSM8K DONE ===` in logs/run32.log (both inside run33.sh).
 
 Progress: `tr '\r' '\n' < logs/<name>.log | grep -vE 'Loading|it/s|s/it' | tail`
 
-## Why 33/34 exist (the practicality plan)
+## Paper state — canonical is the NEW Overleaf project
 
-Practicality is asymmetric (embedding cheap, verification expensive+fragile). Two of the
-three weaknesses have structural fixes now queued:
-1. **Edit fragility from pooling** (33): the pooled count dilutes intact blocks with
-   damaged ones; per-block exact tests (Bonferroni-min) should recover detection when
-   edits are local. Runs on saved outputs.
-2. **Edit fragility from propagation** (34): full-prefix conditioning lets one edit
-   perturb every later block's bank; ctx_window=W bounds damage to ~ceil(W/32)+1 blocks.
-   Costs: shorter context may weaken the contrast — that trade is what 34 measures.
-3. **Detection cost**: unaddressed by these runs; L=4 ablation (5 seqs/block, ~45%
-   cheaper detection) is the next candidate if 33/34 land well.
+- **Overleaf project 6a8932298ef42d96245d3b28** (GPT-revised draft) is canonical; the old
+  project in earlier RESUME notes is superseded. Method renamed **ReTrace → Shibboleth**;
+  title "Shibboleth: Probe-and-Replay Model-Response Watermarking for Diffusion Language
+  Models", NeurIPS 2026 workshop (Foundations of Language Model Security) template.
+- **Fabricated numbers were removed 2026-08-22**: the GPT draft had invented a full
+  Dream-7B-Instruct results block and an MMLU/GSM8K/HumanEval quality grid never run
+  locally. Deleted with do-not-restore comments; quality_table.tex is now a GSM8K stub
+  matching exp/32's actual design. Every remaining number was checked against results/.
+- Local `paper/` mirrors the corrected Overleaf tree (compiles: 10 pages).
+  `sections/discussion.tex` is orphaned (GPT draft merged it into the conclusion) but kept
+  for its practicality-asymmetry text.
+- After 30/31 land: fill the two commented dg512 rows in `tables/baseline_table.tex`.
+  After 32: fill `tables/quality_table.tex` and un-comment its \input + the downstream
+  paragraph in experiments.tex. After 33/34: robustness-hardening paragraph with measured
+  numbers; robustness_table.tex is still held back (mostly \tbd).
 
-## Paper state
+## Improvement roadmap (user-approved direction)
 
-NeurIPS 2026 template, 10 pages, compiles clean. GitHub: through "Adopt GPT revision"
-plus this commit. Overleaf 6a8805111903ef804b4e2eae synced (branch main). After
-30/31/32/33/34 land: add dg512 same-budget rows, GSM8K downstream row, and (if positive)
-the robustness-hardening paragraph with measured numbers.
+From the vNext plan: (1) UBRG — KL-budgeted response guidance replacing fixed R;
+(2) probe-count sweep L=2/4/8 (L=4 cuts detection to 16*5=80 evals); (3) batched
+verification; (4) multi-view response routing; (5) content anchors + local replay (exp/33/34
+are the first steps). Robustness table design to follow the detector-design survey.
