@@ -41,17 +41,22 @@ dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & 1.21$\times$ & \textbf{0.93
 \rowcolor{finalres}
 \textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$, 512 tok & 0.87$\times$ & 0.70 & 0.60 & 656 & 144 \\
 \textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$, 512 tok & \textbf{0.74}$\times$ & 0.80 & 0.60 & 656 & 144 \\
-% ---- Dream-7B-Instruct block: fill ONLY from the runs listed in the header comment ----
+% ---- Dream-7B-Instruct block ----
+% Shibboleth rows <- exp/36 (results/36_dream.json, landed 2026-08-23): control sync 0.503
+%   TPR 0/0/0; R1 sync .596; R8k10 sync .648 ppl x0.788 (13 valid pairs); R16k05 sync .725
+%   ppl x1.087 (10 valid pairs). PPL pairs surviving the decoded-length rule are few —
+%   caption says so. NOTE: the floor's sub-control ppl did NOT replicate at R16 on Dream.
+% KGW/dgMARK rows <- exp/37 / exp/38 (running); RE-BOLD this block when they land.
 \midrule
 \multicolumn{7}{@{}l}{\emph{Dream-7B-Instruct}}\\
 KGW \citep{kirchenbauer2023watermark} & $\delta=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/37
 dgMARK \citep{hong2026dgmark} & $k=1$, 512 tok & \tbd & \tbd & \tbd & 512 & \textbf{0} \\  % exp/38
 dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & \tbd & \tbd & \tbd & $\sim$2048 & \textbf{0} \\  % exp/38
 \addlinespace[1.5pt]
-\textcolor{oursemph}{Shibboleth} & $R=1$, 512 tok & \tbd & \tbd & \tbd & 656 & 144 \\  % exp/36
+\textcolor{oursemph}{Shibboleth} & $R=1$, 512 tok & 1.34$\times$ & 0.40 & 0.27 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$, 512 tok & \tbd & \tbd & \tbd & 656 & 144 \\  % exp/36
-\textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$, 512 tok & \tbd & \tbd & \tbd & 656 & 144 \\  % exp/36
+\textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$, 512 tok & 0.79$\times$ & 0.70 & 0.67 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$, 512 tok & 1.09$\times$ & 0.90 & 0.90 & 656 & 144 \\
 \bottomrule
 \end{tabular}%
 }
@@ -60,8 +65,9 @@ matched unwatermarked baseline, and compute in sequence evaluations. All rows ar
 reproductions on one checkpoint and prompt protocol at 512 tokens; each method keeps its own
 decoding regime, so PPL ratios are
 comparable within a method and indicative across methods. A PPL ratio below one is not evidence
-of better semantics. LLaDA rows use $n=30$ documents ($n=20$ for $R=16$).
+of better semantics. Shibboleth rows use $n=30$ documents ($n=20$ for $R=16$) on both models;
+Dream PPL ratios rest on the 8--13 pairs per arm that survive the decoded-length rule.
 Here $\delta$ is KGW's green-list logit bias and $k$ is dgMARK's
-candidate count. Cells marked \tbd\ are the queued Dream-7B-Instruct runs.}
+candidate count. Cells marked \tbd\ are the queued Dream baseline runs.}
 \label{tab:baselines}
 \end{table}

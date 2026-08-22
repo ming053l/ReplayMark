@@ -2,8 +2,11 @@
 \label{sec:experiments}
 
 \paragraph{Datasets and setup.}
-We evaluate \texttt{GSAI-ML/LLaDA-8B-Instruct}~\citep{nie2025llada} in fp16 on a single TITAN
-RTX. Detectability is measured
+We evaluate \texttt{GSAI-ML/LLaDA-8B-Instruct}~\citep{nie2025llada} and
+Dream-7B-Instruct~\citep{ye2025dream} in fp16 on a single TITAN
+RTX; Dream emits the prediction for position $i$ at raw-logit index $i{-}1$, and one shift in
+the model wrapper restores the shared convention for generation and replay alike.
+Detectability is measured
 on C4 \texttt{realnewslike}~\citep{raffel2020c4} prompts truncated to 300 characters as dgMARK's
 protocol prescribes. Every row decodes 512 tokens in 32-token blocks at one denoising step
 per token, each method under its own decoding regime: Shibboleth and dgMARK on the native
@@ -63,6 +66,15 @@ $1.40\times$ at $R=4$ and $1.61\times$ at $R=8$. The floor converts part of that
 $(R,\kappa)=(8,0.1)$ obtains $0.70$ TPR at $0.87\times$ and $(16,0.05)$ obtains $0.80$ at
 $0.74\times$, both below their unwatermarked baselines, although a ratio below one indicates only that
 GPT-2-large prefers the high-probability tokens the floor admits.
+
+\paragraph{Across models.}
+The channel transfers to Dream-7B-Instruct and detects more strongly there: the same
+$(16,0.05)$ setting reaches $0.90$ TPR at both $1\%$ and $0.1\%$ FPR at a sync rate of
+$0.725$ against $0.503$ on the control, whose false positives stay at zero. What does not
+transfer is the floor's perplexity dividend, since on Dream $(8,0.1)$ reads $0.79\times$ but
+$(16,0.05)$ reads $1.09\times$ — which $(R,\kappa)$ is quality-optimal is model-dependent —
+and the Dream ratios rest on the 8--13 pairs per arm that survive the decoded-length rule,
+so they carry wide error bars.
 
 % TODO(gsm8k): a "Downstream quality" paragraph belongs here once exp/32's GSM8K numbers
 % exist. The previous draft's paragraph quoted an MMLU/GSM8K/HumanEval grid on two models
