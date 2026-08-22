@@ -2,7 +2,10 @@
 % until each cell's run exists. NO CELL may be filled from the deleted GPT draft — its grid
 % was untraceable to any run. Fill map:
 %   GSM8K, multinomial, control & Shibboleth rows:
-%     LLaDA  <- exp/32, results/32_gsm8k.json      (queued in chain)
+%     LLaDA  <- exp/32, results/32_gsm8k.json — LANDED 2026-08-22: control 0.640 (32/50),
+%       R16k05 0.700 (35/50); paired flips 5 up / 2 down => tie within noise, do NOT claim
+%       an improvement. Control detection at null (.02@1%), wm arm .12@1% (256-tok docs,
+%       few carriers — expected, not the headline TPR).
 %     Dream  <- exp/39, results/39_dream_gsm8k.json (queued, run36.sh)
 %   MMLU / HumanEval / greedy columns / KGW / dgMARK rows:
 %     harness not yet built — exp/40 (MMLU) and exp/41 (HumanEval) planned after run36;
@@ -24,12 +27,12 @@
 Model & Method & Acc $\uparrow$ & Acc $\uparrow$ & Pass@1 $\uparrow$
                 & Acc $\uparrow$ & Acc $\uparrow$ & Pass@1 $\uparrow$ \\
 \midrule
-LLaDA-8B-Instruct & Non-watermarked & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
+LLaDA-8B-Instruct & Non-watermarked & \tbd & \tbd & \tbd & \tbd & 0.640 & \tbd \\
       & KGW \citep{kirchenbauer2023watermark} & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
       & dgMARK \citep{hong2026dgmark} & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
       & dgMARK $+3$-beam & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
 \rowcolor{finalres}
-      & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
+      & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & \tbd & 0.700 & \tbd \\
 \midrule
 Dream-7B-Instruct & Non-watermarked & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
       & KGW & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\

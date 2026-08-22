@@ -69,8 +69,14 @@ GPT-2-large prefers the high-probability tokens the floor admits.
 % that was never run and has been deleted; do not restore it from history.
 \paragraph{Downstream quality.}
 Perplexity ratios are a proxy, so we additionally measure GSM8K~\citep{cobbe2021gsm8k} accuracy
-on 50 test problems at 256 tokens, comparing the watermarked sampler against its matched
-unwatermarked control under the identical decoding schedule; results are \tbd\ pending the run.
+on 50 test problems at 256 tokens, comparing the watermarked $R=16,\kappa=0.05$ sampler
+against its matched unwatermarked control under the identical decoding schedule
+(Table~\ref{tab:quality}). The watermarked arm scores $0.700$ against the control's $0.640$,
+and the paired view shows five problems flipping right and two flipping wrong, a tie within
+noise at this cohort size rather than an improvement; the sub-control perplexity ratio is
+therefore not purchased with degenerate text. Detection on these short outputs is weak
+($0.12$ at $1\%$ FPR) since 256 tokens admit few carriers, and the control arm sits at its
+null ($0.02$ at $1\%$).
 
 \paragraph{Cost against token-local detectors.}
 Detection trails the token-based detectors at matched length: dgMARK's three-beam variant
