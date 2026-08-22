@@ -2,12 +2,10 @@
 
 ## Relaunch after reboot (do this first)
 
-run30 was interrupted mid-chain again. Before relaunching, check arm completeness:
-`python3 -c "import csv;print({f:sum(1 for _ in csv.reader(open('results/baselines/'+f)))-1 for f in ['dg512_original_original.csv','dg512_watermark_watermark.csv']})"`
-- original arm: COMPLETE (30 rows, finished 14:18).
-- watermark arm: was at ~26/30 at shutdown — if <30 rows it must be rerun; beam arm never started.
-Edit `exp/30_dgmark512.sh`: remove `original` from the `for M in ...` loop (done arms), keep
-`watermark` if incomplete, keep the beam command. Then:
+Verified at shutdown (15:15): dg512 **original COMPLETE (30 rows)**, **watermark COMPLETE
+(30 rows)**, beam arm interrupted partway (partial CSV exists — delete
+`results/baselines/dg512_beam3*` and rerun it). Edit `exp/30_dgmark512.sh`: delete the whole
+`for M in original watermark` loop (both done), keep ONLY the beam command. Then:
 ```bash
 cd /ssd2/ming/basinmark
 setsid nohup ./exp/run30.sh > logs/run30.log 2>&1 < /dev/null &
