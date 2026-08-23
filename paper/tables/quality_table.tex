@@ -20,9 +20,13 @@
 %   Shibboleth Dream row LANDED (exp/39, results/39_dream_gsm8k.json): control 0.660,
 %     R16k05 0.680, paired 9 up / 8 down = dead tie; control at null (0.00@1%), wm arm
 %     .22@1% on 256-tok outputs. Dream multinomial Non-wm cell = exp/39's control.
-%   MMLU / HumanEval / remaining greedy cells:
-%     harness not yet built — exp/40 (MMLU) and exp/41 (HumanEval) planned after the peer
-%     chain (several GPU-days; user approved). Keep \tbd until measured.
+%   MMLU LLaDA LANDED 2026-08-24 (exp/40, results/40_mmlu_llada.json; 200q, SE~3.5%):
+%     control 0.595, shib 0.575 (within noise); kgw_d0 0.530 / kgw_d1 0.535 (LTR base is
+%     lower, watermark itself free); dg_orig 0.605 (argmax -> greedy Non-wm MMLU cell),
+%     dg_wm 0.530, dg_beam3 0.530 (-0.075 vs own control). MMLU cells here are the
+%     watermark arms under the MULTINOMIAL column; kgw rows are LTR-sampled (caption).
+%   MMLU Dream <- exp/40 dream (running); HumanEval <- exp/41 (queued);
+%     remaining greedy cells need the greedy-Shibboleth mode (not yet implemented).
 % Greedy for Shibboleth means: reference decoder fixed to argmax, carriers still draw their
 % R proposals from the live conditional (repeated argmax draws would coincide and leave no
 % channel) — implement exactly this before labelling any greedy cell.
@@ -39,12 +43,12 @@
 Model & Method & Acc $\uparrow$ & Acc $\uparrow$ & Pass@1 $\uparrow$
                 & Acc $\uparrow$ & Acc $\uparrow$ & Pass@1 $\uparrow$ \\
 \midrule
-LLaDA-8B-Instruct & Non-watermarked & \tbd & 0.740 & \tbd & \tbd & 0.640 & \tbd \\
-      & KGW \citep{kirchenbauer2023watermark} & \tbd & \tbd & \tbd & \tbd & 0.740 & \tbd \\
-      & dgMARK \citep{hong2026dgmark} & \tbd & \tbd & \tbd & \tbd & 0.660 & \tbd \\
-      & dgMARK $+3$-beam & \tbd & \tbd & \tbd & \tbd & 0.660 & \tbd \\
+LLaDA-8B-Instruct & Non-watermarked & 0.605 & 0.740 & \tbd & 0.595 & 0.640 & \tbd \\
+      & KGW \citep{kirchenbauer2023watermark} & \tbd & \tbd & \tbd & 0.535 & 0.740 & \tbd \\
+      & dgMARK \citep{hong2026dgmark} & \tbd & \tbd & \tbd & 0.530 & 0.660 & \tbd \\
+      & dgMARK $+3$-beam & \tbd & \tbd & \tbd & 0.530 & 0.660 & \tbd \\
 \rowcolor{finalres}
-      & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & \tbd & 0.700 & \tbd \\
+      & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & 0.575 & 0.700 & \tbd \\
 \midrule
 Dream-7B-Instruct & Non-watermarked & \tbd & 0.840 & \tbd & \tbd & 0.660 & \tbd \\
       & KGW & \tbd & \tbd & \tbd & \tbd & 0.700 & \tbd \\

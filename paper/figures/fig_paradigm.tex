@@ -1,89 +1,95 @@
-% Conceptual contrast using the same visual grammar as Figure 2.
+% Conceptual contrast: the two panels differ in what constitutes evidence.
+% Concrete text replaces generic token strips so the distinction reads at a glance.
 \begin{figure}[t]
 \centering
 \resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[
-  x=1cm, y=1.10cm,
+  x=1cm, y=1.08cm,
   font=\scriptsize,
   >=Stealth,
-  canvas/.style={draw=black!20, fill=white, rounded corners=2.5pt,
-                 line width=0.45pt},
-  lane/.style={font=\tiny\bfseries, anchor=west},
-  label/.style={font=\tiny, text=black!62, align=center},
-  action/.style={draw=black!37, fill=black!2, rounded corners=1.5pt,
-                 minimum height=6.2mm, inner xsep=4pt, align=center},
-  blueaction/.style={draw=oursemph, fill=oursemph!7, rounded corners=1.5pt,
-                     minimum height=6.2mm, inner xsep=4pt, align=center,
-                     text=oursemph, line width=0.65pt},
-  tok/.style={draw=black!40, fill=white, minimum width=2.75mm,
-              minimum height=2.75mm, inner sep=0pt, line width=0.4pt},
-  keyed/.style={tok, fill=black!28},
-  carrier/.style={tok, fill=oursemph!7, draw=oursemph, line width=0.75pt},
-  flow/.style={->, draw=black!55, line width=0.55pt},
-  blueflow/.style={->, draw=oursemph, line width=0.8pt}
+  paneltitle/.style={font=\scriptsize\bfseries, anchor=west, text=black!82},
+  note/.style={font=\tiny, text=black!61, align=center},
+  word/.style={draw=black!38, fill=white, rounded corners=0.7pt,
+               minimum height=3.5mm, inner xsep=2.1pt, inner ysep=0.6pt,
+               font=\tiny},
+  keyed/.style={word, fill=black!20, draw=black!50},
+  carrier/.style={word, fill=oursemph!7, draw=oursemph,
+                  line width=0.75pt, text=oursemph},
+  detector/.style={draw=black!38, fill=white, rounded corners=1.3pt,
+                   minimum height=5.7mm, inner xsep=4pt,
+                   font=\scriptsize\bfseries},
+  bluedetector/.style={detector, draw=oursemph, fill=oursemph!6,
+                       text=oursemph, line width=0.65pt},
+  flow/.style={->, draw=black!53, line width=0.5pt},
+  blueflow/.style={->, draw=oursemph, line width=0.8pt},
+  keyflow/.style={->, dashed, line width=0.5pt}
 ]
 
-\draw[canvas] (0,0) rectangle (13.88,-3.20);
+\path[use as bounding box] (0,0) rectangle (13.88,-3.30);
+\fill[black!2, rounded corners=2.3pt] (0.02,-0.02) rectangle (6.70,-3.18);
+\fill[oursemph!4, rounded corners=2.3pt] (7.04,-0.02) rectangle (13.86,-3.18);
 
-% ========================= token-local lane ===============================
-\node[lane, text=black!72] at (0.20,-0.27) {TOKEN-BASED};
-\draw[black!20, line width=0.4pt] (1.38,-0.27) -- (13.64,-0.27);
+% ======================= (a) token-local evidence ========================
+\node[paneltitle] at (0.22,-0.27) {(a) Evidence in tokens};
 
-\node[action, text width=1.55cm, font=\scriptsize\bfseries]
-  (basegen) at (1.30,-0.94) {DLM $\theta$};
-\node[label] at (1.30,-1.38) {$K$ biases draws};
+\node[circle, draw=black!40, fill=white, minimum size=6.4mm,
+      inner sep=0pt] (tokmodel) at (0.92,-1.15) {$\theta$};
+\node[note] (tokkey) at (0.92,-0.67) {$K$ biases draws};
+\draw[keyflow, draw=black!55] (tokkey.south) -- (tokmodel.north);
 
-\foreach \i in {0,...,8}{
-  \node[tok] at ({2.72+0.36*\i},-0.94) {};
-}
-\foreach \i in {1,3,6,8}{
-  \node[keyed] at ({2.72+0.36*\i},-0.94) {};
-}
-\node[label] at (4.16,-1.38) {signal in token identities};
-\draw[flow] (basegen.east) -- (2.54,-0.94);
+\node[word]  (t1) at (1.72,-1.15) {the};
+\node[keyed] (t2) at (2.33,-1.15) {model};
+\node[word]  (t3) at (3.08,-1.15) {left};
+\node[word]  (t4) at (3.59,-1.15) {a};
+\node[word]  (t5) at (4.10,-1.15) {clear};
+\node[keyed] (t6) at (4.79,-1.15) {trace};
+\draw[flow] (tokmodel.east) -- (t1.west);
 
-\node[action, text width=2.35cm, font=\scriptsize\bfseries]
-  (basedet) at (8.38,-0.94) {count keyed tokens};
-\node[label] at (6.48,-0.66) {read $y,K$};
-\draw[flow] (5.80,-0.94) -- (basedet.west);
+\node[detector] (tokdet) at (3.10,-2.25) {keyed-token count};
+\node[note, anchor=west] at (3.36,-1.72) {read $y,K$};
+\draw[flow] (3.25,-1.54) -- (tokdet.north);
 
-\node[action, font=\scriptsize\bfseries]
-  (basep) at (11.72,-0.94) {$p$-value};
-\node[label] at (11.72,-1.38) {no model call};
-\draw[flow] (basedet.east) -- (basep.west);
+\node[detector] (tokp) at (5.55,-2.25) {$p$-value};
+\node[note] at (5.55,-2.72) {no model call};
+\draw[flow] (tokdet.east) -- (tokp.west);
 
-% ========================= model-response lane ============================
-\node[lane, text=oursemph] at (0.20,-1.75) {SHIBBOLETH};
-\draw[oursemph!28, line width=0.45pt] (1.38,-1.75) -- (13.64,-1.75);
+\draw[decorate, decoration={brace, amplitude=3pt, mirror}, black!45]
+  (1.43,-1.43) -- (5.08,-1.43);
 
-\node[blueaction, text width=1.55cm, font=\scriptsize\bfseries]
-  (ourgen) at (1.30,-2.43) {DLM $\theta$};
-\node[label] at (1.30,-2.87) {$K$ selects responses};
+% ===================== (b) model-response evidence =======================
+\node[paneltitle, text=oursemph] at (7.24,-0.27) {(b) Evidence in model response};
 
-\foreach \i in {0,...,8}{
-  \node[tok] at ({2.72+0.36*\i},-2.43) {};
-}
-\foreach \i in {2,5}{
-  \node[carrier] at ({2.72+0.36*\i},-2.43) {};
-}
-\node[label] at (4.16,-2.87) {signal in $(y,\theta)$};
-\draw[blueflow] (ourgen.east) -- (2.54,-2.43);
+\node[circle, draw=oursemph, fill=oursemph!6, minimum size=6.4mm,
+      inner sep=0pt, text=oursemph, line width=0.65pt]
+  (ourmodel) at (7.92,-1.15) {$\theta$};
+\node[note, text=oursemph] (ourkey) at (7.92,-0.67) {$K$ selects a response};
+\draw[keyflow, draw=oursemph] (ourkey.south) -- (ourmodel.north);
 
-\node[blueaction, text width=2.35cm, font=\scriptsize\bfseries]
-  (ourdet) at (8.38,-2.43) {re-mask $+$ replay};
-\node[label, text=oursemph] at (6.48,-2.15) {rerun $\theta$};
-\draw[blueflow] (5.80,-2.43) -- (ourdet.west);
+\node[word]    (s1) at (8.72,-1.15) {the};
+\node[carrier] (s2) at (9.33,-1.15) {model};
+\node[word]    (s3) at (10.08,-1.15) {left};
+\node[word]    (s4) at (10.59,-1.15) {a};
+\node[word]    (s5) at (11.10,-1.15) {clear};
+\node[carrier] (s6) at (11.79,-1.15) {trace};
+\draw[blueflow] (ourmodel.east) -- (s1.west);
 
-\node[blueaction, font=\scriptsize\bfseries]
-  (ourp) at (11.72,-2.43) {$p$-value};
-\node[label] at (11.72,-2.87) {144 masked evaluations};
+\node[bluedetector] (ourdet) at (10.05,-2.25) {re-mask $+$ probe};
+\node[note, text=oursemph, anchor=west] at (10.31,-1.72) {response signs};
+\draw[blueflow] (10.25,-1.54) -- (ourdet.north);
+\draw[blueflow] (ourmodel.south) to[out=-75,in=180] (ourdet.west);
+
+\node[bluedetector] (ourp) at (12.62,-2.25) {$p$-value};
+\node[note] at (12.62,-2.72) {rerun the same $\theta$};
 \draw[blueflow] (ourdet.east) -- (ourp.west);
+
+\draw[decorate, decoration={brace, amplitude=3pt, mirror}, oursemph]
+  (8.43,-1.43) -- (12.08,-1.43);
 
 \end{tikzpicture}
 }%
 \caption{\textbf{Two places to keep a watermark.}
-Token-based methods store evidence in token identities and verify from $y,K$ alone. Shibboleth
-stores evidence in the response of $\theta$ to keyed context probes, so verification reruns the
-same checkpoint.}
+Token-local methods store evidence in the sampled identities and verify from $y,K$ alone.
+Shibboleth stores evidence in how a fixed checkpoint responds to keyed context probes, so its
+verifier must rerun that same $\theta$.}
 \label{fig:paradigm}
 \end{figure}
