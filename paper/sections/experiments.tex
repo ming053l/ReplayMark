@@ -107,7 +107,10 @@ On Dream the task-quality cost separates the methods more sharply than any perpl
 did: KGW leaves accuracy untouched ($0.700$ against its own control's $0.700$) while barely
 embedding ($0.14$ at $1\%$), whereas dgMARK drops it from $0.840$ to $0.560$ in both
 variants — twenty-eight against forty-two problems of fifty, well beyond noise — for $0.18$
-and $0.66$ TPR respectively.
+and $0.66$ TPR respectively. Shibboleth holds its Dream control's accuracy ($0.680$ against
+$0.660$, nine problems flipping right and eight wrong), so on this model it is
+simultaneously the strongest 512-token detector in Table~\ref{tab:baselines} and the only
+watermark here that pays no measurable task accuracy for it.
 
 \paragraph{Cost against token-local detectors.}
 Detection trails the token-based detectors at matched length: dgMARK's three-beam variant
