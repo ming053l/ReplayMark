@@ -40,31 +40,32 @@
 \draw[oursemph!28, line width=0.45pt] (0.78,-1.89) -- (13.64,-1.89);
 
 % ======================== WRITE: left to right ===========================
-\node[label] at (1.43,-0.53) {keyed probes};
-\node[label, anchor=east] at (0.31,-0.88) {$\ell$};
-\node[label, anchor=east] at (0.31,-1.23) {$\ell'$};
+\node[label] at (1.43,-0.55) {keyed probes};
+\node[label] at (0.38,-0.88) {$\ell$};
+\node[label] at (0.38,-1.23) {$\ell'$};
 \foreach \i in {0,...,7}{
-  \node[ptok] at ({0.48+0.275*\i},-0.88) {};
-  \node[ptok] at ({0.48+0.275*\i},-1.23) {};
+  \node[ptok] at ({0.68+0.25*\i},-0.88) {};
+  \node[ptok] at ({0.68+0.25*\i},-1.23) {};
 }
 \foreach \i in {5,...,7}{
-  \node[mask] at ({0.48+0.275*\i},-0.88) {};
-  \node[mask] at ({0.48+0.275*\i},-1.23) {};
+  \node[mask] at ({0.68+0.25*\i},-0.88) {};
+  \node[mask] at ({0.68+0.25*\i},-1.23) {};
 }
-\node[hidden] at ({0.48+0.275*1},-0.88) {};
-\node[hidden] at ({0.48+0.275*3},-0.88) {};
-\node[hidden] at ({0.48+0.275*0},-1.23) {};
-\node[hidden] at ({0.48+0.275*4},-1.23) {};
-\node[label] at (1.43,-1.51) {prefix\quad masked future};
+\node[hidden] at ({0.68+0.25*1},-0.88) {};
+\node[hidden] at ({0.68+0.25*3},-0.88) {};
+\node[hidden] at ({0.68+0.25*0},-1.23) {};
+\node[hidden] at ({0.68+0.25*4},-1.23) {};
+\node[label] at (1.18,-1.52) {prefix};
+\node[label] at (2.18,-1.52) {block $+$ suffix};
 
 \node[circle, draw=black!38, fill=white, minimum size=5.7mm,
       inner sep=0pt] (embedmodel) at (3.05,-1.06) {$\theta$};
-\draw[flow] (2.57,-0.88) -- (embedmodel.north west);
-\draw[flow] (2.57,-1.23) -- (embedmodel.south west);
+\draw[flow] (2.55,-0.88) -- (embedmodel.north west);
+\draw[flow] (2.55,-1.23) -- (embedmodel.south west);
 
 % The paired bar replaces a formula: a useful response has probability mass
 % on both signs.
-\node[label] at (4.42,-0.57) {two-sided response};
+\node[label] at (4.42,-0.55) {two-sided response};
 \fill[black!36] (3.58,-0.98) rectangle (4.40,-1.18);
 \fill[oursemph!67] (4.40,-0.98) rectangle (5.27,-1.18);
 \draw[black!43, line width=0.35pt] (3.58,-0.98) rectangle (5.27,-1.18);
@@ -78,23 +79,23 @@
 
 % The key enters only after the carrier has passed the gate.
 \node[blueaction, minimum height=4.7mm, font=\tiny\bfseries]
-  (key) at (7.27,-0.58) {$K:\epsilon_i$};
+  (key) at (7.27,-0.55) {$K\mapsto\epsilon_i$};
 \draw[keyflow] (key.south) -- (7.27,-0.98);
 
 \node[bad]  (z1) at (7.62,-1.08) {$\times$};
 \node[bad]  (z2) at (8.31,-1.08) {$\times$};
 \node[good] (z3) at (9.00,-1.08) {$\checkmark$};
-\node[label] at (8.31,-1.50) {$\leq R$ live draws};
+\node[label] at (8.31,-1.52) {$\leq R$ live draws};
 \draw[mainflow] (gate.east) -- (z1.west);
 \draw[flow] (z1.east) -- (z2.west);
 \draw[flow] (z2.east) -- (z3.west);
 
-\node[label] at (11.45,-0.57) {first match};
+\node[label] at (9.60,-0.55) {first match};
 \foreach \i in {0,...,8}{
   \node[tok] at ({10.15+0.31*\i},-1.08) {};
 }
 \node[marked] at ({10.15+0.31*4},-1.08) {};
-\node[label] at (11.39,-1.50) {marked text $y$};
+\node[label] at (11.39,-1.52) {marked text $y$};
 \draw[mainflow] (z3.east) -- (9.98,-1.08);
 
 % The finished text turns directly into the verification path; the rounded
@@ -115,7 +116,7 @@
 
 \node[circle, draw=black!38, fill=white, minimum size=5.7mm,
       inner sep=0pt] (replaymodel) at (9.36,-2.47) {$\theta$};
-\node[label] at (9.36,-2.88) {same $\theta$};
+\node[label] at (9.36,-2.91) {same $\theta$};
 \draw[mainflow] (10.08,-2.47) -- (replaymodel.east);
 
 \node[good] (m1) at (7.99,-2.47) {$\checkmark$};
