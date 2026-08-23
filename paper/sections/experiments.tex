@@ -171,8 +171,12 @@ one. Measured at $R=16,\kappa=0.05$ and 512 tokens on shared prompts and seeds (
 window costs nothing clean — $0.69$ TPR at $1\%$ FPR in both arms, at a comparable perplexity
 ratio — but buys nothing under random $10\%$ re-denoising either ($0.44$ against $0.50$, a
 one-document difference), and for the same reason: the window bounds propagation, while
-uniformly random edits already damage every window. Both structural repairs therefore stand
-or fall on the localized-edit test, which is the one still outstanding.
-% TODO(exp33b): localized (contiguous-span) re-denoise on the same saved outputs — the
-% regime where Bonferroni-min and the window should finally win; queued behind the Dream
-% block (results/33b_localized.json).
+uniformly random edits already damage every window. The localized-edit test then resolves
+both questions at once, and in the deployed detector's favour: re-denoising one contiguous
+span of $10\%$ or even $30\%$ of positions leaves the pooled count exactly at its clean
+$0.88$ at both operating points, because desynchronisation propagates forward only and
+every carrier before the span survives untouched — what an edit costs is set by where it
+starts, not by how much it changes. Neither repair is needed in the regimes measured here:
+Bonferroni-min never overtakes pooling, and the window has nothing left to protect. The one
+untested regime that could still favour a min-statistic is copy--paste-style sparse
+survival, where only a fragment of watermarked text remains inside a larger document.

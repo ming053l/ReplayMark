@@ -75,8 +75,9 @@ reaches $0.80$ TPR at $1\%$ FPR on LLaDA-8B-Instruct — below the strongest tok
 detector there, at the only perplexity ratio in that comparison reading below its own
 unwatermarked baseline — and $0.90$ on Dream-7B-Instruct, where every token-local baseline
 weakens under transfer and the model-response channel is the strongest detector measured. Verification in exchange costs one rerun of the
-checkpoint, and evidence written against a prefix degrades under editing — collapsing at low
-redundancy, halving at high — leaving the method
+checkpoint, and evidence written against a prefix degrades under dispersed editing —
+collapsing at low redundancy, halving at high, though contiguous edits leave everything
+before them intact — leaving the method
 suited to a verifier that holds the checkpoint rather than to open screening.
 \end{abstract}
 
@@ -107,8 +108,9 @@ That guarantee is nevertheless one-sided, since soundness holds for any text wri
 key while nothing is claimed in the other direction, and editing degrades detection: a single
 same-model denoising pass over a tenth of the positions takes TPR from $0.35$ to $0.05$ at
 $R=1$, and even at the strongest setting it halves detection ($0.88$ to $0.50$ at $1\%$ FPR,
-$n=16$), so Shibboleth claims resilience to light editing at high redundancy and nothing
-beyond it. Cost is the second boundary, since 144 masked evaluations per document rule out
+$n=16$); contiguous edits, by contrast, cost nothing even at $30\%$ of positions, since
+damage propagates forward only. Shibboleth accordingly claims resilience to light or
+localized editing at high redundancy and nothing beyond it. Cost is the second boundary, since 144 masked evaluations per document rule out
 screening a corpus. The evidence is bound to one checkpoint as well, and a verifier holding
 different weights, or the same weights at a different precision, consequently cannot reproduce
 the responses at all. Finally, the evaluation is itself narrow, covering two masked diffusion
@@ -120,9 +122,9 @@ payload construction of Section~\ref{sec:theory} never measured.
 \paragraph{Future work.}
 Each boundary suggests its own repair. Anchoring probe patterns to content rather than to
 absolute positions would stop an edit from desynchronising every carrier after it, which is the
-single change most likely to turn an abrupt collapse into a graceful decline, and the remaining
-attack to run is the localized one — contiguous edits and copy--paste — where a per-block
-min-statistic should finally beat the pooled count. Verification cost
+single change most likely to turn an abrupt collapse into a graceful decline; the attack
+still missing is copy--paste-style sparse survival, the one measured regime left where a
+per-block min-statistic could yet beat the pooled count. Verification cost
 is the easier target, since the binomial tail is monotone in the matches so far and a sequential
 test could stop once the evidence is decisive.
 Loosening the checkpoint requirement in turn asks for a contrast quantised coarsely enough that numerical

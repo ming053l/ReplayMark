@@ -31,15 +31,19 @@ Paraphrase (DIPPER)~\citep{krishna2023paraphrasing} & lex $20$, order $0$ & \tbd
 \midrule
 \multicolumn{4}{@{}l}{\emph{Strongest setting: $R=16,\kappa=0.05$, 1024 tokens ($n=16$)}}\\
 None & --- & 0.88 & 0.88 \\
-Re-denoising (same model, argmax) & $5\%$ of positions & 0.88 & 0.75 \\
-                                  & $10\%$ of positions & 0.50 & 0.38 \\
+Re-denoising (random positions) & $5\%$ of positions & 0.88 & 0.75 \\
+                                & $10\%$ of positions & 0.50 & 0.38 \\
+Re-denoising (contiguous span)  & $10\%$ of positions & 0.88 & 0.88 \\
+                                & $30\%$ of positions & 0.88 & 0.88 \\
 \bottomrule
 \end{tabular}
 \caption{\textbf{Robustness to post-editing.} Detection after each attack under the deployed
 pooled detector, scored against the same analytic thresholds as Table~\ref{tab:baselines}.
-Evidence written into a replayable probe is synchronised to the prefix, so at $R=1$ a
-$10\%$ edit invalidates nearly every carrier; at the strongest setting the carrier
-redundancy absorbs a $5\%$ edit outright and a $10\%$ edit halves detection rather than
-erasing it. Small cohorts: one document is $0.05$ ($n=20$) or $0.06$ ($n=16$) of TPR.}
+Evidence written into a replayable probe is synchronised to the prefix, so damage propagates
+forward only: at $R=1$ a $10\%$ edit invalidates nearly every carrier, while at the strongest
+setting redundancy absorbs a random $5\%$ edit outright, a random $10\%$ edit halves
+detection, and a contiguous edit costs nothing even at $30\%$ of positions, because every
+carrier before the span survives untouched. Small cohorts: one document is $0.05$ ($n=20$)
+or $0.06$ ($n=16$) of TPR.}
 \label{tab:robustness}
 \end{table}

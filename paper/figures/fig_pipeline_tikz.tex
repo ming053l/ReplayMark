@@ -1,83 +1,147 @@
-% Pipeline overview, three panels in the manner of dgMARK's Figure 1.
-% Each panel carries a picture, one equation, and one line of text; the explanation
-% belongs to Section 3, not to the figure.
+% Human-readable overview: one continuous write--read path. Exact definitions
+% stay in the body; the figure carries only the symbols needed to follow it.
 \begin{figure}[tb]
 \centering
+\resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[
-  font=\scriptsize, >=Stealth,
-  panel/.style ={draw=black!25, rounded corners=2.5pt, fill=black!2},
-  ttl/.style   ={font=\scriptsize\bfseries, anchor=west},
-  badge/.style ={circle, draw=oursemph, fill=finalres, inner sep=0.9pt,
-                 font=\tiny\bfseries, text=oursemph},
-  tok/.style   ={draw=black!40, fill=white, minimum width=2.5mm,
-                 minimum height=2.5mm, inner sep=0pt},
-  hid/.style   ={tok, fill=black!50, draw=black!50},
-  msk/.style   ={tok, fill=black!10, draw=black!30},
-  ctok/.style  ={tok, draw=oursemph, fill=finalres, line width=0.6pt},
-  lgd/.style   ={font=\tiny, text=black!55},
-  eq/.style    ={anchor=north west, inner sep=0pt},
-  note/.style  ={font=\tiny, text=black!60, anchor=north west, inner sep=0pt,
-                 text width=3.9cm, align=left},
-  big/.style   ={->, draw=oursemph, line width=0.9pt}
+  x=1cm, y=1.12cm,
+  font=\scriptsize,
+  >=Stealth,
+  canvas/.style={draw=black!20, fill=white, rounded corners=2.5pt,
+                 line width=0.45pt},
+  lane/.style={font=\tiny\bfseries, text=oursemph, anchor=west},
+  label/.style={font=\tiny, text=black!64, align=center},
+  tok/.style={draw=black!40, fill=white, minimum width=2.45mm,
+              minimum height=2.45mm, inner sep=0pt, line width=0.4pt},
+  ptok/.style={tok, fill=black!8},
+  hidden/.style={tok, fill=black!62, draw=black!62},
+  mask/.style={tok, fill=black!16, draw=black!32},
+  marked/.style={tok, fill=oursemph!9, draw=oursemph, line width=0.8pt},
+  action/.style={draw=black!35, fill=black!2, rounded corners=1.5pt,
+                 minimum height=5.6mm, inner xsep=4pt, align=center},
+  blueaction/.style={draw=oursemph, fill=oursemph!7, rounded corners=1.5pt,
+                     minimum height=5.6mm, inner xsep=4pt, align=center,
+                     text=oursemph, line width=0.6pt},
+  bad/.style={circle, draw=black!37, fill=white, minimum size=4.8mm,
+              inner sep=0pt, text=black!55},
+  good/.style={circle, draw=oursemph, fill=oursemph!8, minimum size=4.8mm,
+               inner sep=0pt, text=oursemph, line width=0.7pt},
+  flow/.style={->, draw=black!55, line width=0.55pt},
+  mainflow/.style={->, draw=oursemph, line width=0.85pt},
+  keyflow/.style={->, draw=oursemph, dashed, line width=0.55pt}
 ]
 
-\def\ph{2.54}
+% One canvas, with generation and verification forming a single loop.
+\draw[canvas] (0,0) rectangle (13.88,-3.30);
 
-% ===================== 1. probe =====================
-\draw[panel] (0,0) rectangle (4.25,-\ph);
-\node[badge] at (0.32,-0.30) {1};
-\node[ttl]   at (0.54,-0.30) {Probe the model};
+\node[lane] at (0.20,-0.27) {WRITE};
+\draw[oursemph!28, line width=0.45pt] (0.86,-0.27) -- (13.64,-0.27);
+\node[lane] at (0.20,-1.89) {READ};
+\draw[oursemph!28, line width=0.45pt] (0.78,-1.89) -- (13.64,-1.89);
 
-\foreach \i in {0,...,9}{\node[tok] at ({0.45+0.30*\i},-0.92) {};}
-\node[hid] at (0.75,-0.92) {};
-\node[hid] at (1.35,-0.92) {};
-\foreach \i in {4,...,9}{\node[msk] at ({0.45+0.30*\i},-0.92) {};}
-\node[lgd, anchor=west] at (3.40,-0.92) {$\times(L{+}1)$};
-\node[lgd, anchor=north] at (0.90,-1.12) {prefix};
-\node[lgd, anchor=north] at (2.55,-1.12) {block $+$ suffix};
+% ======================== WRITE: left to right ===========================
+\node[label] at (1.43,-0.53) {keyed probes};
+\node[label, anchor=east] at (0.31,-0.88) {$\ell$};
+\node[label, anchor=east] at (0.31,-1.23) {$\ell'$};
+\foreach \i in {0,...,7}{
+  \node[ptok] at ({0.48+0.275*\i},-0.88) {};
+  \node[ptok] at ({0.48+0.275*\i},-1.23) {};
+}
+\foreach \i in {5,...,7}{
+  \node[mask] at ({0.48+0.275*\i},-0.88) {};
+  \node[mask] at ({0.48+0.275*\i},-1.23) {};
+}
+\node[hidden] at ({0.48+0.275*1},-0.88) {};
+\node[hidden] at ({0.48+0.275*3},-0.88) {};
+\node[hidden] at ({0.48+0.275*0},-1.23) {};
+\node[hidden] at ({0.48+0.275*4},-1.23) {};
+\node[label] at (1.43,-1.51) {prefix\quad masked future};
 
-\node[eq]   at (0.22,-1.60) {$g_i=\lambda_{i,\ell'}-\lambda_{i,\ell}$};
-\node[note] at (0.22,-2.06) {the model's response to two hidings};
+\node[circle, draw=black!38, fill=white, minimum size=5.7mm,
+      inner sep=0pt] (embedmodel) at (3.05,-1.06) {$\theta$};
+\draw[flow] (2.57,-0.88) -- (embedmodel.north west);
+\draw[flow] (2.57,-1.23) -- (embedmodel.south west);
 
-% ===================== 2. gate, then write =====================
-\draw[panel] (4.82,0) rectangle (9.07,-\ph);
-\node[badge] at (5.14,-0.30) {2};
-\node[ttl]   at (5.36,-0.30) {Gate, then write};
+% The paired bar replaces a formula: a useful response has probability mass
+% on both signs.
+\node[label] at (4.42,-0.57) {two-sided response};
+\fill[black!36] (3.58,-0.98) rectangle (4.40,-1.18);
+\fill[oursemph!67] (4.40,-0.98) rectangle (5.27,-1.18);
+\draw[black!43, line width=0.35pt] (3.58,-0.98) rectangle (5.27,-1.18);
+\draw[white, line width=0.7pt] (4.40,-0.98) -- (4.40,-1.18);
+\node[font=\tiny, text=white] at (3.99,-1.08) {$-$};
+\node[font=\tiny, text=white] at (4.84,-1.08) {$+$};
+\draw[mainflow] (embedmodel.east) -- (3.49,-1.08);
 
-\fill[oursemph!55] (5.32,-0.84) rectangle (6.42,-1.00);
-\node[lgd, anchor=west] at (6.52,-0.92) {$q_{i,+}$};
-\fill[black!30]    (5.32,-1.08) rectangle (6.18,-1.24);
-\node[lgd, anchor=west] at (6.52,-1.16) {$q_{i,-}$};
+\node[action] (gate) at (6.18,-1.08) {blind gate};
+\draw[mainflow] (5.33,-1.08) -- (gate.west);
 
-\node[eq]   at (5.04,-1.60) {$S_i=2\min(q_{i,+},q_{i,-})>s_{\min}$};
-\node[note] at (5.04,-2.06)
-  {blind to the requested sign; then draw ${\leq}R$};
+% The key enters only after the carrier has passed the gate.
+\node[blueaction, minimum height=4.7mm, font=\tiny\bfseries]
+  (key) at (7.27,-0.58) {$K:\epsilon_i$};
+\draw[keyflow] (key.south) -- (7.27,-0.98);
 
-% ===================== 3. replay and test =====================
-\draw[panel] (9.64,0) rectangle (13.89,-\ph);
-\node[badge] at (9.96,-0.30) {3};
-\node[ttl]   at (10.18,-0.30) {Replay and test};
+\node[bad]  (z1) at (7.62,-1.08) {$\times$};
+\node[bad]  (z2) at (8.31,-1.08) {$\times$};
+\node[good] (z3) at (9.00,-1.08) {$\checkmark$};
+\node[label] at (8.31,-1.50) {$\leq R$ live draws};
+\draw[mainflow] (gate.east) -- (z1.west);
+\draw[flow] (z1.east) -- (z2.west);
+\draw[flow] (z2.east) -- (z3.west);
 
-\foreach \i in {0,...,9}{\node[tok] at ({10.09+0.30*\i},-0.92) {};}
-\node[hid]  at (10.39,-0.92) {};
-\node[hid]  at (10.99,-0.92) {};
-\node[ctok] at (11.89,-0.92) {};
-\node[ctok] at (12.79,-0.92) {};
-\node[lgd, text=oursemph] at (11.89,-1.20) {$m_i$};
-\node[lgd, text=oursemph] at (12.79,-1.20) {$m_i$};
+\node[label] at (11.45,-0.57) {first match};
+\foreach \i in {0,...,8}{
+  \node[tok] at ({10.15+0.31*\i},-1.08) {};
+}
+\node[marked] at ({10.15+0.31*4},-1.08) {};
+\node[label] at (11.39,-1.50) {marked text $y$};
+\draw[mainflow] (z3.east) -- (9.98,-1.08);
 
-\node[eq]   at (9.86,-1.60)
-  {$T\sim\mathrm{Binomial}(|P|,\tfrac12)$};
-\node[note] at (9.86,-2.06) {an exact $p$-value, with no calibration};
+% The finished text turns directly into the verification path; the rounded
+% elbow makes the reading direction explicit without a floating arrow.
+\draw[mainflow, rounded corners=4pt]
+  (12.80,-1.08) -- (13.52,-1.08) -- (13.52,-2.47) -- (12.70,-2.47);
 
-% ===================== flow =====================
-\draw[big] (4.34,-1.27) -- (4.74,-1.27);
-\draw[big] (9.16,-1.27) -- (9.56,-1.27);
+% ======================== READ: right to left =============================
+\node[label] at (11.46,-2.12) {re-mask $+$ replay};
+\foreach \i in {0,...,8}{
+  \node[ptok] at ({10.22+0.29*\i},-2.47) {};
+}
+\foreach \i in {5,...,8}{
+  \node[mask] at ({10.22+0.29*\i},-2.47) {};
+}
+\node[hidden] at ({10.22+0.29*1},-2.47) {};
+\node[hidden] at ({10.22+0.29*3},-2.47) {};
+
+\node[circle, draw=black!38, fill=white, minimum size=5.7mm,
+      inner sep=0pt] (replaymodel) at (9.36,-2.47) {$\theta$};
+\node[label] at (9.36,-2.88) {same $\theta$};
+\draw[mainflow] (10.08,-2.47) -- (replaymodel.east);
+
+\node[good] (m1) at (7.99,-2.47) {$\checkmark$};
+\node[good] (m2) at (7.34,-2.47) {$\checkmark$};
+\node[bad]  (m3) at (6.69,-2.47) {$\times$};
+\node[label] at (7.34,-2.12) {key matches};
+\draw[mainflow] (replaymodel.west) -- (m1.east);
+\draw[flow] (m1.west) -- (m2.east);
+\draw[flow] (m2.west) -- (m3.east);
+
+\node[blueaction, text width=2.55cm, font=\scriptsize\bfseries]
+  (pvalue) at (4.18,-2.47)
+  {exact binomial $p$-value};
+\node[label] at (4.18,-2.91) {no calibration};
+\draw[mainflow] (m3.west) -- (pvalue.east);
+
+\node[blueaction, minimum height=5.7mm, font=\scriptsize\bfseries]
+  (decision) at (1.43,-2.47) {decision};
+\node[label] at (1.43,-2.91) {at level $\alpha$};
+\draw[mainflow] (pvalue.west) -- (decision.east);
 
 \end{tikzpicture}
-\caption{\textbf{How Shibboleth writes a mark and reads it back.} The same three steps run at
-generation and at verification, which is what makes the evidence replayable, and the gate in the
-middle step is settled before the key names the sign it accepts, which is what keeps its
-$p$-values exact.}
+}%
+\caption{\textbf{How Shibboleth writes a mark and reads it back.}
+Keyed probes expose a two-sided response. The gate selects a carrier before the key reveals the
+accepted sign, then generation commits the first match. Verification re-masks the text, replays
+$\theta$, and returns an exact binomial $p$-value.}
 \label{fig:pipeline}
 \end{figure}
