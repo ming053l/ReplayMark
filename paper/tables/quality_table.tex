@@ -25,7 +25,10 @@
 %     lower, watermark itself free); dg_orig 0.605 (argmax -> greedy Non-wm MMLU cell),
 %     dg_wm 0.530, dg_beam3 0.530 (-0.075 vs own control). MMLU cells here are the
 %     watermark arms under the MULTINOMIAL column; kgw rows are LTR-sampled (caption).
-%   MMLU Dream <- exp/40 dream (running); HumanEval <- exp/41 (queued);
+%   MMLU Dream LANDED (exp/40, results/40_mmlu_dream.json; 200q): control 0.695, shib
+%     0.710 (tie); kgw_d0 0.640 / kgw_d1 0.625; dg_orig 0.740 (greedy Non-wm cell),
+%     dg_wm 0.570 (-0.170 vs own control, >3 SE), dg_beam3 0.645 (-0.095).
+%   HumanEval <- exp/41 (running);
 %     remaining greedy cells need the greedy-Shibboleth mode (not yet implemented).
 % Greedy for Shibboleth means: reference decoder fixed to argmax, carriers still draw their
 % R proposals from the live conditional (repeated argmax draws would coincide and leave no
@@ -50,12 +53,12 @@ LLaDA-8B-Instruct & Non-watermarked & 0.605 & 0.740 & \tbd & 0.595 & 0.640 & \tb
 \rowcolor{finalres}
       & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & 0.575 & 0.700 & \tbd \\
 \midrule
-Dream-7B-Instruct & Non-watermarked & \tbd & 0.840 & \tbd & \tbd & 0.660 & \tbd \\
-      & KGW & \tbd & \tbd & \tbd & \tbd & 0.700 & \tbd \\
-      & dgMARK & \tbd & \tbd & \tbd & \tbd & 0.560 & \tbd \\
-      & dgMARK $+3$-beam & \tbd & \tbd & \tbd & \tbd & 0.560 & \tbd \\
+Dream-7B-Instruct & Non-watermarked & 0.740 & 0.840 & \tbd & 0.695 & 0.660 & \tbd \\
+      & KGW & \tbd & \tbd & \tbd & 0.625 & 0.700 & \tbd \\
+      & dgMARK & \tbd & \tbd & \tbd & 0.570 & 0.560 & \tbd \\
+      & dgMARK $+3$-beam & \tbd & \tbd & \tbd & 0.645 & 0.560 & \tbd \\
 \rowcolor{finalres}
-      & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & \tbd & 0.680 & \tbd \\
+      & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & 0.710 & 0.680 & \tbd \\
 \bottomrule
 \end{tabular}%
 }

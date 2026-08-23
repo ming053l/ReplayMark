@@ -8,64 +8,52 @@
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llllll}
 \toprule
-Method & Watermark evidence & DLM schedule & Gen.\ budget & Verifier & Principal cost \\
+Method & Watermark channel & DLM schedule & Gen.\ budget & Verifier & Constraint \\
 \midrule
 KGW \citep{kirchenbauer2023watermark} & keyed token subset & left-to-right adaptation & $1.0\times$ & text only & loses block decoding \\
 dgMARK \citep{hong2026dgmark} & keyed parity via order & order is steered & $1.0$--$4.0\times$ & text only & changes commit order \\
-\textcolor{oursemph}{ReTrace} & contextual model response & preserved & $1.28\times$ & 144 model eval. & edit-fragile, checkpoint-bound \\
+\textcolor{oursemph}{Shibboleth} & contextual model response & preserved & $1.28\times$ & 144 model eval. & prefix-synchronised, checkpoint-bound \\
 \bottomrule
 \end{tabular}%
 }
-\caption{\textbf{The methods optimize different constraints.} Budgets are local
+\caption{\textbf{Comparison of design constraints.} Budgets are local
 sequence-evaluation ratios at the settings in Table~\ref{tab:baselines}; the dgMARK range
-spans one-candidate and three-beam decoding. Preserved means that ReTrace leaves the
+spans one-candidate and three-beam decoding. Preserved means that Shibboleth leaves the
 reference block partition and confidence-based position order unchanged.}
 \label{tab:design-comparison}
 \end{table}
 
-\paragraph{Schedule fidelity.}
-The clearest advantage over prefix-based adaptation is that ReTrace does not serialize the
+\paragraph{Schedule preservation.}
+Shibboleth does not serialize the
 DLM. In our control, the left-to-right schedule needed by KGW raises PPL by
-$1.17\times$ relative to block decoding and produces high repetition before any watermark
-strength is considered. ReTrace also differs from dgMARK: dgMARK turns order sensitivity
-into its channel, whereas ReTrace treats the reference order as an invariant and acts only
-after a live probability row exists. This distinction matters when the production decoder
-has a validated latency--quality schedule that should not be changed. It is not a free
-advantage: constructing the RRB adds $28\%$ generation evaluations.
+$1.17\times$ relative to block decoding and produces a high duplicate-bigram rate before
+watermarking. dgMARK uses order sensitivity as its channel, whereas Shibboleth keeps the
+reference order fixed and acts after a live probability row is available. Constructing the
+response bank adds $28\%$ generation evaluations.
 
-\paragraph{Model-bound evidence.}
-A token-only detector asks whether token identities correlate with a key. RRV asks a
+\paragraph{Model-bound verification.}
+A token-only detector tests whether token identities correlate with a key. Shibboleth tests a
 different question: whether the emitted tokens exhibit keyed responses when a specified
-model reconstructs them under counterfactual context views. The evidence is therefore
-bound jointly to text, context, and checkpoint. This can be useful for provenance settings
-where the verifier controls the model artifact and wants evidence tied to its behavior,
-rather than to any generator capable of reproducing a token histogram. The same property
-is a liability for open verification because a different checkpoint need not reproduce the
-responses.
+model reconstructs them under counterfactual context views. The resulting statistic is bound
+jointly to text, context, and checkpoint. Verification therefore assumes access to the specified
+checkpoint; a different checkpoint need not reproduce the responses.
 
-\paragraph{Exactness after adaptive carrier discovery.}
-BCG chooses carriers and ablation pairs from the completed prefix and model probabilities;
+\paragraph{Adaptive carrier discovery.}
+The gate chooses carriers and probe pairs from the completed prefix and model probabilities;
 the number and identity of trials are consequently data dependent. Nevertheless, after
 conditioning on those choices, the orientation bits remain independent fair coins and the
-binomial tail is exact. The advantage is not merely replacing a $z$-score with a binomial
-function: it is preserving finite-sample validity after model-driven carrier discovery.
-The measured KGW failure without bigram deduplication illustrates why dependence and trial
-definition cannot be treated as implementation details.
+binomial tail is exact after conditioning. Without bigram deduplication, the measured KGW
+control has $37\%$ FPR, showing that dependence and trial definition affect calibration.
 
-\paragraph{Practicality is asymmetric.}
-ReTrace is easier to integrate on the \emph{embedding} side when a deployed DLM's block
-and confidence schedule cannot be changed: it requires no training, and retries are sampling
-arithmetic after the RRB has been built. It is substantially less practical on the
-\emph{verification} side. KGW and dgMARK use zero-inference detectors, obtain stronger
-local TPR, and retain token-local evidence that is easier to synchronize after edits;
-ReTrace requires the exact checkpoint and 144 masked evaluations. We therefore claim
-deployment compatibility with an existing block decoder, not superior end-to-end
-practicality. ReTrace is preferable only in controlled provenance settings where
-model-bound evidence and exact conditional calibration justify a high-cost verifier.
-Wall-clock latency, memory, cross-hardware reproducibility, and multi-checkpoint evaluation
-are still needed before making a broader practicality claim.
+\paragraph{Integration and verification cost.}
+Shibboleth preserves a deployed DLM's block and confidence schedule, requires no training, and
+implements retries using the stored probability row. Verification requires the specified
+checkpoint and 144 masked evaluations. KGW and dgMARK use zero-inference detectors, have higher
+local TPR on LLaDA, and use token-local statistics. Wall-clock latency, memory,
+cross-hardware reproducibility, and multi-checkpoint behavior were not measured.
 
 \paragraph{Limitations.}
-Results cover one checkpoint, one corpus, small samples, and automatic quality proxies.
-Cross-model generality, human or downstream quality, scalable verification, adaptive
-attacks, and content-anchored synchronization remain open.
+Results cover two checkpoints, one prompt corpus, cohorts of twenty to fifty documents,
+automatic perplexity measurements, and a 50-problem GSM8K evaluation. Human evaluation,
+larger cohorts, scalable verification, adaptive attacks, and content-anchored synchronization
+were not evaluated.

@@ -1,10 +1,10 @@
 % Post-editing attacks, two panels:
-%   Panel A: weakest setting (R=1, 512 tok, n=20) — the original fragility measurement.
-%   Panel B: strongest setting (R=16, kappa=0.05, 1024 tok, n=16) — exp/33 (2026-08-22),
+%   Panel A: R=1, 512 tok, n=20 — the original edit measurement.
+%   Panel B: R=16, kappa=0.05, 1024 tok, n=16 — exp/33 (2026-08-22),
 %            results/33_robust.json, POOLED detector. Same-model argmax re-denoising of a
 %            random 5%/10% of generated positions; FPR held on attacked controls for all
 %            aggregations (worst cell 1/16 at nominal 5%).
-% Detector-pooling comparison (in text, not this table): Bonferroni-min NEVER beats pooled
+% Detector-pooling comparison (in text, not this table): pooled TPR exceeds Bonferroni-min
 % under random re-denoising (rd10 @1%: 0.38 vs 0.50; clean @1%: 0.69 vs 0.88) — random
 % edits damage every block, so the sparse-signal regime never arises. The localized-edit /
 % copy-paste test where block-local should win is exp/33b (queued behind the Dream block).
@@ -20,7 +20,7 @@
 \cmidrule(lr){3-4}
 Attack & Strength & $1\%$ & $0.1\%$ \\
 \midrule
-\multicolumn{4}{@{}l}{\emph{Weakest setting: $R=1$, 512 tokens ($n=20$)}}\\
+\multicolumn{4}{@{}l}{\emph{Configuration A: $R=1$, 512 tokens ($n=20$)}}\\
 None & --- & 0.35 & \tbd \\
 Re-denoising (same model, argmax) & $10\%$ of positions & 0.05 & \tbd \\
 Deletion & $10\%$ of positions & 0.05 & \tbd \\
@@ -29,7 +29,7 @@ Substitution (random) & $10\%$ of positions & \tbd & \tbd \\
 Copy--paste & $25\%$ kept, 1 segment & \tbd & \tbd \\
 Paraphrase (DIPPER)~\citep{krishna2023paraphrasing} & lex $20$, order $0$ & \tbd & \tbd \\
 \midrule
-\multicolumn{4}{@{}l}{\emph{Strongest setting: $R=16,\kappa=0.05$, 1024 tokens ($n=16$)}}\\
+\multicolumn{4}{@{}l}{\emph{Configuration B: $R=16,\kappa=0.05$, 1024 tokens ($n=16$)}}\\
 None & --- & 0.88 & 0.88 \\
 Re-denoising (random positions) & $5\%$ of positions & 0.88 & 0.75 \\
                                 & $10\%$ of positions & 0.50 & 0.38 \\
@@ -37,13 +37,13 @@ Re-denoising (contiguous span)  & $10\%$ of positions & 0.88 & 0.88 \\
                                 & $30\%$ of positions & 0.88 & 0.88 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Robustness to post-editing.} Detection after each attack under the deployed
+\caption{\textbf{Detection after post-editing.} Detection after each attack under the evaluated
 pooled detector, scored against the same analytic thresholds as Table~\ref{tab:baselines}.
-Evidence written into a replayable probe is synchronised to the prefix, so damage propagates
-forward only: at $R=1$ a $10\%$ edit invalidates nearly every carrier, while at the strongest
-setting redundancy absorbs a random $5\%$ edit outright, a random $10\%$ edit halves
-detection, and a contiguous edit costs nothing even at $30\%$ of positions, because every
-carrier before the span survives untouched. Small cohorts: one document is $0.05$ ($n=20$)
+The signal written through a replayable probe is synchronised to the prefix, so damage propagates
+forward only: at $R=1$, a $10\%$ edit invalidates nearly every carrier. At
+$R=16,\kappa=0.05$, TPR at $1\%$ FPR is $0.88$ after a random $5\%$ edit, $0.50$ after a
+random $10\%$ edit, and $0.88$ after a contiguous $30\%$ edit; carriers before the edited span
+remain unchanged. Small cohorts: one document is $0.05$ ($n=20$)
 or $0.06$ ($n=16$) of TPR.}
 \label{tab:robustness}
 \end{table}

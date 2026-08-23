@@ -1,4 +1,4 @@
-% Conceptual contrast: the two panels differ in what constitutes evidence.
+% Conceptual contrast: the two panels differ in where the watermark signal lives.
 % Concrete text replaces generic token strips so the distinction reads at a glance.
 \begin{figure}[t]
 \centering
@@ -20,62 +20,69 @@
                    font=\scriptsize\bfseries},
   bluedetector/.style={detector, draw=oursemph, fill=oursemph!6,
                        text=oursemph, line width=0.65pt},
-  flow/.style={->, draw=black!53, line width=0.5pt},
-  blueflow/.style={->, draw=oursemph, line width=0.8pt},
-  keyflow/.style={->, dashed, line width=0.5pt}
+  flow/.style={-{Stealth[length=4pt,width=4pt]}, draw=black!53,
+               line width=0.5pt},
+  blueflow/.style={-{Stealth[length=4pt,width=4pt]}, draw=oursemph,
+                   line width=0.8pt},
+  genflow/.style={-{Stealth[length=3pt,width=3pt]}, draw=black!53,
+                  line width=0.45pt, shorten <=1pt, shorten >=1.2pt},
+  bluegenflow/.style={-{Stealth[length=3pt,width=3pt]}, draw=oursemph,
+                      line width=0.65pt, shorten <=1pt, shorten >=1.2pt},
+  keyflow/.style={-{Stealth[length=3pt,width=3pt]}, dashed, line width=0.5pt,
+                  shorten >=0.8pt}
 ]
 
 \path[use as bounding box] (0,0) rectangle (13.88,-3.30);
 \fill[black!2, rounded corners=2.3pt] (0.02,-0.02) rectangle (6.70,-3.18);
 \fill[oursemph!4, rounded corners=2.3pt] (7.04,-0.02) rectangle (13.86,-3.18);
 
-% ======================= (a) token-local evidence ========================
-\node[paneltitle] at (0.22,-0.27) {(a) Evidence in tokens};
+% ======================== (a) token-local signal =========================
+\node[paneltitle] at (0.22,-0.27) {(a) Signal in tokens};
 
 \node[circle, draw=black!40, fill=white, minimum size=6.4mm,
       inner sep=0pt] (tokmodel) at (0.92,-1.15) {$\theta$};
-\node[note] (tokkey) at (0.92,-0.67) {$K$ biases draws};
-\draw[keyflow, draw=black!55] (tokkey.south) -- (tokmodel.north);
+\node[note] (tokkey) at (1.46,-0.67) {$K$ biases draws};
 
-\node[word]  (t1) at (1.72,-1.15) {the};
-\node[keyed] (t2) at (2.33,-1.15) {model};
-\node[word]  (t3) at (3.08,-1.15) {left};
-\node[word]  (t4) at (3.59,-1.15) {a};
-\node[word]  (t5) at (4.10,-1.15) {clear};
-\node[keyed] (t6) at (4.79,-1.15) {trace};
-\draw[flow] (tokmodel.east) -- (t1.west);
+\node[word]  (t1) at (1.84,-1.15) {the};
+\node[keyed] (t2) at (2.45,-1.15) {model};
+\node[word]  (t3) at (3.20,-1.15) {left};
+\node[word]  (t4) at (3.71,-1.15) {a};
+\node[word]  (t5) at (4.22,-1.15) {clear};
+\node[keyed] (t6) at (4.91,-1.15) {trace};
+\draw[genflow] (tokmodel.east) -- (t1.west);
+\draw[keyflow, draw=black!55] (tokkey.south) -- (1.46,-1.15);
 
-\node[detector] (tokdet) at (3.10,-2.25) {keyed-token count};
-\node[note, anchor=west] at (3.36,-1.72) {read $y,K$};
-\draw[flow] (3.25,-1.54) -- (tokdet.north);
+\node[detector] (tokdet) at (3.37,-2.25) {keyed-token count};
+\node[note, anchor=west] at (3.63,-1.72) {read $y,K$};
+\draw[flow] (3.37,-1.54) -- (tokdet.north);
 
 \node[detector] (tokp) at (5.55,-2.25) {$p$-value};
 \node[note] at (5.55,-2.72) {no model call};
 \draw[flow] (tokdet.east) -- (tokp.west);
 
 \draw[decorate, decoration={brace, amplitude=3pt, mirror}, black!45]
-  (1.43,-1.43) -- (5.08,-1.43);
+  (1.55,-1.43) -- (5.20,-1.43);
 
-% ===================== (b) model-response evidence =======================
-\node[paneltitle, text=oursemph] at (7.24,-0.27) {(b) Evidence in model response};
+% ====================== (b) model-response signal ========================
+\node[paneltitle, text=oursemph] at (7.24,-0.27) {(b) Signal in model response};
 
 \node[circle, draw=oursemph, fill=oursemph!6, minimum size=6.4mm,
       inner sep=0pt, text=oursemph, line width=0.65pt]
   (ourmodel) at (7.92,-1.15) {$\theta$};
-\node[note, text=oursemph] (ourkey) at (7.92,-0.67) {$K$ selects a response};
-\draw[keyflow, draw=oursemph] (ourkey.south) -- (ourmodel.north);
+\node[note, text=oursemph] (ourkey) at (8.46,-0.67) {$K$ selects a response};
 
-\node[word]    (s1) at (8.72,-1.15) {the};
-\node[carrier] (s2) at (9.33,-1.15) {model};
-\node[word]    (s3) at (10.08,-1.15) {left};
-\node[word]    (s4) at (10.59,-1.15) {a};
-\node[word]    (s5) at (11.10,-1.15) {clear};
-\node[carrier] (s6) at (11.79,-1.15) {trace};
-\draw[blueflow] (ourmodel.east) -- (s1.west);
+\node[word]    (s1) at (8.84,-1.15) {the};
+\node[carrier] (s2) at (9.45,-1.15) {model};
+\node[word]    (s3) at (10.20,-1.15) {left};
+\node[word]    (s4) at (10.71,-1.15) {a};
+\node[word]    (s5) at (11.22,-1.15) {clear};
+\node[carrier] (s6) at (11.91,-1.15) {trace};
+\draw[bluegenflow] (ourmodel.east) -- (s1.west);
+\draw[keyflow, draw=oursemph] (ourkey.south) -- (8.46,-1.15);
 
-\node[bluedetector] (ourdet) at (10.05,-2.25) {re-mask $+$ probe};
-\node[note, text=oursemph, anchor=west] at (10.31,-1.72) {response signs};
-\draw[blueflow] (10.25,-1.54) -- (ourdet.north);
+\node[bluedetector] (ourdet) at (10.37,-2.25) {re-mask $+$ probe};
+\node[note, text=oursemph, anchor=west] at (10.63,-1.72) {response signs};
+\draw[blueflow] (10.37,-1.54) -- (ourdet.north);
 \draw[blueflow] (ourmodel.south) to[out=-75,in=180] (ourdet.west);
 
 \node[bluedetector] (ourp) at (12.62,-2.25) {$p$-value};
@@ -83,13 +90,13 @@
 \draw[blueflow] (ourdet.east) -- (ourp.west);
 
 \draw[decorate, decoration={brace, amplitude=3pt, mirror}, oursemph]
-  (8.43,-1.43) -- (12.08,-1.43);
+  (8.55,-1.43) -- (12.20,-1.43);
 
 \end{tikzpicture}
 }%
-\caption{\textbf{Two places to keep a watermark.}
-Token-local methods store evidence in the sampled identities and verify from $y,K$ alone.
-Shibboleth stores evidence in how a fixed checkpoint responds to keyed context probes, so its
+\caption{\textbf{Token-local and model-response watermarking.}
+Token-local methods encode the watermark in sampled identities and verify from $y,K$ alone.
+Shibboleth encodes it in how a fixed checkpoint responds to keyed context probes, so its
 verifier must rerun that same $\theta$.}
 \label{fig:paradigm}
 \end{figure}

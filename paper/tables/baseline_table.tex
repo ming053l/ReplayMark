@@ -48,8 +48,8 @@ dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & 1.21$\times$ & \textbf{0.93
 %   caption says so. NOTE: the floor's sub-control ppl did NOT replicate at R16 on Dream.
 % KGW/dgMARK rows <- exp/37 / exp/38 (landed 2026-08-23). Baseline settings were carried
 % over from LLaDA unchanged (delta=1; top-k 3 confidence decode) — both token-local
-% channels weaken sharply on Dream (KGW dup bigrams 0.84 under forced LTR; dgMARK parity
-% far weaker under Dream's schedule) while the model-response channel strengthens. The
+% channels have lower TPR on Dream (KGW duplicate bigrams 0.84 under forced LTR; dgMARK parity
+% is lower under Dream's schedule), while the model-response channel has higher TPR. The
 % caption carries the same-settings caveat; do not tune baselines per-model without also
 % re-tuning ours.
 \midrule
@@ -69,8 +69,8 @@ dgMARK \citep{hong2026dgmark} & $+3$-beam, 512 tok & \textbf{0.71}$\times$ & 0.3
 matched unwatermarked baseline, and compute in sequence evaluations. All rows are local
 reproductions on one checkpoint and prompt protocol at 512 tokens; each method keeps its own
 decoding regime, so PPL ratios are
-comparable within a method and indicative across methods. A PPL ratio below one is not evidence
-of better semantics. Shibboleth rows use $n=30$ documents ($n=20$ for $R=16$) on both models;
+comparable within a method and indicative across methods. A PPL ratio below one does not measure
+semantic quality. Shibboleth rows use $n=30$ documents ($n=20$ for $R=16$) on both models;
 Dream PPL ratios rest on the 8--13 pairs per arm that survive the decoded-length rule.
 Here $\delta$ is KGW's green-list logit bias and $k$ is dgMARK's
 candidate count. Every method uses one setting on both models, tuned on neither: the Dream
