@@ -9,9 +9,10 @@ Dream; KGW barely embeds on tasks), exp/39 Dream Shibboleth GSM8K (0.680 vs 0.66
 Headline: cross-model inversion — on Dream, Shibboleth is the strongest detector AND the
 only no-task-cost watermark, under shared (LLaDA-tuned) settings for every method.
 
-- exp/33b (contiguous-span re-denoise, the regime where Bonferroni/window should win):
-  last stage of runpeer.sh, logs/33b_localized.log -> results/33b_localized.json. When it
-  lands: update the robustness discussion (and possibly a third table panel).
+- exp/33b LANDED 2026-08-24: contiguous 10%/30% re-denoise costs NOTHING (0.88 = clean at
+  both operating points; forward-only propagation spares all upstream carriers). Pooled
+  beats Bonferroni in every measured regime; copy-paste sparse survival is the only regime
+  left untested. PEER CHAIN FULLY DONE (=== PEER CHAIN DONE === in logs/runpeer.log).
 - NEXT BUILD: exp/40 MMLU + exp/41 HumanEval harnesses (user approved; several GPU-days)
   to fill the remaining quality-table columns. GSM8K column is COMPLETE both models.
 
