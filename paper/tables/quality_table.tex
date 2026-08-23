@@ -13,6 +13,11 @@
 %     fills the greedy Non-watermarked GSM8K cell; dg_wm 0.660 TPR@1% .12; dg_beam3 0.660
 %     TPR@1% .44. All accuracy deltas within noise at n=50 (SE of a difference ~0.09).
 %     KGW rows decode left-to-right (their green list requires it); caption says so.
+%   Dream peers LANDED 2026-08-23 (results/42_peer_gsm8k_dream.json): kgw_d0 0.700 =
+%     kgw_d1 0.700 (no cost, but TPR@1% only .14); dg_orig (argmax control -> greedy
+%     Non-wm cell) 0.840; dg_wm 0.560 and dg_beam3 0.560 — a REAL -0.28 accuracy cost
+%     (42/50 -> 28/50), beyond noise; beam3 detects .66@1% on task outputs, z +3.03.
+%     Dream multinomial Non-wm cell + Shibboleth row <- exp/39 (running).
 %   MMLU / HumanEval / remaining greedy cells:
 %     harness not yet built — exp/40 (MMLU) and exp/41 (HumanEval) planned after the peer
 %     chain (several GPU-days; user approved). Keep \tbd until measured.
@@ -39,10 +44,10 @@ LLaDA-8B-Instruct & Non-watermarked & \tbd & 0.740 & \tbd & \tbd & 0.640 & \tbd 
 \rowcolor{finalres}
       & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & \tbd & 0.700 & \tbd \\
 \midrule
-Dream-7B-Instruct & Non-watermarked & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
-      & KGW & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
-      & dgMARK & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
-      & dgMARK $+3$-beam & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
+Dream-7B-Instruct & Non-watermarked & \tbd & 0.840 & \tbd & \tbd & \tbd & \tbd \\
+      & KGW & \tbd & \tbd & \tbd & \tbd & 0.700 & \tbd \\
+      & dgMARK & \tbd & \tbd & \tbd & \tbd & 0.560 & \tbd \\
+      & dgMARK $+3$-beam & \tbd & \tbd & \tbd & \tbd & 0.560 & \tbd \\
 \rowcolor{finalres}
       & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
 \bottomrule

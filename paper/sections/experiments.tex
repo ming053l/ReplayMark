@@ -103,6 +103,11 @@ $0.12$ at $1\%$ FPR, its three-beam variant $0.44$, and KGW at $\delta=1$ embeds
 nothing detectable at all (mean $z=+0.46$, zero TPR), since a short, heavily constrained
 answer leaves its bigram channel few free choices. A watermark's headline TPR, measured on
 512-token continuations, does not transfer to 256-token task outputs for any method here.
+On Dream the task-quality cost separates the methods more sharply than any perplexity ratio
+did: KGW leaves accuracy untouched ($0.700$ against its own control's $0.700$) while barely
+embedding ($0.14$ at $1\%$), whereas dgMARK drops it from $0.840$ to $0.560$ in both
+variants — twenty-eight against forty-two problems of fifty, well beyond noise — for $0.18$
+and $0.66$ TPR respectively.
 
 \paragraph{Cost against token-local detectors.}
 Detection trails the token-based detectors at matched length: dgMARK's three-beam variant
