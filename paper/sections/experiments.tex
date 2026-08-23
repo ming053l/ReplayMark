@@ -88,7 +88,13 @@ and the paired view shows five problems flipping right and two flipping wrong, a
 noise at this cohort size rather than an improvement; the sub-control perplexity ratio is
 therefore not purchased with degenerate text. Detection on these short outputs is weak
 ($0.12$ at $1\%$ FPR) since 256 tokens admit few carriers, and the control arm sits at its
-null ($0.02$ at $1\%$).
+null ($0.02$ at $1\%$). The peers behave the same way under their own controls
+(Table~\ref{tab:quality}): no method moves GSM8K accuracy beyond noise at this cohort size,
+and short task outputs starve every detector, not only ours — direct dgMARK also reads
+$0.12$ at $1\%$ FPR, its three-beam variant $0.44$, and KGW at $\delta=1$ embeds almost
+nothing detectable at all (mean $z=+0.46$, zero TPR), since a short, heavily constrained
+answer leaves its bigram channel few free choices. A watermark's headline TPR, measured on
+512-token continuations, does not transfer to 256-token task outputs for any method here.
 
 \paragraph{Cost against token-local detectors.}
 Detection trails the token-based detectors at matched length: dgMARK's three-beam variant

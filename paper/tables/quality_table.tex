@@ -7,10 +7,15 @@
 %       an improvement. Control detection at null (.02@1%), wm arm .12@1% (256-tok docs,
 %       few carriers — expected, not the headline TPR).
 %     Dream  <- exp/39, results/39_dream_gsm8k.json (queued, run36.sh)
-%   MMLU / HumanEval / greedy columns / KGW / dgMARK rows:
-%     harness not yet built — exp/40 (MMLU) and exp/41 (HumanEval) planned after run36;
-%     KGW/dgMARK task arms need their generators driven on task prompts (several GPU-days
-%     on the TITAN RTX; user approved building them, keep \tbd until measured).
+%   Peer GSM8K rows <- exp/42 (results/42_peer_gsm8k_{llada,dream}.json). LLaDA LANDED
+%     2026-08-23: kgw_d0 (LTR control) 0.640; kgw_d1 0.740 — but z +0.46, TPR@1% 0.00: KGW
+%     delta=1 BARELY EMBEDS on short task outputs; dg_orig (argmax control) 0.740 — also
+%     fills the greedy Non-watermarked GSM8K cell; dg_wm 0.660 TPR@1% .12; dg_beam3 0.660
+%     TPR@1% .44. All accuracy deltas within noise at n=50 (SE of a difference ~0.09).
+%     KGW rows decode left-to-right (their green list requires it); caption says so.
+%   MMLU / HumanEval / remaining greedy cells:
+%     harness not yet built — exp/40 (MMLU) and exp/41 (HumanEval) planned after the peer
+%     chain (several GPU-days; user approved). Keep \tbd until measured.
 % Greedy for Shibboleth means: reference decoder fixed to argmax, carriers still draw their
 % R proposals from the live conditional (repeated argmax draws would coincide and leave no
 % channel) — implement exactly this before labelling any greedy cell.
@@ -27,10 +32,10 @@
 Model & Method & Acc $\uparrow$ & Acc $\uparrow$ & Pass@1 $\uparrow$
                 & Acc $\uparrow$ & Acc $\uparrow$ & Pass@1 $\uparrow$ \\
 \midrule
-LLaDA-8B-Instruct & Non-watermarked & \tbd & \tbd & \tbd & \tbd & 0.640 & \tbd \\
-      & KGW \citep{kirchenbauer2023watermark} & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
-      & dgMARK \citep{hong2026dgmark} & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
-      & dgMARK $+3$-beam & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
+LLaDA-8B-Instruct & Non-watermarked & \tbd & 0.740 & \tbd & \tbd & 0.640 & \tbd \\
+      & KGW \citep{kirchenbauer2023watermark} & \tbd & \tbd & \tbd & \tbd & 0.740 & \tbd \\
+      & dgMARK \citep{hong2026dgmark} & \tbd & \tbd & \tbd & \tbd & 0.660 & \tbd \\
+      & dgMARK $+3$-beam & \tbd & \tbd & \tbd & \tbd & 0.660 & \tbd \\
 \rowcolor{finalres}
       & \textcolor{oursemph}{Shibboleth} & \tbd & \tbd & \tbd & \tbd & 0.700 & \tbd \\
 \midrule
@@ -46,6 +51,10 @@ Dream-7B-Instruct & Non-watermarked & \tbd & \tbd & \tbd & \tbd & \tbd & \tbd \\
 \caption{\textbf{Text generation quality.} Accuracy on MMLU~\citep{hendrycks2021mmlu} and
 GSM8K~\citep{cobbe2021gsm8k} and pass@1 on HumanEval~\citep{chen2021humaneval} under greedy
 and multinomial decoding, with the unwatermarked run of each model as the reference row of
-its block. Shibboleth uses $R=16,\kappa=0.05$; all cells are pending measured runs.}
+its block. Shibboleth uses $R=16,\kappa=0.05$; 50 problems per GSM8K cell, so differences
+within $\pm 0.1$ are noise. Each watermark decodes under its own regime — KGW left-to-right
+(its green list requires a resolved prefix; its own control scores $0.640$), dgMARK under
+confidence decoding (its argmax control is the greedy reference cell) — so rows are read
+against their own controls, not across. Cells marked \tbd\ are pending measured runs.}
 \label{tab:quality}
 \end{table}
