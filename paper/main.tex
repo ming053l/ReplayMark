@@ -71,9 +71,10 @@ Detection re-masks the finished text, rebuilds the identical probes and carriers
 keyed sign matches, whose distribution on text written without the key is exactly binomial, and
 $p$-values are therefore exact at finite sample size and under carriers the method itself chose,
 which no threshold fitted to a corpus can promise. It
-reaches $0.80$ TPR at $1\%$ FPR on LLaDA-8B-Instruct and $0.90$ on Dream-7B-Instruct, below
-the strongest token-based detector, while on LLaDA carrying the only
-perplexity ratio in the comparison that reads below its own unwatermarked baseline. Verification in exchange costs one rerun of the
+reaches $0.80$ TPR at $1\%$ FPR on LLaDA-8B-Instruct — below the strongest token-based
+detector there, at the only perplexity ratio in that comparison reading below its own
+unwatermarked baseline — and $0.90$ on Dream-7B-Instruct, where every token-local baseline
+weakens under transfer and the model-response channel is the strongest detector measured. Verification in exchange costs one rerun of the
 checkpoint, and evidence written against a prefix degrades under editing — collapsing at low
 redundancy, halving at high — leaving the method
 suited to a verifier that holds the checkpoint rather than to open screening.

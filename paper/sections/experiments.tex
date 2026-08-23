@@ -68,13 +68,21 @@ $0.74\times$, both below their unwatermarked baselines, although a ratio below o
 GPT-2-large prefers the high-probability tokens the floor admits.
 
 \paragraph{Across models.}
-The channel transfers to Dream-7B-Instruct and detects more strongly there: the same
-$(16,0.05)$ setting reaches $0.90$ TPR at both $1\%$ and $0.1\%$ FPR at a sync rate of
-$0.725$ against $0.503$ on the control, whose false positives stay at zero. What does not
+The cross-model story inverts the LLaDA ranking. Carrying every method's LLaDA-chosen
+setting to Dream-7B-Instruct unchanged, both token-local channels weaken sharply: KGW falls
+to $0.57$ TPR at $1\%$ FPR at a $1.84\times$ perplexity ratio, since Dream under forced
+left-to-right decoding repeats itself heavily ($84\%$ duplicate bigrams), and dgMARK falls
+to $0.37$ direct and $0.30$ with three-beam lookahead. The model-response channel instead
+strengthens: the same $(16,0.05)$ setting reaches $0.90$ at both $1\%$ and $0.1\%$ FPR at a
+sync rate of $0.725$ against $0.503$ on the control, whose false positives stay at zero, and
+is on this model the strongest detector in the comparison. A token-local channel depends on
+how a particular decoder behaves under the constraint the watermark imposes, where a probe
+the model answers about its own output travels with the model. What does not
 transfer is the floor's perplexity dividend, since on Dream $(8,0.1)$ reads $0.79\times$ but
 $(16,0.05)$ reads $1.09\times$ — which $(R,\kappa)$ is quality-optimal is model-dependent —
 and the Dream ratios rest on the 8--13 pairs per arm that survive the decoded-length rule,
-so they carry wide error bars.
+so they carry wide error bars. These are single-setting reproductions, not per-model tuning,
+for every method alike.
 
 % TODO(gsm8k): a "Downstream quality" paragraph belongs here once exp/32's GSM8K numbers
 % exist. The previous draft's paragraph quoted an MMLU/GSM8K/HumanEval grid on two models
