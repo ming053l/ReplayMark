@@ -1,4 +1,22 @@
-# RESUME — 2026-08-22 evening: runcp.sh RUNNING (CP-ordered chain)
+# RESUME — 2026-08-23 evening: ALL SCHEDULED RUNS LANDED except exp/33b (in flight)
+
+Everything measured is in the paper (Overleaf 6eca03d / GitHub 5518bf3). Landed today:
+exp/33 (block-local: pooled wins under random edits), dg512 beam+eval, exp/35 KGW@512,
+exp/32 GSM8K LLaDA, exp/34 (window free on clean, no gain under random rd10), exp/36 Dream
+Shibboleth (R16k05 .90/.90), exp/37 Dream KGW (1.84x .57/.37), exp/38 Dream dgMARK (k=1
+1.75x .37/.27; beam 0.71x .30/.30), exp/42 peer GSM8K both models (dgMARK -0.28 acc on
+Dream; KGW barely embeds on tasks), exp/39 Dream Shibboleth GSM8K (0.680 vs 0.660 tie).
+Headline: cross-model inversion — on Dream, Shibboleth is the strongest detector AND the
+only no-task-cost watermark, under shared (LLaDA-tuned) settings for every method.
+
+- exp/33b (contiguous-span re-denoise, the regime where Bonferroni/window should win):
+  last stage of runpeer.sh, logs/33b_localized.log -> results/33b_localized.json. When it
+  lands: update the robustness discussion (and possibly a third table panel).
+- NEXT BUILD: exp/40 MMLU + exp/41 HumanEval harnesses (user approved; several GPU-days)
+  to fill the remaining quality-table columns. GSM8K column is COMPLETE both models.
+
+
+# (superseded) RESUME — 2026-08-22 evening: runcp.sh RUNNING (CP-ordered chain)
 
 After the reboot the chain was relaunched as ONE sequential script, `exp/runcp.sh`
 (`logs/runcp.log`), cheapest-per-cell first — the old five-runner gate structure is
