@@ -139,10 +139,11 @@ less than about a tenth should accordingly be read as a tie.
 
 \paragraph{Calibration under the shipped rule.}
 Proposition~\ref{prop:null} is analytical, which is why we also measure the rule as deployed. Across $20$
-keys and $120$ non-watermarked generations apiece, the mean FPR is $0.0121$, $0.0037$ and
+keys and $120$ non-watermarked generations apiece on LLaDA, the mean FPR is $0.0121$, $0.0037$ and
 $0.0000$ at nominal $0.10$, $0.05$ and $0.01$, and the worst individual key gives $0.0583$,
 $0.0250$ and $0.0000$, and control consequently holds for every key rather than on average
-alone, which is what binds when one key serves many documents.
+alone, which is what binds when one key serves many documents. Every Dream control cohort in
+this section behaves the same way, with zero false positives at $1\%$ throughout.
 
 \input{tables/robustness_table}
 \paragraph{Post-editing.}

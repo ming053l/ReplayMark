@@ -95,8 +95,12 @@ names the sign it accepts, carriers may be discovered adaptively at no cost to t
 exact $p$-values. That trade is worth making where the decoding
 schedule must not change and the evidence wanted is of the kind a specified model can vouch for,
 which a key--token hash cannot supply, since anyone holding the key can compute it without the
-generator. Absent either constraint, a token-local watermark is cheaper and easier to
-resynchronise after edits.
+generator. The two-model comparison adds a third reason: a token-local channel is only as
+strong as the decoder behaviour it exploits, and both baselines weakened sharply when their
+settings were carried unchanged from LLaDA to Dream — one to near-undetectability on task
+outputs, one at a $0.28$ task-accuracy cost — while the probe travelled with the model.
+Absent all of that, on a model where a token-local watermark does bite, it remains cheaper
+and easier to resynchronise after edits.
 
 \paragraph{Limitations.}
 That guarantee is nevertheless one-sided, since soundness holds for any text written without the
@@ -108,8 +112,9 @@ beyond it. Cost is the second boundary, since 144 masked evaluations per documen
 screening a corpus. The evidence is bound to one checkpoint as well, and a verifier holding
 different weights, or the same weights at a different precision, consequently cannot reproduce
 the responses at all. Finally, the evaluation is itself narrow, covering two masked diffusion
-models, one prompt corpus, cohorts of twenty to fifty documents, quality proxies read as ratios
-against each method's own unwatermarked baseline, and provenance detection only, with the
+models, one prompt corpus, cohorts of twenty to fifty documents, perplexity ratios read
+against each method's own unwatermarked baseline plus a single 50-problem GSM8K probe, and
+provenance detection only, with the
 payload construction of Section~\ref{sec:theory} never measured.
 
 \paragraph{Future work.}
