@@ -58,7 +58,8 @@ Table~\ref{tab:quality} shows each method's own unwatermarked and watermarked sc
 side; Appendix Table~\ref{tab:quality_full} gives the full grid. This pairing matters because each
 method uses a different decoding procedure.
 For Shibboleth, changes are at most $0.06$ across the measured MMLU, GSM8K, and HumanEval cells.
-For direct dgMARK, HumanEval on LLaDA changes from $0.409$ to $0.341$; on Dream, MMLU changes
+For dgMARK, HumanEval on LLaDA changes from $0.409$ to $0.341$ direct and to $0.280$ with
+three-beam lookahead; on Dream, MMLU changes
 from $0.740$ to $0.570$ and GSM8K from $0.840$ to $0.560$. These task outputs are also shorter:
 on LLaDA GSM8K, Shibboleth and direct dgMARK reach
 $0.12$ TPR at $1\%$ FPR, three-beam dgMARK $0.44$, and KGW zero. The 512-token detection rates
