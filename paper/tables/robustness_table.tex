@@ -10,7 +10,7 @@
 % copy-paste test where block-local should win is exp/33b (queued behind the Dream block).
 % Remaining \tbd rows: insertion/substitution/copy-paste/paraphrase not yet run; delete any
 % row that will not be run before submission.
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \small
 \renewcommand{\arraystretch}{0.86}
@@ -37,13 +37,10 @@ Re-denoising (contiguous span)  & $10\%$ of positions & 0.88 & 0.88 \\
                                 & $30\%$ of positions & 0.88 & 0.88 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Robustness to post-editing.} Detection after each attack under the deployed
-pooled detector, scored against the same analytic thresholds as Table~\ref{tab:baselines}.
-The signal written through a replayable probe is synchronised to the prefix, so changes propagate
-forward only: at $R=1$, a $10\%$ edit invalidates nearly every carrier. At
-$R=16,\kappa=0.05$, TPR at $1\%$ FPR is $0.88$ after a random $5\%$ edit, $0.50$ after a
-random $10\%$ edit, and $0.88$ after a contiguous $30\%$ edit; carriers before the edited span
-remain unchanged. Small cohorts: one document is $0.05$ ($n=20$)
-or $0.06$ ($n=16$) of TPR.}
+\setlength{\abovecaptionskip}{0pt}
+\caption{\textbf{Detection after editing.} The pooled detector uses the same analytic thresholds
+as Table~\ref{tab:baselines}. Random edits disrupt later prefixes; a contiguous span preserves
+all earlier carriers. Because the cohorts are small, one document changes TPR by $0.05$ when
+$n=20$ and about $0.06$ when $n=16$. An em dash denotes an unmeasured setting.}
 \label{tab:robustness}
 \end{table}

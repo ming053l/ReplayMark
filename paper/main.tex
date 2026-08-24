@@ -72,11 +72,11 @@ finished text and counts keyed sign agreements. Because position selection canno
 requested sign, text generated independently of the key produces an exact binomial count.
 
 At $1\%$ FPR, Shibboleth reaches $0.80$ TPR on LLaDA-8B-Instruct and $0.90$ on
-Dream-7B-Instruct. Token-based detectors reach $0.90$--$0.93$ on LLaDA, but Shibboleth is the
-only evaluated row there with a PPL ratio below its own unwatermarked run; on Dream it has the
-highest TPR under settings transferred unchanged from LLaDA. Verification requires 144 masked
-evaluations per 512-token document, access to the same checkpoint, and loses power under
-dispersed editing.
+Dream-7B-Instruct. The strongest token-based baseline reaches $0.93$ on LLaDA, but falls to
+$0.57$ or below on Dream when its LLaDA setting is transferred unchanged. At Shibboleth's main
+setting, the PPL ratio is $0.74\times$ on LLaDA and $1.09\times$ on Dream, while measured task-score
+changes are at most $0.06$. Verification requires the same checkpoint and 144 full-sequence model
+calls per 512-token document; dispersed edits reduce detection power.
 \end{abstract}
 
 \input{sections/introduction}
@@ -96,9 +96,9 @@ symmetric response score first, then reveal the keyed orientation. This ordering
 binomial test even though the text and model determine how many carriers are available.
 
 The result complements token-local watermarking rather than replacing it. Shibboleth preserves
-the deployed decoding schedule and transfers strongly from LLaDA to Dream, but its verifier must
-rerun the same checkpoint 144 times per 512-token document. Token-local detectors remain cheaper
-and, on LLaDA, reach higher TPR.
+the deployed decoding schedule, and its TPR rises from $0.80$ on LLaDA to $0.90$ on Dream under
+settings transferred without retuning. Its verifier, however, must rerun the same checkpoint 144
+times per 512-token document. Token-local detectors remain cheaper and, on LLaDA, reach higher TPR.
 
 \paragraph{Limitations.}
 The false-positive guarantee does not imply detection after editing. Random $10\%$ re-denoising
@@ -117,9 +117,9 @@ and numerical precision. Evaluation covers two masked DLMs, one prompt corpus, c
 \label{app:tables}
 
 Table~\ref{tab:validity} reports the measured per-key false-positive rate of the deployed
-decision rule. Table~\ref{tab:robustness} lists every post-editing attack measured, at both
-configurations, under the deployed pooled detector. Table~\ref{tab:quality_full} is the full
-task-accuracy grid behind Table~\ref{tab:quality}, including the greedy-decoding cells.
+decision rule. Table~\ref{tab:robustness} summarises the post-editing evaluation under the
+deployed pooled detector. Table~\ref{tab:quality_full} expands Table~\ref{tab:quality} into the
+full task-accuracy grid, including the greedy-decoding cells.
 
 \input{tables/validity_table}
 \input{tables/robustness_table}

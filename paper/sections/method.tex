@@ -21,8 +21,8 @@ the log-probability of vocabulary item $v$ at position $i$:
 \end{equation}
 The block and suffix are hidden because neither was available when the probe was created. The
 verifier can therefore reconstruct the same state from the completed sequence instead of seeing
-later tokens that would alter the probabilities. Probing a block costs $L+1$ sequence evaluations:
-$L$ hidden-prefix views and one view with no prefix positions hidden.
+later tokens that would alter the probabilities. Probing a block costs $L+1$ full-sequence model
+calls: $L$ hidden-prefix views and one view with no prefix positions hidden.
 
 For a pair $(\ell,\ell')$, define the response
 $g_i^{\ell,\ell'}(z)=\lambda_{i,\ell'}(z)-\lambda_{i,\ell}(z)$. Let
@@ -68,8 +68,8 @@ A_i=\left\{z:
 \label{eq:accept-set}
 \end{equation}
 It draws from the same $p_i$ up to $R$ times and commits the first member of $A_i$. If every
-proposal misses, it takes one fresh unchecked draw. The probability row is never recomputed, so
-retries add no model evaluation and do not alter the commit order.
+proposal misses, it takes one fresh unchecked draw. All retries reuse $p_i$, so they add no model
+call and do not alter the commit order.
 
 Let $a_i=p_i(A_i)$ be the mass that passes both conditions, and let
 $q_i=\sum_z p_i(z)m_i(z)$ be the chance that an unchecked draw scores as a match. The committed

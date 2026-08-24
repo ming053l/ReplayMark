@@ -52,6 +52,6 @@ reaction to hidden context rather than a keyed pattern in token identities.
 orientation is consulted, yielding finite-sample false-positive control while preserving the
 reference decoding schedule (Sections~\ref{sec:setup}--\ref{sec:theory}).
 \item We evaluate two masked DLMs. At $1\%$ FPR, Shibboleth reaches $0.80$ TPR on LLaDA and
-$0.90$ on Dream, while requiring 144 masked evaluations for verification and degrading under
-dispersed edits (Section~\ref{sec:experiments}).
+$0.90$ on Dream. Verification requires 144 full-sequence model calls, and detection power
+decreases under dispersed edits (Section~\ref{sec:experiments}).
 \end{itemize}

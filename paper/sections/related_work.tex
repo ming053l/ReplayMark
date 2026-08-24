@@ -30,9 +30,13 @@ Model access can support richer tests than a key--token hash. Likelihood-ratio d
 watermarked and base conditionals~\citep{hu2024unbiased}; access to the model can improve a
 Neyman--Pearson score over a key-only Gumbel statistic~\citep{fernandez2023bricks}; GaussMark
 verifies a keyed weight perturbation with a forward--backward pass~\citep{block2025gaussmark};
-and model-theft watermarks query a suspect system~\citep{zhao2023invisible}. Shibboleth differs in
-where the key lives: it leaves the checkpoint unchanged and keys the contexts presented to it, so
-one deployed model can serve many keys.
+and model-theft watermarks query a suspect system~\citep{zhao2023invisible}. Outside watermarking,
+DetectGPT scores text using log probabilities from the model of interest and perturbed versions of
+the passage; replacing the source model with a surrogate weakens detection
+~\citep{mitchell2023detectgpt}. These model-assisted detectors are most natural when a provider or
+central verifier can afford model access. Shibboleth shares that operational setting but adds a
+keyed generation channel and a document-level test. It leaves the checkpoint unchanged and keys
+the contexts presented to it, so one deployed model can serve many keys.
 
 \paragraph{Finite-sample detection and editing.}
 Watermark tests increasingly replace asymptotic $z$-scores with exact tails, permutation tests,

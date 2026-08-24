@@ -7,8 +7,9 @@
 A masked DLM does not have a unique ``next token.'' It sees a sequence containing masks and
 returns a distribution at every unresolved position. Let $x$ be the prompt,
 $y=(y_1,\ldots,y_N)$ the continuation, and $I$ the positions already revealed. At any masked
-position $i\notin I$, the model provides $p_\theta(y_i\mid y_I,x)$. One sequence evaluation
-provides these distributions for all unresolved positions at once.
+position $i\notin I$, the model provides $p_\theta(y_i\mid y_I,x)$. One forward pass over the
+full sequence provides these distributions for every unresolved position; we count this as one
+full-sequence model call.
 
 We study the blockwise schedule used by LLaDA~\citep{arriola2025blockdiffusion,
 nie2025llada}. Blocks finish from left to right, while a confidence rule decides which masks
@@ -36,8 +37,9 @@ and permits the method to choose a data-dependent number of carriers. It does no
 detection after editing, key disclosure, adaptive detector queries
 ~\citep{jovanovic2024stealing}, or replay with a numerically different checkpoint.
 
-\paragraph{Why generation-time access is needed.}
-One might instead edit a finished text. Across 36 post-hoc substitution settings, however, the
+\paragraph{Why write during generation?}
+A tempting alternative is to watermark only after the text is complete. Across 36 post-hoc
+substitution settings, however, the
 median selected position has only one candidate within a 3-nat likelihood budget, and the best
 setting below a $1.35\times$ PPL budget reaches $0.10$ TPR at $1\%$ FPR. Shibboleth therefore
 writes while the model's live distribution is available.

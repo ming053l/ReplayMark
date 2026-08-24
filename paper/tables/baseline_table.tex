@@ -28,9 +28,9 @@
 \begin{tabular}{llrrrrr}
 \toprule
 & & & \multicolumn{2}{c}{TPR at FPR $\uparrow$}
-    & \multicolumn{2}{c}{Sequence evaluations $\downarrow$} \\
+    & \multicolumn{2}{c}{\shortstack{Full-sequence\\model calls $\downarrow$}} \\
 \cmidrule(lr){4-5}\cmidrule(lr){6-7}
-Method & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Generation & Detection \\
+Method & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Generation & Verification \\
 \midrule
 \multicolumn{7}{@{}l}{\emph{LLaDA-8B-Instruct}}\\
 KGW \citep{kirchenbauer2023watermark} & $\delta=1$ & 1.22$\times$ & 0.90 & 0.83 & 512 & \textbf{0} \\
@@ -64,10 +64,12 @@ dgMARK \citep{hong2026dgmark} & $+3$-beam & \textbf{0.71}$\times$ & 0.30 & 0.30 
 \textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$ & 1.09$\times$ & \textbf{0.90} & \textbf{0.90} & 656 & 144 \\
 \bottomrule
 \end{tabular}
+\setlength{\abovecaptionskip}{3pt}
 \caption{\textbf{Detectability and cost at 512 tokens.} PPL ratio is measured against each
 method's own unwatermarked run and should be interpreted within that method. Shibboleth uses
-$n=30$ documents ($n=20$ for $R=16$); Dream PPL uses 8--13 valid pairs per arm. Settings chosen
-on LLaDA are transferred to Dream without retuning. $\delta$ is KGW's logit bias and $k$ is
-dgMARK's candidate count.}
+$n=30$ documents ($n=20$ for $R=16$); Dream PPL uses 8--13 successfully scored document pairs
+per setting. Settings chosen on LLaDA are transferred to Dream without retuning. One model call
+is one forward pass over the current full sequence; these counts measure algorithmic work, not
+runtime. $\delta$ is KGW's logit bias and $k$ is dgMARK's candidate count.}
 \label{tab:baselines}
 \end{table}

@@ -1,18 +1,19 @@
 % Statistical validity of the Shibboleth detector under the decision rule it actually ships.
-\begin{table}[!t]
+\begin{table}[H]
 \centering
 \small
 \renewcommand{\arraystretch}{0.8}
-\begin{tabular}{lrrl}
+\begin{tabular}{lrr}
 \toprule
-Nominal $\alpha$ & Mean FPR & Worst-key FPR & Verdict \\
+Nominal $\alpha$ & Mean FPR & Highest per-key FPR \\
 \midrule
-$0.10$ & $0.0121$ & $0.0583$ & valid ($\leq\alpha$) \\
-$0.05$ & $0.0037$ & $0.0250$ & valid ($\leq\alpha$) \\
-$0.01$ & $0.0000$ & $0.0000$ & valid ($\leq\alpha$) \\
+$0.10$ & $0.0121$ & $0.0583$ \\
+$0.05$ & $0.0037$ & $0.0250$ \\
+$0.01$ & $0.0000$ & $0.0000$ \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{False positive control holds per key, worst key included.} $20$ keys $\times$
-$120$ non-watermarked generations under the deployed rule.}
+\setlength{\abovecaptionskip}{0pt}
+\caption{\textbf{Observed false-positive rates across keys.} The evaluation uses 20 keys and
+120 unwatermarked generations per key under the deployed decision rule.}
 \label{tab:validity}
 \end{table}

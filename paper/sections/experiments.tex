@@ -3,18 +3,19 @@
 
 \paragraph{Models and data.}
 We evaluate LLaDA-8B-Instruct~\citep{nie2025llada} and
-Dream-7B-Instruct~\citep{ye2025dream} in fp16 on one TITAN RTX. Detectability uses C4
+Dream-7B-Instruct~\citep{ye2025dream} in FP16 on one TITAN RTX. Detectability uses C4
 \texttt{realnewslike} prompts~\citep{raffel2020c4}, truncated to 300 characters, and 512-token
-continuations divided into 32-token blocks. Dream predicts position $i$ at raw-logit index
-$i-1$; shifting the wrapper by one restores the convention used for both generation and replay.
+continuations divided into 32-token blocks. We correct Dream's one-position logit offset in its
+wrapper, then use the same position convention for generation and replay.
 
 \paragraph{Decoders and settings.}
 Shibboleth and dgMARK use each model's confidence schedule with multinomial sampling at
 temperature $0.8$; dgMARK additionally uses top-$k=3$. KGW requires strictly left-to-right
 decoding. Shibboleth uses $L=8$ probe patterns, threshold $s_{\min}=0.5$, retry budget $R$, and
 optional plausibility floor $\kappa$. We evaluate provenance ($w_i=+1$), not payload recovery.
-With 16 blocks and $L+1=9$ probe views, verification costs 144 sequence evaluations and
-generation costs $512+144=656$.
+Here one model call means one forward pass over the current full sequence. With 16 blocks and
+$L+1=9$ probe views, verification replays $16\times9=144$ calls; generation uses 512 ordinary
+decoding calls plus the same 144 probe calls, for 656 in total.
 
 \paragraph{Metrics.}
 Detection is TPR at the analytic FPR thresholds in Eq.~\eqref{eq:test}. Perplexity is scored by
@@ -49,8 +50,9 @@ on 8--13 valid pairs per arm. Detection transfers here; the PPL-minimising setti
 Table~\ref{tab:quality} shows each method's own unwatermarked and watermarked scores side by
 side; this pairing matters because each method uses a different decoding procedure.
 For Shibboleth, changes are at most $0.06$ across the measured MMLU, GSM8K, and HumanEval cells.
-For direct dgMARK on Dream, MMLU changes from $0.740$ to $0.570$ and GSM8K from $0.840$ to
-$0.560$. These task outputs are also shorter: on LLaDA GSM8K, Shibboleth and direct dgMARK reach
+For direct dgMARK, HumanEval on LLaDA changes from $0.409$ to $0.341$; on Dream, MMLU changes
+from $0.740$ to $0.570$ and GSM8K from $0.840$ to $0.560$. These task outputs are also shorter:
+on LLaDA GSM8K, Shibboleth and direct dgMARK reach
 $0.12$ TPR at $1\%$ FPR, three-beam dgMARK $0.44$, and KGW zero. The 512-token detection rates
 therefore do not describe 256-token answers.
 
@@ -58,22 +60,22 @@ therefore do not describe 256-token answers.
 At 512 tokens, three-beam dgMARK reaches $0.93$ TPR at both $1\%$ and $0.1\%$ FPR, direct dgMARK
 $0.83/0.80$, KGW $0.90/0.83$, and Shibboleth $0.80/0.60$. The token-local methods need no model
 evaluation during detection; Shibboleth needs 144. KGW's left-to-right decoder also repeats
-heavily: before bigram deduplication, its unwatermarked run fires on $37\%$ of documents, and
-after deduplication two of thirty documents still cross the $0.1\%$ threshold. With cohorts of
+heavily: before bigram deduplication, $37\%$ of its unwatermarked documents cross the decision
+threshold; after deduplication, two of thirty still cross the $0.1\%$ threshold. With cohorts of
 20--30 documents, TPR differences near $0.1$ remain imprecise.
 
 \subsection{Calibration and Robustness}
 \label{sec:calibration}
 
 \paragraph{Observed false positives remain below the requested levels.}
-Across 20 keys and 120 unwatermarked LLaDA generations per key
-mean FPR is $0.0121$, $0.0037$, and $0.0000$ at nominal $0.10$, $0.05$, and $0.01$.
+Across 20 keys, with 120 unwatermarked LLaDA generations per key, mean FPR is $0.0121$,
+$0.0037$, and $0.0000$ at nominal $0.10$, $0.05$, and $0.01$.
 The largest per-key rates are $0.0583$,
 $0.0250$, and $0.0000$. Every Dream unwatermarked cohort has zero false positives at $1\%$.
 
 \paragraph{Editing mainly breaks prefix synchronisation.}
-At $R=1$, same-model argmax re-denoising or deleting a random $10\%$ of positions reduces TPR at
-$1\%$ FPR from $0.35$ to $0.05$ on 20 documents. At $R=16,\kappa=0.05$ and 1024 tokens
+At $R=1$, either same-model argmax re-denoising or deleting a random $10\%$ of positions reduces
+TPR at $1\%$ FPR from $0.35$ to $0.05$ on 20 documents. At $R=16,\kappa=0.05$ and 1024 tokens
 ($n=16$), a random $5\%$ edit leaves TPR at $0.88$, while a random $10\%$ edit reduces it to
 $0.50$; false-positive control remains valid on identically edited unwatermarked text. In
 contrast, re-denoising one contiguous span covering $10\%$ or $30\%$ of positions leaves TPR at

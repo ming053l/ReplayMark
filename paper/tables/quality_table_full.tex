@@ -38,7 +38,7 @@
 % Greedy for Shibboleth means: reference decoder fixed to argmax, carriers still draw their
 % R proposals from the live conditional (repeated argmax draws would coincide and leave no
 % channel) — implement exactly this before labelling any greedy cell.
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \small
 \renewcommand{\arraystretch}{0.76}
@@ -67,13 +67,14 @@ Dream-7B-Instruct & Non-watermarked & 0.740 & 0.840 & \tbd & 0.695 & 0.660 & \tb
 \bottomrule
 \end{tabular}%
 }
+\setlength{\abovecaptionskip}{0pt}
 \caption{\textbf{Text generation quality, full grid.} Accuracy on MMLU~\citep{hendrycks2021mmlu} and
 GSM8K~\citep{cobbe2021gsm8k} and pass@1 on HumanEval~\citep{chen2021humaneval} under greedy
 and multinomial decoding, with the unwatermarked run of each model as the reference row of
 its block. Shibboleth uses $R=16,\kappa=0.05$; 50 problems per GSM8K cell, so differences
-within $\pm 0.1$ are noise. Each watermark decodes under its own regime — KGW left-to-right
+in individual scores should be interpreted cautiously. Each watermark decodes under its own regime---KGW left-to-right
 (its green list requires a resolved prefix; its own control scores $0.640$), dgMARK under
-confidence decoding (its argmax control is the greedy reference cell) — so rows are read
-against their own controls, not across. Cells marked \tbd\ are pending measured runs.}
+confidence decoding (its argmax control is the greedy reference cell)---so rows are read
+against their own controls, not across. An em dash denotes an unmeasured setting.}
 \label{tab:quality_full}
 \end{table}
