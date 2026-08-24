@@ -4,7 +4,7 @@
 \centering
 \resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[
-  x=1cm, y=1.10cm,
+  x=1cm, y=1.12cm,
   font=\scriptsize,
   >=Stealth,
   section/.style={font=\scriptsize\bfseries, text=black!78, anchor=west},
@@ -38,9 +38,9 @@
 \node[section] at (0.08,-0.20) {Generation};
 \draw[oursemph, line width=1.1pt] (0.08,-0.36) -- (0.92,-0.36);
 
-\node[note] at (1.62,-0.52) {keyed context probes};
-\node[note] at (0.38,-0.88) {$\ell$};
-\node[note] at (0.38,-1.22) {$\ell'$};
+\node[note] at (1.62,-0.52) {two probes, one masked position};
+\node[note] at (0.38,-0.88) {upper};
+\node[note] at (0.38,-1.22) {lower};
 \foreach \i in {0,...,7}{
   \node[pale] at ({0.72+0.27*\i},-0.88) {};
   \node[pale] at ({0.72+0.27*\i},-1.22) {};
@@ -61,22 +61,22 @@
 \draw[flow] (2.76,-0.88) -- (embedmodel.north west);
 \draw[flow] (2.76,-1.22) -- (embedmodel.south west);
 
-\node[note] at (4.67,-0.52) {response mass};
+\node[note] at (4.67,-0.52) {group by higher probability};
 \fill[black!36] (3.80,-0.96) rectangle (4.66,-1.16);
 \fill[oursemph!66] (4.66,-0.96) rectangle (5.55,-1.16);
 \draw[black!43, line width=0.35pt] (3.80,-0.96) rectangle (5.55,-1.16);
 \draw[white, line width=0.65pt] (4.66,-0.96) -- (4.66,-1.16);
-\node[font=\tiny, text=white] at (4.23,-1.06) {$-$};
-\node[font=\tiny, text=white] at (5.11,-1.06) {$+$};
+\node[font=\tiny, text=white] at (4.23,-1.06) {upper};
+\node[font=\tiny, text=white] at (5.11,-1.06) {lower};
 \draw[mainflow] (embedmodel.east) -- (3.70,-1.06);
 
-\node[note] at (6.45,-1.45) {blind admission};
+\node[note] at (6.45,-1.45) {both groups viable};
 \draw[black!45, fill=black!4, line width=0.45pt]
   (6.08,-0.90) -- (6.82,-0.90) -- (6.62,-1.20) -- (6.28,-1.20) -- cycle;
 \draw[mainflow] (5.61,-1.06) -- (6.03,-1.06);
 
 \node[font=\tiny\bfseries, text=oursemph] (key) at (7.36,-0.52)
-  {$K\mapsto\epsilon_i$};
+  {key chooses a group};
 \draw[keyflow] (key.south) -- (7.36,-1.06);
 
 \node[miss] (z1) at (7.72,-1.06) {$\times$};
@@ -96,43 +96,49 @@
 \node[word]       (w6) at (13.00,-1.06) {trace};
 \node[note] at (11.48,-1.45) {finished text $y$};
 \draw[mainflow] (z3.east) -- (w1.west);
-\draw[mainflow, rounded corners=4pt]
-  (w6.east) -- (13.58,-1.06) -- (13.58,-2.53) -- (13.24,-2.53);
-
 \node[section] at (0.08,-1.91) {Verification};
 \draw[oursemph, line width=1.1pt] (0.08,-2.07) -- (1.03,-2.07);
 
-\node[note] at (11.55,-2.19) {re-mask block $+$ suffix};
-\node[word]     (r1) at (10.02,-2.53) {the};
-\node[word]     (r2) at (10.64,-2.53) {model};
-\node[maskword] (r3) at (11.36,-2.53) {[M]};
-\node[maskword] (r4) at (11.88,-2.53) {[M]};
-\node[maskword] (r5) at (12.40,-2.53) {[M]};
-\node[maskword] (r6) at (12.92,-2.53) {[M]};
+\node[note] at (1.73,-2.19) {finished text $y$};
+\node[word]     (r1) at (0.54,-2.53) {the};
+\node[word]     (r2) at (1.16,-2.53) {model};
+\node[markedword] (r3) at (1.90,-2.53) {left};
+\node[word]     (r4) at (2.42,-2.53) {a};
+\node[word]     (r5) at (2.94,-2.53) {clear};
+\node[word]     (r6) at (3.62,-2.53) {trace};
+
+\node[note] at (5.25,-2.19) {re-mask block $+$ suffix};
+\node[word]     (v1) at (4.46,-2.53) {the};
+\node[word]     (v2) at (5.08,-2.53) {model};
+\node[maskword] (v3) at (5.80,-2.53) {[M]};
+\node[maskword] (v4) at (6.32,-2.53) {[M]};
+\node[maskword] (v5) at (6.84,-2.53) {[M]};
+\node[maskword] (v6) at (7.36,-2.53) {[M]};
+\draw[mainflow] (r6.east) -- (v1.west);
 
 \node[circle, draw=black!40, fill=white, minimum size=5.8mm,
-      inner sep=0pt] (replaymodel) at (9.18,-2.53) {$\theta$};
-\node[note] at (9.18,-2.91) {same checkpoint};
-\draw[mainflow] (r1.west) -- (replaymodel.east);
+      inner sep=0pt] (replaymodel) at (8.18,-2.53) {$\theta$};
+\node[note] at (8.18,-2.91) {same checkpoint};
+\draw[mainflow] (v6.east) -- (replaymodel.west);
 
-\node[hit]  (m1) at (7.82,-2.53) {$\checkmark$};
-\node[hit]  (m2) at (7.15,-2.53) {$\checkmark$};
-\node[miss] (m3) at (6.48,-2.53) {$\times$};
-\node[note] at (7.15,-2.19) {key matches};
-\draw[mainflow] (replaymodel.west) -- (m1.east);
-\draw[flow] (m1.west) -- (m2.east);
-\draw[flow] (m2.west) -- (m3.east);
+\node[hit]  (m1) at (9.08,-2.53) {$\checkmark$};
+\node[hit]  (m2) at (9.75,-2.53) {$\checkmark$};
+\node[miss] (m3) at (10.42,-2.53) {$\times$};
+\node[note] at (9.75,-2.19) {compare with key};
+\draw[mainflow] (replaymodel.east) -- (m1.west);
+\draw[flow] (m1.east) -- (m2.west);
+\draw[flow] (m2.east) -- (m3.west);
 
-\node[result, text width=2.55cm, align=center]
-  (pvalue) at (3.92,-2.53) {exact binomial $p$-value};
-\node[note] at (3.92,-2.93) {no calibration corpus};
-\draw[mainflow] (m3.west) -- (pvalue.east);
+\node[result, text width=2.15cm, align=center]
+  (replayed) at (12.17,-2.53) {replayed\\carrier outcomes};
+\node[note] at (12.17,-2.93) {no generation trace};
+\draw[mainflow] (m3.east) -- (replayed.west);
 
 \end{tikzpicture}
 }%
-\caption{\textbf{One block of generation and verification.}
-Two hidden-prefix views separate candidates by response direction. Carrier selection occurs before
-the key supplies its orientation; generation commits the first matching draw. Verification rebuilds
-the same masked state and returns an exact binomial $p$-value.}
+\caption{\textbf{Probe pair and replay.}
+Two hidden-prefix probes split candidate tokens by which probe assigns more probability. Both
+groups must be viable before the key chooses one; verification recreates the same probes from the
+finished text.}
 \label{fig:pipeline}
 \end{figure}

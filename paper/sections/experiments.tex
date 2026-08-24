@@ -1,5 +1,6 @@
-% Keep the first results table from appearing above the section that introduces it.
-\suppressfloats[t]
+% Queue the main comparison while the method page is still being built, so it can occupy the
+% following page top rather than opening a separate results page.
+\input{tables/baseline_table}
 \section{Experiments}
 \label{sec:experiments}
 
@@ -20,7 +21,7 @@ temperature $0.8$; dgMARK additionally uses top-$k=3$. KGW requires strictly lef
 decoding. Shibboleth uses $L=8$ probe patterns, threshold $s_{\min}=0.5$, retry budget $R$, and
 optional plausibility floor $\kappa$. We evaluate provenance ($w_i=+1$), not payload recovery.
 Here one model call means one forward pass over the current full sequence. With 16 blocks and
-$L+1=9$ probe views, verification replays $16\times9=144$ calls; generation uses 512 ordinary
+$L+1=9$ probe evaluations, verification replays $16\times9=144$ calls; generation uses 512 ordinary
 decoding calls plus the same 144 probe calls, for 656 in total.
 
 \paragraph{Metrics.}
@@ -31,11 +32,13 @@ compares a method with its own unwatermarked decoder; it is not a semantic-quali
 only indicative across different decoders. The baselines are KGW
 ~\citep{kirchenbauer2023watermark} and dgMARK~\citep{hong2026dgmark}.
 
-\input{tables/baseline_table}
 \input{tables/quality_table}
 
 \subsection{Main Results and Analysis}
 \label{sec:mainresults}
+
+Table~\ref{tab:baselines} shows the tradeoff: Shibboleth transfers strongly to Dream but replay is
+costly, while two cheaper baselines detect LLaDA output more often.
 
 \paragraph{Retries trade sampling distortion for detection.}
 Table~\ref{tab:baselines} gives the 512-token detection, PPL, and model-call comparison.
@@ -46,53 +49,41 @@ The floor removes low-probability guided draws: $(R,\kappa)=(8,0.1)$ gives $0.70
 $0.87\times$ PPL, and $(16,0.05)$ gives $0.80$ at $0.74\times$. Ratios below one mean only that
 GPT-2-large prefers the retained high-probability tokens.
 
-\paragraph{Transfer is checkpoint-dependent.}
-We transfer all LLaDA settings to Dream without retuning. KGW falls to $0.57$ TPR at $1\%$ FPR
+\paragraph{The transferred setting behaves differently across checkpoints.}
+We carry every LLaDA setting to Dream without retuning. KGW reaches $0.57$ TPR at $1\%$ FPR
 and produces $84\%$ duplicate bigrams under forced left-to-right decoding. Direct and three-beam
 dgMARK reach $0.37$ and $0.30$ TPR. Shibboleth at $(16,0.05)$ reaches $0.90$ at both reported
 FPR levels. Its PPL ratio is $0.79\times$ at $(8,0.1)$ and $1.09\times$ at $(16,0.05)$, based
-on 8--13 valid pairs per arm. Detection transfers here; the PPL-minimising setting does not.
+on 8--13 scored pairs per setting. Thus detectability transfers in this experiment, whereas the
+setting with the lowest LLaDA PPL ratio does not retain that ratio on Dream.
 
 \paragraph{Task accuracy exposes decoder-specific costs.}
 Table~\ref{tab:quality} shows each method's own unwatermarked and watermarked scores side by
-side; Appendix Table~\ref{tab:quality_full} gives the full grid. This pairing matters because each
-method uses a different decoding procedure.
-For Shibboleth, changes are at most $0.06$ across the measured MMLU, GSM8K, and HumanEval cells.
-For dgMARK, HumanEval on LLaDA changes from $0.409$ to $0.341$ direct and to $0.280$ with
-three-beam lookahead; on Dream, MMLU changes
-from $0.740$ to $0.570$ and GSM8K from $0.840$ to $0.560$. These task outputs are also shorter:
-on LLaDA GSM8K, Shibboleth and direct dgMARK reach
-$0.12$ TPR at $1\%$ FPR, three-beam dgMARK $0.44$, and KGW zero. The 512-token detection rates
-therefore do not describe 256-token answers.
+side; Appendix Table~\ref{tab:quality_full} gives the full grid. Shibboleth changes by at most
+$0.06$. On LLaDA HumanEval, dgMARK changes from $0.409$ to $0.341$ direct and $0.280$ with
+three beams; on Dream, MMLU changes from $0.740$ to $0.570$ and GSM8K from $0.840$ to $0.560$.
+On 256-token LLaDA GSM8K answers, Shibboleth and direct dgMARK reach $0.12$ TPR at $1\%$ FPR,
+three-beam dgMARK $0.44$, and KGW zero; 512-token rates therefore do not transfer to short answers.
 
 \paragraph{Checkpoint binding costs model calls.}
 On LLaDA, Shibboleth's $0.80/0.60$ TPR at $1\%/0.1\%$ FPR trails three-beam dgMARK's
-$0.93/0.93$ and KGW's $0.90/0.83$. The token-local methods need no model evaluation during
-detection; Shibboleth needs 144. KGW's left-to-right decoder also repeats heavily: before bigram
-deduplication, $37\%$ of its unwatermarked documents cross the decision threshold; after
-deduplication, two of thirty still cross the $0.1\%$ threshold. With cohorts of 20--30 documents,
-TPR differences near $0.1$ remain imprecise.
+$0.93/0.93$ and KGW's $0.90/0.83$, while requiring 144 verification calls instead of zero.
+KGW's left-to-right decoder also repeats heavily: $37\%$ of unwatermarked documents cross the
+threshold before bigram deduplication, and two of thirty cross $0.1\%$ afterward. With 20--30
+documents, TPR differences near $0.1$ remain imprecise.
 
 \subsection{Calibration and Robustness}
 \label{sec:calibration}
 
 \paragraph{Observed false-positive rates are below nominal levels.}
-Appendix Table~\ref{tab:validity} reports the per-key results. Across 20 keys, with 120
-unwatermarked LLaDA generations per key, mean FPR is $0.0121$,
-$0.0037$, and $0.0000$ at nominal $0.10$, $0.05$, and $0.01$.
-The largest per-key rates are $0.0583$,
-$0.0250$, and $0.0000$. Every Dream unwatermarked cohort has zero false positives at $1\%$.
+Across 20 keys and 120 unwatermarked LLaDA generations per key, mean FPR is
+$0.0121/0.0037/0.0000$ at nominal $0.10/0.05/0.01$; the largest per-key rates are
+$0.0583/0.0250/0.0000$. Every Dream cohort has zero false positives at $1\%$
+(Appendix Table~\ref{tab:validity}).
 
 \paragraph{Dispersed edits break prefix synchronisation.}
-Appendix Table~\ref{tab:robustness} summarises the editing results. At $R=1$, either same-model
-argmax re-denoising or deleting a random $10\%$ of positions reduces
-TPR at $1\%$ FPR from $0.35$ to $0.05$ on 20 documents. At $R=16,\kappa=0.05$ and 1024 tokens
-($n=16$), a random $5\%$ edit leaves TPR at $0.88$, while a random $10\%$ edit reduces it to
-$0.50$; false-positive control remains valid on identically edited unwatermarked text. In
-contrast, re-denoising one contiguous span covering $10\%$ or $30\%$ of positions leaves TPR at
-$0.88$, because carriers before the span are unchanged.
-
-Neither tested aggregation change improves the random-edit result. A Bonferroni-combined
-per-block test gives $0.38$ TPR versus $0.50$ for document-wide counting under random $10\%$
-editing, and $0.69$ versus $0.88$ without editing. A 128-token conditioning window gives $0.44$
-versus $0.50$ under random $10\%$ editing. Copy--paste-style sparse survival was not evaluated.
+At $R=1$, random $10\%$ re-denoising or deletion reduces TPR from $0.35$ to $0.05$. At
+$R=16,\kappa=0.05$, random $5\%$ and $10\%$ edits leave $0.88$ and $0.50$ TPR, whereas a
+contiguous $10\%$ or $30\%$ span leaves $0.88$ because earlier carriers survive. Blockwise
+Bonferroni and 128-token windowing reach only $0.38$ and $0.44$ under random $10\%$ editing,
+below pooled counting at $0.50$ (Appendix Table~\ref{tab:robustness}).

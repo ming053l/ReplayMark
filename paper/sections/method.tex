@@ -3,51 +3,46 @@
 \subsection{Probing the Model and Selecting Carriers}
 \label{sec:observable}
 
-For each unfinished block, Shibboleth asks the model the same question under several hidden-prefix
-views: how likely is each candidate token when this part of the earlier context is missing? A
-candidate's response is the change between two such views. A useful carrier is a position where
-the model still assigns probability mass to candidates with both response directions
-(Figures~\ref{fig:pipeline} and~\ref{fig:blindadmission}).
+Figure~\ref{fig:pipeline} first locates the main operations within one generation-and-verification
+block. For each unfinished block, Shibboleth asks the model the same question under several
+masked-prefix probes: how likely is each candidate token when this part of the earlier context is
+missing? Comparing two probes splits candidate tokens by which probe assigns them more probability.
+The position can carry a bit only when the live decoder assigns sufficient probability to both
+groups; only then does the key choose which group the emitted token should favour.
 
 Formally, Shibboleth constructs $L$ pseudorandom probe patterns
 $D_{b,\ell}\subset F_b$, where each pattern specifies prefix positions to hide. It also masks the
-current block $B_b$ and every later position. One model evaluation for pattern $\ell$ then gives
-the log-probability of vocabulary item $v$ at position $i$:
-\begin{equation}
-\lambda_{i,\ell}(v)
-  = \log p_\theta\!\left(v \mid F_b\setminus D_{b,\ell};
-                    B_b\text{ and suffix masked}\right).
-\label{eq:arm-logprob}
-\end{equation}
+current block $B_b$ and every later position. Let $\lambda_{i,\ell}(v)$ denote the resulting
+log-probability of vocabulary item $v$ at position $i$ under pattern $\ell$.
 The block and suffix are hidden because neither was available when the probe was created. The
 verifier can therefore reconstruct the same state from the completed sequence instead of seeing
 later tokens that would alter the probabilities. Probing a block costs $L+1$ full-sequence model
-calls: $L$ hidden-prefix views and one view with no prefix positions hidden.
+calls: $L$ masked-prefix probes and one evaluation with the full prefix visible.
 
 For a pair $(\ell,\ell')$, define the response
 $g_i^{\ell,\ell'}(z)=\lambda_{i,\ell'}(z)-\lambda_{i,\ell}(z)$. Let
-$p_i^{\mathrm{base}}$ be the block-masked distribution with no hidden prefix. The probability
-mass on either response direction, and a symmetric score for the pair, are
+$p_i^{\mathrm{base}}$ be the block-masked distribution with no hidden prefix. The aggregate
+probability assigned to either response direction, and a symmetric score for the pair, are
 \begin{equation}
 q_{i,\pm}^{\ell,\ell'}=\sum_z p_i^{\mathrm{base}}(z)
                   \mathbf{1}[\pm g_i^{\ell,\ell'}(z)>0],\qquad
 S_i^{\ell,\ell'}=2\min(q_{i,+}^{\ell,\ell'},q_{i,-}^{\ell,\ell'}).
 \label{eq:admission}
 \end{equation}
-The score is twice the smaller mass: it is near one when the two directions are balanced and near
-zero when either direction is absent. At each position, Shibboleth keeps the pair with the largest
-$S_i$ and selects the position when $S_i>s_{\min}$, subject to an
-optional per-block cap. Choosing the best pair raises the measured mean score from $0.28$ for a
-fixed near/far pair to $0.45$.
+The score is twice the smaller total. It approaches one when the live distribution is divided
+evenly between the two response groups and approaches zero when one group has little probability.
+At each position, Shibboleth keeps the pair with the largest $S_i$ and selects the position when
+$S_i>s_{\min}$, subject to an optional per-block cap. Choosing the best pair raises the measured
+mean score from $0.28$ for a fixed near/far pair to $0.45$. Figure~\ref{fig:carriermap} shows where
+this criterion retains or skips positions in one saved LLaDA output.
+\input{figures/fig_carrier_viz}
 
 Crucially, swapping $\ell$ and $\ell'$ leaves $S_i$ unchanged while reversing every response
-sign. Carrier selection therefore reveals nothing about which sign will later be rewarded.
-Figure~\ref{fig:blindadmission} makes this ordering explicit.
-\input{figures/fig_blind_admission}
+sign. Carrier selection therefore cannot favour the direction later requested by the key.
 
-After the carrier is fixed, a separate hash domain supplies an orientation
-$\epsilon_i\in\{-1,+1\}$. A target $w_i\in\{-1,+1\}$ represents the provenance or payload bit.
-Together they decide which response direction counts as a match:
+After the carrier is fixed, the key assigns one group to the target bit. Formally, a separate hash
+domain supplies $\epsilon_i\in\{-1,+1\}$, while $w_i\in\{-1,+1\}$ represents the provenance or
+payload bit. Together they decide which response direction counts as a match:
 \begin{equation}
 m_i(z)=\mathbf{1}[w_i\epsilon_i g_i(z)>0].
 \label{eq:m}
@@ -72,7 +67,7 @@ It draws from the same $p_i$ up to $R$ times and commits the first member of $A_
 proposal misses, it takes one fresh unchecked draw. All retries reuse $p_i$, so they add no model
 call and do not alter the commit order.
 
-Let $a_i=p_i(A_i)$ be the mass that passes both conditions, and let
+Let $a_i=p_i(A_i)$ be the probability of satisfying both conditions, and let
 $q_i=\sum_z p_i(z)m_i(z)$ be the chance that an unchecked draw scores as a match. The committed
 token comes from $p_i(\cdot\mid A_i)$ with probability $1-(1-a_i)^R$ and from $p_i$ otherwise.
 Its match probability is therefore

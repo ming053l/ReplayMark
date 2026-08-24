@@ -1,98 +1,95 @@
-"""Render the carrier-suitability figures from results/43_viz.json.
+"""Render the carrier-availability heat map from saved measurements."""
 
-One paper figure, three panels:
-  (a) heatmap over one 512-token document (16 blocks x 32 positions) of the admission
-      score S = 2 min(q+, q-): where the block-masked conditional keeps mass on both
-      response signs, i.e. where a watermark bit can be written. Admitted cells
-      (S > 0.5) are outlined.
-  (b) distribution of S over all positions of both documents (q+ + q- ~ 1 on real
-      text, so S ~ 1 - |q+ - q-|); the s_min = 0.5 gate cuts the sharp tail.
-  (c) the block-masked conditional at a strong carrier vs a one-sided position:
-      top-12 tokens, bar color = response sign. A carrier needs mass on both colors.
-
-Colors: single-hue sequential (white -> #18548C) for magnitude; blue vs orange
-(#18548C / #C4622D) for the response-sign polarity; neutral gray for rejected.
-"""
 import json
+
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.gridspec import GridSpec
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Patch, Rectangle
 
-BLUE, ORANGE, GRAY = "#18548C", "#C4622D", "#9A9A9A"
-D = json.load(open("/ssd2/ming/basinmark/results/43_viz.json"))
-BLK = D["blk"]
-NB = D["gen"] // BLK
 
-cmap = LinearSegmentedColormap.from_list("seqblue", ["#FFFFFF", BLUE])
-plt.rcParams.update({"font.size": 8, "axes.titlesize": 9, "axes.labelsize": 8,
-                     "xtick.labelsize": 7, "ytick.labelsize": 7})
+BLUE = "#18548C"
+ORANGE = "#C4622D"
+DATA_PATH = "/ssd2/ming/basinmark/results/43_viz.json"
+OUT_PATH = "/ssd2/ming/basinmark/paper/figures/fig_carrier_map.pdf"
 
-fig = plt.figure(figsize=(9.2, 4.6))
-gs = GridSpec(2, 3, height_ratios=[1.15, 1.0], hspace=0.52, wspace=0.34,
-              left=0.06, right=0.985, top=0.92, bottom=0.13)
+with open(DATA_PATH, encoding="utf-8") as handle:
+    data = json.load(handle)
 
-# ---- (a) heatmap, doc 0 ----
-axa = fig.add_subplot(gs[0, :])
-Sgrid = np.zeros((NB, BLK))
-adm = np.zeros((NB, BLK), dtype=bool)
-for r in D["docs"][0]:
-    Sgrid[r["block"], r["pos"] % BLK] = r["S"]
-    adm[r["block"], r["pos"] % BLK] = r["S"] > 0.5
-im = axa.imshow(Sgrid, aspect="auto", cmap=cmap, vmin=0, vmax=1,
-                interpolation="nearest")
-for b in range(NB):
-    for j in range(BLK):
-        if not adm[b, j]:
-            axa.add_patch(Rectangle((j - 0.5, b - 0.5), 1, 1, fill=False,
-                                    edgecolor=ORANGE, linewidth=1.1))
-axa.set_xlabel("position within block")
-axa.set_ylabel("block")
-axa.set_title(r"(a) admission score $S_i = 2\min(q_{i,+},\,q_{i,-})$ over one 512-token "
-              r"document; orange outline: rejected ($S_i \leq 0.5$), no bit can be written",
-              loc="left")
-cb = fig.colorbar(im, ax=axa, fraction=0.025, pad=0.01)
-cb.set_label(r"$S_i$")
+block_size = data["blk"]
+num_blocks = data["gen"] // block_size
 
-# ---- (b) distribution of S ----
-axb = fig.add_subplot(gs[1, 0])
-S = np.array([r["S"] for d in D["docs"] for r in d])
-bins = np.linspace(0, 1, 41)
-axb.hist(S[S > 0.5], bins=bins, color=BLUE, label="admitted")
-axb.hist(S[S <= 0.5], bins=bins, color=ORANGE, label="rejected")
-axb.axvline(0.5, ls="--", lw=0.9, c="#555555")
-axb.text(0.49, axb.get_ylim()[1] * 0.95, r"$s_{\min}$", ha="right", va="top",
-         fontsize=7, color="#555555")
-axb.set_yscale("log")
-axb.set_xlabel(r"$S_i$")
-axb.set_ylabel("positions")
-axb.set_title(f"(b) score distribution ({len(S)} positions)", loc="left")
-axb.legend(frameon=False, loc="upper left", handletextpad=0.4)
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.serif": ["Times New Roman", "Times", "Nimbus Roman"],
+    "font.size": 9.4,
+    "axes.titlesize": 10.2,
+    "axes.labelsize": 9.0,
+    "xtick.labelsize": 8.0,
+    "ytick.labelsize": 8.0,
+    "axes.linewidth": 0.65,
+    "pdf.fonttype": 42,
+})
 
-# ---- (c) showcase conditionals ----
-for col, (key, ttl) in enumerate(
-        [("best", "(c) a strong carrier"), ("onesided", "(d) a one-sided position")]):
-    ax = fig.add_subplot(gs[1, 1 + col])
-    s = D["showcase"][key]
-    probs = np.array(s["probs"])
-    colors = [BLUE if g > 0 else (ORANGE if g < 0 else GRAY) for g in s["gsign"]]
-    ax.bar(range(len(probs)), probs, color=colors, width=0.72)
-    ax.set_xticks(range(len(probs)))
-    labels = [t.replace("\n", "\\n").strip() or "␣" for t in s["toks"]]
-    ax.set_xticklabels(labels, rotation=60, ha="right", fontsize=6)
-    ax.set_ylabel("probability" if col == 0 else "")
-    ax.set_title(f"{ttl}  ($S_i={s['S']:.2f}$)", loc="left")
-if True:
-    from matplotlib.lines import Line2D
-    fig.legend(handles=[Line2D([], [], marker="s", ls="", color=BLUE,
-                               label="response $+$"),
-                        Line2D([], [], marker="s", ls="", color=ORANGE,
-                               label="response $-$")],
-               loc="lower right", frameon=False, ncol=2, bbox_to_anchor=(0.99, 0.0))
+fig, axis = plt.subplots(figsize=(8.0, 2.05))
+fig.subplots_adjust(left=0.09, right=0.94, top=0.91, bottom=0.22)
 
-fig.savefig("/ssd2/ming/basinmark/paper/figures/fig_carrier_map.pdf",
-            bbox_inches="tight")
+score_grid = np.zeros((num_blocks, block_size))
+retained_grid = np.zeros((num_blocks, block_size), dtype=bool)
+for row in data["docs"][0]:
+    block = row["block"]
+    offset = row["pos"] % block_size
+    score_grid[block, offset] = row["S"]
+    retained_grid[block, offset] = row["S"] > 0.5
+
+colour_map = LinearSegmentedColormap.from_list("score_blue", ["#FFFFFF", BLUE])
+image = axis.imshow(
+    score_grid,
+    aspect="auto",
+    cmap=colour_map,
+    vmin=0,
+    vmax=1,
+    interpolation="nearest",
+)
+
+for block in range(num_blocks):
+    for offset in range(block_size):
+        if not retained_grid[block, offset]:
+            axis.add_patch(Rectangle(
+                (offset - 0.5, block - 0.5),
+                1,
+                1,
+                fill=False,
+                edgecolor=ORANGE,
+                linewidth=1.1,
+            ))
+
+axis.set_xticks([0, 5, 11, 17, 23, 31], [1, 6, 12, 18, 24, 32])
+axis.set_yticks([0, 3, 7, 11, 15], [1, 4, 8, 12, 16])
+axis.set_xlabel("position within block")
+axis.set_ylabel("block")
+axis.legend(
+    handles=[Patch(
+        facecolor="white",
+        edgecolor=ORANGE,
+        linewidth=1.1,
+        label="not used: below selection cutoff",
+    )],
+    loc="upper right",
+    frameon=True,
+    framealpha=0.94,
+    borderpad=0.35,
+    handlelength=1.15,
+    fontsize=8.0,
+)
+
+colour_bar = fig.colorbar(image, ax=axis, fraction=0.025, pad=0.012)
+colour_bar.set_ticks([0, 1])
+colour_bar.set_ticklabels(["one dominates", "evenly divided"])
+colour_bar.set_label("response balance")
+
+fig.savefig(OUT_PATH, bbox_inches="tight")
 print("wrote paper/figures/fig_carrier_map.pdf")

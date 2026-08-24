@@ -38,8 +38,8 @@ the key reveals which direction counts as a match. Reversing this order would bi
 positions toward the requested answer.
 
 Shibboleth addresses both obstacles. For each active block, it re-masks that block and its suffix,
-compares pairs of hidden-prefix probes, and selects positions that retain probability mass on both
-response directions. The key then supplies the requested direction. At a selected position,
+compares pairs of hidden-prefix probes, and selects positions whose smaller directional probability
+total exceeds a fixed cutoff. The key then supplies the requested direction. At a selected position,
 Shibboleth draws up to $R$ candidates from the decoder's current distribution and commits the first
 match; all other positions follow the reference decoder. Verification reconstructs the probes,
 repeats the selection rule, and evaluates an exact binomial tail. The block partition, confidence

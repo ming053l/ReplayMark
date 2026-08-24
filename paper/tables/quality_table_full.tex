@@ -28,11 +28,10 @@
 %   MMLU Dream LANDED (exp/40, results/40_mmlu_dream.json; 200q): control 0.695, shib
 %     0.710 (tie); kgw_d0 0.640 / kgw_d1 0.625; dg_orig 0.740 (greedy Non-wm cell),
 %     dg_wm 0.570 (-0.170 vs own control, >3 SE), dg_beam3 0.645 (-0.095).
-%   HumanEval LLaDA PARTIAL 2026-08-24 (exp/41, logs/41_he_llada.log; 164 tasks, pass@1
+%   HumanEval LLaDA COMPLETE 2026-08-24 (exp/41, results/41_humaneval_llada.json; 164 tasks, pass@1
 %     by execution, SE~3.7%): control 0.335, shib 0.384 (+0.049, within noise), kgw_d0
 %     0.329 / kgw_d1 0.293, dg_orig 0.409 (argmax -> greedy Non-wm cell); dg_wm 0.341
-%     (landed 2026-08-24). dg_beam3 still running -> results/41_humaneval_llada.json
-%     when the arm set completes.
+%     and dg_beam3 0.280 (landed 2026-08-24).
 %   HumanEval Dream <- exp/41 dream (queued);
 %     remaining greedy cells need the greedy-Shibboleth mode (not yet implemented).
 % Greedy for Shibboleth means: reference decoder fixed to argmax, carriers still draw their

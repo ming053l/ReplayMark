@@ -89,23 +89,18 @@ and 144 full-sequence calls per 512-token document, and dispersed edits reduce d
 \section{Conclusion}
 \label{sec:conclusion}
 
-Shibboleth establishes model response as a watermark channel for masked DLMs. Its signal is a
-reproducible change in model probability under hidden context, rather than membership in a keyed
-token subset. The central lesson is the ordering: select a carrier with a symmetric response score,
-then reveal the keyed orientation. This separation yields an exact binomial test even when the text
-and model determine how many carriers are available.
-
-The method complements token-local watermarking rather than replacing it. It preserves the
-deployed decoding schedule and reaches $0.80$ TPR on LLaDA and $0.90$ on Dream with settings
-transferred without retuning. In return, the verifier must replay the same checkpoint 144 times per
-512-token document. Token-local detectors remain cheaper and reach higher TPR on LLaDA.
+Shibboleth encodes a keyed signal in reproducible model responses to hidden context. Selecting a
+carrier with a symmetric score before revealing the keyed direction yields an exact binomial test
+even with a data-dependent carrier count. The method preserves the deployed schedule and reaches
+$0.80$ TPR on LLaDA and $0.90$ on Dream without retuning, but needs 144 same-checkpoint calls per
+512-token document. It therefore complements cheaper token-local detectors, which perform better
+on LLaDA.
 
 \paragraph{Limitations.}
-The false-positive guarantee does not imply detection after editing. Random $10\%$ re-denoising
-reduces TPR from $0.35$ to $0.05$ at $R=1$ and from $0.88$ to $0.50$ at $R=16$, although one
-contiguous edited span leaves the measured TPR unchanged. Replay also requires the same checkpoint
-and numerical precision. Evaluation covers two masked DLMs, one prompt corpus, cohorts of
-16--50 documents, and provenance only; payload recovery is not measured.
+The false-positive guarantee does not imply editing tolerance: random $10\%$ re-denoising reduces
+TPR from $0.35$ to $0.05$ at $R=1$ and from $0.88$ to $0.50$ at $R=16$. Replay requires the same
+checkpoint and precision; evaluation covers two masked DLMs, one corpus, 16--50 documents per
+cohort, and provenance only.
 
 \clearpage
 \bibliographystyle{plainnat}
@@ -124,19 +119,4 @@ full task-accuracy grid, including the greedy-decoding cells.
 \input{tables/validity_table}
 \input{tables/robustness_table}
 \input{tables/quality_table_full}
-
-\section{Where the Watermark Can Be Written}
-\label{app:viz}
-
-Figure~\ref{fig:carriermap} replays the verifier's response bank over saved unwatermarked
-512-token outputs and maps the admission score of Eq.~\eqref{eq:admission} across every
-position. On this checkpoint the channel is wide: $97\%$ of positions retain probability
-mass on both response signs and pass the $s_{\min}=0.5$ gate, and the sharp, unwritable
-positions concentrate at the first tokens of a block, where the block-masked conditional is
-most constrained. The two showcased conditionals make the criterion concrete: a good
-carrier is a position where several plausible tokens disagree about the response sign, so
-committing either sign stays on-distribution; a one-sided position has a single dominant
-continuation, and the gate rejects it before the keyed orientation is revealed.
-
-\input{figures/fig_carrier_viz}
 \end{document}

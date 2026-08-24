@@ -120,9 +120,9 @@ def main():
         candidate_row(s, x + 25, 137 + 22*j, name, prob)
     s.text(x + 137, 237, "all are model proposals", 10.5, MUTED, anchor="middle")
 
-    # Stage 2: two context views assign candidate-specific response signs.
+    # Stage 2: two probe contexts assign candidate-specific response signs.
     x = xs[1]
-    s.text(x + 18, 93, "two replayable context views", 10.5, MUTED, "bold")
+    s.text(x + 18, 93, "two replayable probe contexts", 10.5, MUTED, "bold")
     s.rect(x + 18, 101, 131, 30, GOLD_FILL, "#D9BB7B", 6)
     s.text(x + 29, 119, "Cᵘ: near context hidden", 10.5, GOLD, "bold")
     s.rect(x + 159, 101, 143, 30, GOLD_FILL, "#D9BB7B", 6)
