@@ -17,6 +17,15 @@ checkpoint identity, numerical precision, and replay implementation part of
 the verification record.  Transfer across numerically different copies is not
 established by our experiments.
 
+\paragraph{What does a positive result mean?}
+The detector supports a narrow statement: under the registered key and replay
+procedure, the document contains more checkpoint-consistent carrier responses
+than expected by chance.  It does not identify the human who requested the
+text, establish that every passage came from the model, or rule out later
+editing.  Those questions require account records, cryptographic signatures,
+or separate forensic analysis.  Keeping this interpretation narrow is
+especially important when the detector is used outside a controlled benchmark.
+
 \paragraph{Editing reveals where synchronisation lives.}
 Dispersed edits alter many later prefixes and therefore many reconstructed
 probes; a contiguous span leaves all earlier carriers intact.  The measured
@@ -31,3 +40,13 @@ cohorts are too small to support claims about modest accuracy changes.  The
 relevant result is narrower: under the measured settings, Shibboleth's task
 score changes are small relative to the degradation observed for direct
 dgMARK on Dream, while its detector requires substantially more computation.
+
+\paragraph{Reporting and deployment.}
+The operational record should include the key identifier, checkpoint hash,
+numerical precision, probe construction, decision threshold, and the number of
+usable carriers.  Reporting the carrier count alongside the decision separates
+a weak result caused by too little text from a genuinely unaligned response.
+In a deployment, the verifier can also return the exact binomial probability
+rather than only a binary label, leaving the downstream policy to the operator.
+Our experiments validate the statistical calculation and measure several
+editing patterns; they do not define such a policy or its consequences.

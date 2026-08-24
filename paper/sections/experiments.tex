@@ -47,8 +47,7 @@ on 8--13 valid pairs per arm. Detection transfers here; the PPL-minimising setti
 
 \paragraph{Task accuracy exposes decoder-specific costs.}
 Table~\ref{tab:quality} shows each method's own unwatermarked and watermarked scores side by
-side; the full grid, including greedy-decoding cells, is Table~\ref{tab:quality_full} in
-Appendix~\ref{app:tables}.
+side; this pairing matters because each method uses a different decoding procedure.
 For Shibboleth, changes are at most $0.06$ across the measured MMLU, GSM8K, and HumanEval cells.
 For direct dgMARK on Dream, MMLU changes from $0.740$ to $0.570$ and GSM8K from $0.840$ to
 $0.560$. These task outputs are also shorter: on LLaDA GSM8K, Shibboleth and direct dgMARK reach
@@ -68,14 +67,13 @@ after deduplication two of thirty documents still cross the $0.1\%$ threshold. W
 
 \paragraph{Observed false positives remain below the requested levels.}
 Across 20 keys and 120 unwatermarked LLaDA generations per key
-(Table~\ref{tab:validity}, Appendix~\ref{app:tables}), mean FPR is $0.0121$, $0.0037$,
-and $0.0000$ at nominal $0.10$, $0.05$, and $0.01$. The largest per-key rates are $0.0583$,
+mean FPR is $0.0121$, $0.0037$, and $0.0000$ at nominal $0.10$, $0.05$, and $0.01$.
+The largest per-key rates are $0.0583$,
 $0.0250$, and $0.0000$. Every Dream unwatermarked cohort has zero false positives at $1\%$.
 
 \paragraph{Editing mainly breaks prefix synchronisation.}
 At $R=1$, same-model argmax re-denoising or deleting a random $10\%$ of positions reduces TPR at
-$1\%$ FPR from $0.35$ to $0.05$ on 20 documents
-(Table~\ref{tab:robustness}, Appendix~\ref{app:tables}). At $R=16,\kappa=0.05$ and 1024 tokens
+$1\%$ FPR from $0.35$ to $0.05$ on 20 documents. At $R=16,\kappa=0.05$ and 1024 tokens
 ($n=16$), a random $5\%$ edit leaves TPR at $0.88$, while a random $10\%$ edit reduces it to
 $0.50$; false-positive control remains valid on identically edited unwatermarked text. In
 contrast, re-denoising one contiguous span covering $10\%$ or $30\%$ of positions leaves TPR at
