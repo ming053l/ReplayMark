@@ -34,8 +34,9 @@ q_{i,\pm}^{\ell,\ell'}=\sum_z p_i^{\mathrm{base}}(z)
 S_i^{\ell,\ell'}=2\min(q_{i,+}^{\ell,\ell'},q_{i,-}^{\ell,\ell'}).
 \label{eq:admission}
 \end{equation}
-The score is high only when both directions remain available. At each position, Shibboleth keeps
-the pair with the largest $S_i$ and selects the position when $S_i>s_{\min}$, subject to an
+The score is twice the smaller mass: it is near one when the two directions are balanced and near
+zero when either direction is absent. At each position, Shibboleth keeps the pair with the largest
+$S_i$ and selects the position when $S_i>s_{\min}$, subject to an
 optional per-block cap. Choosing the best pair raises the measured mean score from $0.28$ for a
 fixed near/far pair to $0.45$.
 
@@ -44,9 +45,9 @@ sign. Carrier selection therefore reveals nothing about which sign will later be
 Figure~\ref{fig:blindadmission} makes this ordering explicit.
 \input{figures/fig_blind_admission}
 
-After selecting the carrier, a separate hash domain supplies
+After the carrier is fixed, a separate hash domain supplies an orientation
 $\epsilon_i\in\{-1,+1\}$. A target $w_i\in\{-1,+1\}$ represents the provenance or payload bit.
-Candidate $z$ counts as a match when
+Together they decide which response direction counts as a match:
 \begin{equation}
 m_i(z)=\mathbf{1}[w_i\epsilon_i g_i(z)>0].
 \label{eq:m}
@@ -54,7 +55,7 @@ m_i(z)=\mathbf{1}[w_i\epsilon_i g_i(z)>0].
 If $g_i(z)=0$, a second domain-separated bit assigns the outcome. Such a tie cannot be steered,
 but it remains an independent fair outcome for detection.
 
-\subsection{Writing the Requested Answer}
+\subsection{Embedding Without Changing the Schedule}
 \label{sec:embedding}
 
 The reference decoder still chooses the next position and supplies its live distribution $p_i$.
@@ -79,10 +80,11 @@ Its match probability is therefore
 \Pr[m_i=1]=1-(1-a_i)^R(1-q_i).
 \label{eq:hit}
 \end{equation}
-With no plausibility floor and no ties, $a_i=q_i$, giving
-$1-(1-q_i)^{R+1}$. Increasing $R$ strengthens detection but changes the sampling distribution;
-$\kappa$ limits how unlikely a guided proposal may be relative to the live argmax. It does not
-constrain the unchecked fallback or guarantee semantic quality, which we measure separately.
+With no plausibility floor and no ties, $a_i=q_i$, giving $1-(1-q_i)^{R+1}$. Equation~\eqref{eq:hit}
+separates the two controls: $R$ determines how many chances the sampler has to find an acceptable
+token, while $\kappa$ limits how unlikely that token may be relative to the live argmax. Larger $R$
+can strengthen detection but changes the sampling distribution; $\kappa$ does not constrain the
+unchecked fallback or guarantee semantic quality, which we measure separately.
 
 \subsection{Watermark Detection}
 \label{sec:theory}
@@ -96,8 +98,8 @@ T=\sum_{i\in P}m_i,\qquad
 p_{\mathrm{det}}=\Pr\!\left[\mathrm{Binomial}(|P|,\tfrac12)\geq T\right].
 \label{eq:test}
 \end{equation}
-Figure~\ref{fig:detection} follows a concrete five-carrier example from the replayed outcomes to
-the exact upper-tail probability.
+Figure~\ref{fig:detection} follows a five-carrier example from replayed outcomes to the exact
+upper-tail probability.
 
 \input{figures/fig_detection_wrap}
 
@@ -112,9 +114,9 @@ document length and carrier count.
 \end{proposition}
 
 \paragraph{Why adaptive carrier selection is allowed.}
-The text and model may determine how many carriers exist, which probe pair is chosen, and how
-large each response is. All of those choices are fixed before the independent orientation bit is
-used. Flipping $\epsilon_i$ then flips the match whenever $g_i(y_i)\neq0$; the tie rule supplies a
-fresh fair bit otherwise. The detector therefore needs neither an asymptotic approximation nor a
-calibration corpus. The guarantee still assumes text produced independently of the key and
-domain separation among the key's several roles.
+The text and model may determine the number of carriers, the probe pair, and the response size.
+What matters is that each choice is fixed before the independent orientation bit is used. Flipping
+$\epsilon_i$ then flips the match whenever $g_i(y_i)\neq0$; the tie rule supplies a fresh fair bit
+otherwise. The detector therefore needs neither an asymptotic approximation nor a calibration
+corpus. The guarantee still assumes text produced independently of the key and domain separation
+among the key's several roles.

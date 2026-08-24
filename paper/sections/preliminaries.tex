@@ -4,8 +4,9 @@
 \subsection{Masked Decoding}
 \label{sec:prelim}
 
-A masked DLM does not have a unique ``next token.'' It sees a sequence containing masks and
-returns a distribution at every unresolved position. Let $x$ be the prompt,
+A masked DLM predicts many unresolved positions at once rather than exposing a unique ``next
+token.'' Given a sequence containing masks, it returns a distribution at every unresolved
+position. Let $x$ be the prompt,
 $y=(y_1,\ldots,y_N)$ the continuation, and $I$ the positions already revealed. At any masked
 position $i\notin I$, the model provides $p_\theta(y_i\mid y_I,x)$. One forward pass over the
 full sequence provides these distributions for every unresolved position; we count this as one
@@ -19,9 +20,9 @@ the completed prefix before it. Shibboleth keeps both the block order and this c
 \subsection{Problem Setup}
 \label{sec:setup}
 
-The goal is to distinguish text generated with a secret document key from text generated
-independently of that key, at a false-positive rate fixed in advance. The watermark may change
-which token is sampled, but it should not replace the model's decoder or its schedule.
+We target keyed provenance detection: distinguish text generated with a secret document key from
+text produced independently of that key, at a false-positive rate fixed in advance. The watermark
+may change which token is sampled, but should not replace the model's decoder or its schedule.
 
 \paragraph{What the two parties retain.}
 The embedder has the model, prompt, secret key $K$, and target bits. The verifier later has the
@@ -38,11 +39,10 @@ detection after editing, key disclosure, adaptive detector queries
 ~\citep{jovanovic2024stealing}, or replay with a numerically different checkpoint.
 
 \paragraph{Why write during generation?}
-A tempting alternative is to watermark only after the text is complete. Across 36 post-hoc
-substitution settings, however, the
-median selected position has only one candidate within a 3-nat likelihood budget, and the best
-setting below a $1.35\times$ PPL budget reaches $0.10$ TPR at $1\%$ FPR. Shibboleth therefore
-writes while the model's live distribution is available.
+Editing only after completion offers too little freedom at most positions. Across 36 post-hoc
+substitution settings, the median selected position has only one candidate within a 3-nat
+likelihood budget; the best setting below a $1.35\times$ PPL budget reaches $0.10$ TPR at $1\%$
+FPR. Shibboleth therefore writes while the model's live distribution is still available.
 \label{sec:posthoc}
 
 The design follows three requirements:
@@ -55,6 +55,6 @@ response direction counts as a match.
 the reference decoder.
 \end{enumerate}
 
-Replayability makes a generation-time response measurable later; blind selection keeps
-data-dependent carrier discovery from changing the stated false-positive rate. The next three
-subsections implement these requirements.
+Replayability makes a generation-time response measurable later. Blind selection keeps adaptive
+carrier discovery from biasing the detector, while schedule preservation limits changes to the
+deployed generator. The next three subsections implement these requirements.

@@ -1,13 +1,13 @@
 \section{Introduction}
 \label{sec:intro}
 
-Language-model text can be difficult for readers to distinguish from human writing, creating
-provenance risks in disinformation, phishing, and academic-integrity review~\citep{liang2026survey}.
-A post-hoc detector learns the output patterns of a generator; a watermark instead changes
-generation under a secret key and lets the key holder test a later document
-~\citep{petitcolas1999hiding,kirchenbauer2023watermark}. We study watermarking because it permits
-a stated false-positive rate, including at finite sample size, rather than relying on a classifier
-whose behaviour may change with the decoder~\citep{krishna2023paraphrasing,
+When language-model text resembles human writing, its origin can be difficult to establish in
+settings such as disinformation analysis, phishing investigation, and academic-integrity review
+~\citep{liang2026survey}. A post-hoc detector learns recurring output patterns; a watermark instead
+changes generation under a secret key and lets the key holder test a later document
+~\citep{petitcolas1999hiding,kirchenbauer2023watermark}. We focus on watermarking because it can
+offer a stated finite-sample false-positive rate, rather than relying on a classifier whose behaviour
+may change with the decoder~\citep{krishna2023paraphrasing,
 jovanovic2024stealing,zhao2024provable,christ2024undetectable}.
 
 % Keep the first page available for prose, but prevent this top float from
@@ -23,20 +23,21 @@ For masked DLMs, that decoder may resolve many positions in parallel and choose 
 confidence, so forcing a resolved prefix or steering the order can change the system being
 watermarked~\citep{hong2026dgmark}.
 
-Our starting observation is simple: a masked DLM can answer a reproducible question about its own
-output. Take a completed sentence, hide one subset of its earlier context, and record the
+This tension suggests a different question: can the originating model, rather than the token alone,
+carry the signal? A masked DLM can answer a reproducible question about its own output. Take a
+completed sentence, hide one subset of its earlier context, and record the
 probability of an emitted token; then hide a second subset and record it again. Some candidates
 become more likely and others less likely. The sign of that change is a \emph{model response}.
 Because the verifier can recreate both hidings from the finished text, this response can carry a
 keyed signal even when the token identity alone does not (Figure~\ref{fig:paradigm}b).
 
-Two details determine whether this idea is statistically sound. First, verification must recreate
-exactly the state used during generation, although later tokens are now visible. Second, a method
-may choose positions where both response directions are plausible, but it must do so before the key
-reveals which direction will count as a match. Otherwise position selection itself raises the
-false-positive rate.
+Two obstacles separate this observation from a valid detector. First, verification must recreate
+the generation-time state even though the full continuation is now visible. Second, the method may
+seek positions where both response directions are plausible, but it must finish that search before
+the key reveals which direction counts as a match. Reversing this order would bias the selected
+positions toward the requested answer.
 
-Shibboleth addresses both points. For each active block, it re-masks that block and its suffix,
+Shibboleth addresses both obstacles. For each active block, it re-masks that block and its suffix,
 compares pairs of hidden-prefix probes, and selects positions that retain probability mass on both
 response directions. The key then supplies the requested direction. At a selected position,
 Shibboleth draws up to $R$ candidates from the decoder's current distribution and commits the first
@@ -46,8 +47,8 @@ order, and checkpoint probabilities remain those of the reference decoder.
 
 Our contributions are:
 \begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt]
-\item We introduce model-response watermarking, where the signal is a checkpoint's reproducible
-reaction to hidden context rather than a keyed pattern in token identities.
+\item We introduce model-response watermarking: the signal is a checkpoint's reproducible reaction
+to hidden context rather than a keyed pattern in token identities.
 \item We give a replayable construction whose carrier positions are selected before the keyed
 orientation is consulted, yielding finite-sample false-positive control while preserving the
 reference decoding schedule (Sections~\ref{sec:setup}--\ref{sec:theory}).

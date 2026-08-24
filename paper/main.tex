@@ -58,25 +58,25 @@
 \maketitle
 
 \begin{abstract}
-Most text watermarks encode a secret in the chosen tokens and later inspect the text alone.
-We study a different channel available in masked diffusion language models (DLMs): after
-generation, the same model can reveal how an emitted token's probability changes when selected
-parts of its context are hidden. This reproducible response ties the watermark to both the text
-and the checkpoint.
+Text watermarks usually hide a secret in token choices and later test those tokens without
+rerunning the generator. We ask whether a masked diffusion language model (DLM) can instead help
+verify its own output. Hiding selected parts of the context changes the probability of an emitted
+token in a reproducible, checkpoint-specific direction. Shibboleth uses that model response as the
+watermark carrier.
 
-Shibboleth turns that response into a detector. It first finds positions whose candidate tokens
-span both response directions. Only after a position is selected does the key choose which
-direction to favour. The generator then resamples from the current model distribution, without
-changing the decoding schedule. Verification reconstructs the same masked contexts from the
-finished text and counts keyed sign agreements. Because position selection cannot observe the
-requested sign, text generated independently of the key produces an exact binomial count.
+The method first finds positions where plausible candidates exhibit both response directions.
+Only after a position is fixed does the key choose which direction to favour. The generator then
+resamples from its current distribution without changing the decoding schedule. To verify a
+finished document, Shibboleth reconstructs the same masked contexts and counts how often the
+responses agree with the key. Position selection cannot observe the requested direction, so text
+produced independently of the key gives an exact binomial count.
 
 At $1\%$ FPR, Shibboleth reaches $0.80$ TPR on LLaDA-8B-Instruct and $0.90$ on
-Dream-7B-Instruct. The strongest token-based baseline reaches $0.93$ on LLaDA, but falls to
-$0.57$ or below on Dream when its LLaDA setting is transferred unchanged. At Shibboleth's main
-setting, the PPL ratio is $0.74\times$ on LLaDA and $1.09\times$ on Dream, while measured task-score
-changes are at most $0.06$. Verification requires the same checkpoint and 144 full-sequence model
-calls per 512-token document; dispersed edits reduce detection power.
+Dream-7B-Instruct. The strongest token-local baseline reaches $0.93$ on LLaDA but $0.57$ or less
+on Dream when its LLaDA setting is transferred unchanged. At Shibboleth's main setting, the PPL
+ratio is $0.74\times$ on LLaDA and $1.09\times$ on Dream, and changes across the measured task
+scores are at most $0.06$. This checkpoint binding has a cost: verification needs the same model
+and 144 full-sequence calls per 512-token document, and dispersed edits reduce detection power.
 \end{abstract}
 
 \input{sections/introduction}
@@ -89,16 +89,16 @@ calls per 512-token document; dispersed edits reduce detection power.
 \section{Conclusion}
 \label{sec:conclusion}
 
-Shibboleth shows that a masked DLM can participate in authenticating its own output. The
-watermark is carried by reproducible changes in model probability under hidden context, rather
-than by a keyed token subset. Its central design choice is temporal: select a carrier from a
-symmetric response score first, then reveal the keyed orientation. This ordering gives an exact
-binomial test even though the text and model determine how many carriers are available.
+Shibboleth establishes model response as a watermark channel for masked DLMs. Its signal is a
+reproducible change in model probability under hidden context, rather than membership in a keyed
+token subset. The central lesson is the ordering: select a carrier with a symmetric response score,
+then reveal the keyed orientation. This separation yields an exact binomial test even when the text
+and model determine how many carriers are available.
 
-The result complements token-local watermarking rather than replacing it. Shibboleth preserves
-the deployed decoding schedule, and its TPR rises from $0.80$ on LLaDA to $0.90$ on Dream under
-settings transferred without retuning. Its verifier, however, must rerun the same checkpoint 144
-times per 512-token document. Token-local detectors remain cheaper and, on LLaDA, reach higher TPR.
+The method complements token-local watermarking rather than replacing it. It preserves the
+deployed decoding schedule and reaches $0.80$ TPR on LLaDA and $0.90$ on Dream with settings
+transferred without retuning. In return, the verifier must replay the same checkpoint 144 times per
+512-token document. Token-local detectors remain cheaper and reach higher TPR on LLaDA.
 
 \paragraph{Limitations.}
 The false-positive guarantee does not imply detection after editing. Random $10\%$ re-denoising
