@@ -5,8 +5,8 @@ One paper figure, three panels:
       score S = 2 min(q+, q-): where the block-masked conditional keeps mass on both
       response signs, i.e. where a watermark bit can be written. Admitted cells
       (S > 0.5) are outlined.
-  (b) every position of both documents in the (q+, q-) plane; the gate admits the
-      corner q+ > 0.25 and q- > 0.25. Gray = rejected, blue = admitted.
+  (b) distribution of S over all positions of both documents (q+ + q- ~ 1 on real
+      text, so S ~ 1 - |q+ - q-|); the s_min = 0.5 gate cuts the sharp tail.
   (c) the block-masked conditional at a strong carrier vs a one-sided position:
       top-12 tokens, bar color = response sign. A carrier needs mass on both colors.
 
@@ -46,34 +46,31 @@ im = axa.imshow(Sgrid, aspect="auto", cmap=cmap, vmin=0, vmax=1,
                 interpolation="nearest")
 for b in range(NB):
     for j in range(BLK):
-        if adm[b, j]:
+        if not adm[b, j]:
             axa.add_patch(Rectangle((j - 0.5, b - 0.5), 1, 1, fill=False,
-                                    edgecolor=ORANGE, linewidth=0.9))
+                                    edgecolor=ORANGE, linewidth=1.1))
 axa.set_xlabel("position within block")
 axa.set_ylabel("block")
-axa.set_title(r"(a) admission score $S_i = 2\min(q_{i,+},\,q_{i,-})$ over one "
-              r"512-token document; outlined cells are admitted ($S_i > 0.5$)",
+axa.set_title(r"(a) admission score $S_i = 2\min(q_{i,+},\,q_{i,-})$ over one 512-token "
+              r"document; orange outline: rejected ($S_i \leq 0.5$), no bit can be written",
               loc="left")
 cb = fig.colorbar(im, ax=axa, fraction=0.025, pad=0.01)
 cb.set_label(r"$S_i$")
 
-# ---- (b) (q+, q-) plane ----
+# ---- (b) distribution of S ----
 axb = fig.add_subplot(gs[1, 0])
-qp = np.array([r["qp"] for d in D["docs"] for r in d])
-qm = np.array([r["qm"] for d in D["docs"] for r in d])
-sel = np.minimum(qp, qm) > 0.25
-axb.scatter(qp[~sel], qm[~sel], s=4, c=GRAY, alpha=0.45, linewidths=0,
-            label="rejected")
-axb.scatter(qp[sel], qm[sel], s=5, c=BLUE, alpha=0.8, linewidths=0,
-            label="admitted")
-axb.axvline(0.25, ls="--", lw=0.8, c="#555555")
-axb.axhline(0.25, ls="--", lw=0.8, c="#555555")
-axb.plot([0, 1], [1, 0], lw=0.6, c="#BBBBBB")
-axb.set_xlim(0, 1); axb.set_ylim(0, 1)
-axb.set_xlabel(r"$q_{i,+}$ (mass responding $+$)")
-axb.set_ylabel(r"$q_{i,-}$ (mass responding $-$)")
-axb.set_title("(b) the balanced gate", loc="left")
-axb.legend(frameon=False, loc="upper right", handletextpad=0.2)
+S = np.array([r["S"] for d in D["docs"] for r in d])
+bins = np.linspace(0, 1, 41)
+axb.hist(S[S > 0.5], bins=bins, color=BLUE, label="admitted")
+axb.hist(S[S <= 0.5], bins=bins, color=ORANGE, label="rejected")
+axb.axvline(0.5, ls="--", lw=0.9, c="#555555")
+axb.text(0.49, axb.get_ylim()[1] * 0.95, r"$s_{\min}$", ha="right", va="top",
+         fontsize=7, color="#555555")
+axb.set_yscale("log")
+axb.set_xlabel(r"$S_i$")
+axb.set_ylabel("positions")
+axb.set_title(f"(b) score distribution ({len(S)} positions)", loc="left")
+axb.legend(frameon=False, loc="upper left", handletextpad=0.4)
 
 # ---- (c) showcase conditionals ----
 for col, (key, ttl) in enumerate(

@@ -124,4 +124,19 @@ full task-accuracy grid, including the greedy-decoding cells.
 \input{tables/validity_table}
 \input{tables/robustness_table}
 \input{tables/quality_table_full}
+
+\section{Where the Watermark Can Be Written}
+\label{app:viz}
+
+Figure~\ref{fig:carriermap} replays the verifier's response bank over saved unwatermarked
+512-token outputs and maps the admission score of Eq.~\eqref{eq:admission} across every
+position. On this checkpoint the channel is wide: $97\%$ of positions retain probability
+mass on both response signs and pass the $s_{\min}=0.5$ gate, and the sharp, unwritable
+positions concentrate at the first tokens of a block, where the block-masked conditional is
+most constrained. The two showcased conditionals make the criterion concrete: a good
+carrier is a position where several plausible tokens disagree about the response sign, so
+committing either sign stays on-distribution; a one-sided position has a single dominant
+continuation, and the gate rejects it before the keyed orientation is revealed.
+
+\input{figures/fig_carrier_viz}
 \end{document}

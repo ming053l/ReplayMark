@@ -1,0 +1,21 @@
+% Carrier-suitability visualization (exp/43): data from results/43_viz.json — a CPU replay
+% of the verifier's response bank over two saved unwatermarked 512-token LLaDA outputs
+% (results/23_floor.json control arm). Rendered by exp/43_viz_plot.py. Every number in the
+% caption is measured; regenerate the PDF only from that script.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_carrier_map.pdf}
+\caption{\textbf{Where the watermark can be written.} The verifier's response bank replayed
+over an unwatermarked 512-token LLaDA output. (a)~Admission score
+$S_i=2\min(q_{i,+},q_{i,-})$ at every position of one document; orange outlines mark the
+rejected positions ($S_i\leq s_{\min}=0.5$), where the block-masked conditional concentrates
+on one response sign and no bit can be written. (b)~Across $1024$ positions of two documents,
+$97\%$ pass the gate; since $q_{i,+}+q_{i,-}\approx 1$ on real text,
+$S_i\approx 1-|q_{i,+}-q_{i,-}|$, and the gate removes the sharp tail. Thirty of the
+thirty-one rejected positions sit within the first six tokens of a block, where the
+conditional is most constrained. (c)~A strong carrier: the conditional spreads its mass over
+tokens of both response signs, so either sign can be committed from a plausible token.
+(d)~A one-sided position: a single dominant token fixes the response, and the position is
+rejected before the key's orientation is consulted.}
+\label{fig:carriermap}
+\end{figure}
