@@ -22,25 +22,25 @@
 % evaluations per token, hence ~2048 at 512 tokens.
 \begin{table}[t]
 \centering
-\footnotesize
-\renewcommand{\arraystretch}{0.78}
-\setlength{\tabcolsep}{5.8pt}
-\begin{tabular}{lllrrrrr}
+\small
+\renewcommand{\arraystretch}{0.84}
+\setlength{\tabcolsep}{5.6pt}
+\begin{tabular}{llrrrrr}
 \toprule
-& & & & \multicolumn{2}{c}{TPR at FPR $\uparrow$}
+& & & \multicolumn{2}{c}{TPR at FPR $\uparrow$}
     & \multicolumn{2}{c}{Sequence evaluations $\downarrow$} \\
-\cmidrule(lr){5-6}\cmidrule(lr){7-8}
-Method & Venue & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Generation & Detection \\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Method & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Generation & Detection \\
 \midrule
-\multicolumn{8}{@{}l}{\emph{LLaDA-8B-Instruct}}\\
-KGW \citep{kirchenbauer2023watermark} & ICML'23 & $\delta=1$ & 1.22$\times$ & 0.90 & 0.83 & 512 & \textbf{0} \\
-dgMARK \citep{hong2026dgmark} & ICML'26 & $k=1$ & 1.45$\times$ & 0.83 & 0.80 & 512 & \textbf{0} \\
-dgMARK \citep{hong2026dgmark} & ICML'26 & $+3$-beam & 1.21$\times$ & \textbf{0.93} & \textbf{0.93} & $\sim$2048 & \textbf{0} \\
+\multicolumn{7}{@{}l}{\emph{LLaDA-8B-Instruct}}\\
+KGW \citep{kirchenbauer2023watermark} & $\delta=1$ & 1.22$\times$ & 0.90 & 0.83 & 512 & \textbf{0} \\
+dgMARK \citep{hong2026dgmark} & $k=1$ & 1.45$\times$ & 0.83 & 0.80 & 512 & \textbf{0} \\
+dgMARK \citep{hong2026dgmark} & $+3$-beam & 1.21$\times$ & \textbf{0.93} & \textbf{0.93} & $\sim$2048 & \textbf{0} \\
 \addlinespace[1.5pt]
-\textcolor{oursemph}{Shibboleth} & ours & $R=1$ & 0.97$\times$ & 0.43 & 0.20 & 656 & 144 \\
-\textcolor{oursemph}{Shibboleth} & ours & $R=8,\kappa=0.1$ & 0.87$\times$ & 0.70 & 0.60 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & $R=1$ & 0.97$\times$ & 0.43 & 0.20 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$ & 0.87$\times$ & 0.70 & 0.60 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{Shibboleth} & ours & $R=16,\kappa=0.05$ & \textbf{0.74}$\times$ & 0.80 & 0.60 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$ & \textbf{0.74}$\times$ & 0.80 & 0.60 & 656 & 144 \\
 % ---- Dream-7B-Instruct block ----
 % Shibboleth rows <- exp/36 (results/36_dream.json, landed 2026-08-23): control sync 0.503
 %   TPR 0/0/0; R1 sync .596; R8k10 sync .648 ppl x0.788 (13 valid pairs); R16k05 sync .725
@@ -53,15 +53,15 @@ dgMARK \citep{hong2026dgmark} & ICML'26 & $+3$-beam & 1.21$\times$ & \textbf{0.9
 % caption carries the same-settings caveat; do not tune baselines per-model without also
 % re-tuning ours.
 \midrule
-\multicolumn{8}{@{}l}{\emph{Dream-7B-Instruct}}\\
-KGW \citep{kirchenbauer2023watermark} & ICML'23 & $\delta=1$ & 1.84$\times$ & 0.57 & 0.37 & 512 & \textbf{0} \\  % exp/37: dup bigrams 0.84 under forced LTR; control z +0.43, 0/30 @1%
-dgMARK \citep{hong2026dgmark} & ICML'26 & $k=1$ & 1.75$\times$ & 0.37 & 0.27 & 512 & \textbf{0} \\  % exp/38: control z +0.10
-dgMARK \citep{hong2026dgmark} & ICML'26 & $+3$-beam & \textbf{0.71}$\times$ & 0.30 & 0.30 & $\sim$2048 & \textbf{0} \\  % exp/38
+\multicolumn{7}{@{}l}{\emph{Dream-7B-Instruct}}\\
+KGW \citep{kirchenbauer2023watermark} & $\delta=1$ & 1.84$\times$ & 0.57 & 0.37 & 512 & \textbf{0} \\  % exp/37: dup bigrams 0.84 under forced LTR; control z +0.43, 0/30 @1%
+dgMARK \citep{hong2026dgmark} & $k=1$ & 1.75$\times$ & 0.37 & 0.27 & 512 & \textbf{0} \\  % exp/38: control z +0.10
+dgMARK \citep{hong2026dgmark} & $+3$-beam & \textbf{0.71}$\times$ & 0.30 & 0.30 & $\sim$2048 & \textbf{0} \\  % exp/38
 \addlinespace[1.5pt]
-\textcolor{oursemph}{Shibboleth} & ours & $R=1$ & 1.34$\times$ & 0.40 & 0.27 & 656 & 144 \\
-\textcolor{oursemph}{Shibboleth} & ours & $R=8,\kappa=0.1$ & 0.79$\times$ & 0.70 & 0.67 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & $R=1$ & 1.34$\times$ & 0.40 & 0.27 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$ & 0.79$\times$ & 0.70 & 0.67 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{Shibboleth} & ours & $R=16,\kappa=0.05$ & 1.09$\times$ & \textbf{0.90} & \textbf{0.90} & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$ & 1.09$\times$ & \textbf{0.90} & \textbf{0.90} & 656 & 144 \\
 \bottomrule
 \end{tabular}
 \caption{\textbf{Detectability and cost at 512 tokens.} PPL ratio is measured against each
