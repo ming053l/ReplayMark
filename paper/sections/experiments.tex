@@ -148,12 +148,13 @@ Proposition~\ref{prop:null} is analytical, which is why we also measure the rule
 keys and $120$ non-watermarked generations apiece on LLaDA, the mean FPR is $0.0121$, $0.0037$ and
 $0.0000$ at nominal $0.10$, $0.05$ and $0.01$, and the worst individual key gives $0.0583$,
 $0.0250$ and $0.0000$, and control consequently holds for every key rather than on average
-alone, which is what binds when one key serves many documents. Every Dream control cohort in
+alone, which is what binds when one key serves many documents
+(Table~\ref{tab:validity}, Appendix~\ref{app:tables}). Every Dream control cohort in
 this section behaves the same way, with zero false positives at $1\%$ throughout.
 
-\input{tables/robustness_table}
 \paragraph{Post-editing.}
-Edit robustness is the channel's principal failure mode, and it degrades abruptly, since
+Edit robustness is the channel's principal failure mode (Table~\ref{tab:robustness},
+Appendix~\ref{app:tables}), and it degrades abruptly, since
 same-model argmax re-denoising of a random $10\%$ of token positions takes TPR at $1\%$ FPR from
 $0.35$ to $0.05$ on 20 $R=1$ documents and deleting $10\%$ measures the same. The collapse is
 one of synchronisation rather than signal strength, because an early edit alters the fixed
