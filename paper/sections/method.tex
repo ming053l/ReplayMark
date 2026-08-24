@@ -97,6 +97,8 @@ p_{\mathrm{det}}=\Pr\!\left[\mathrm{Binomial}(|P|,\tfrac12)\geq T\right].
 \label{eq:test}
 \end{equation}
 
+\input{figures/fig_detection_wrap}
+
 \begin{proposition}[Exact false-positive control]
 \label{prop:fpr}
 Assume the hash domains behave as independent random functions. For any text written without the
@@ -106,8 +108,6 @@ $\mathrm{Bernoulli}(\tfrac12)$ variables, $T\sim\mathrm{Binomial}(|P|,\tfrac12)$
 thresholding Eq.~\eqref{eq:test} at $\alpha$ gives false-positive rate at most $\alpha$ for every
 document length and carrier count.
 \end{proposition}
-
-\input{figures/fig_detection_wrap}
 
 \paragraph{Why adaptive carrier selection is allowed.}
 The text and model may determine how many carriers exist, which probe pair is chosen, and how
