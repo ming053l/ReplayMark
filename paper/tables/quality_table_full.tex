@@ -4,12 +4,12 @@
 %   GSM8K, multinomial, control & Shibboleth rows:
 %     LLaDA  <- exp/32, results/32_gsm8k.json — LANDED 2026-08-22: control 0.640 (32/50),
 %       R16k05 0.700 (35/50); paired flips 5 up / 2 down => tie within noise, do NOT claim
-%       an improvement. Control detection at null (.02@1%), wm arm .12@1% (256-tok docs,
-%       few carriers — expected, not the headline TPR).
+%       an improvement. Unwatermarked detection .02@1%, wm arm .12@1% (256-tok docs,
+%       few carriers; this differs from the 512-token detectability evaluation).
 %     Dream  <- exp/39, results/39_dream_gsm8k.json (queued, run36.sh)
 %   Peer GSM8K rows <- exp/42 (results/42_peer_gsm8k_{llada,dream}.json). LLaDA LANDED
 %     2026-08-23: kgw_d0 (LTR control) 0.640; kgw_d1 0.740 — but z +0.46, TPR@1% 0.00: KGW
-%     delta=1 BARELY EMBEDS on short task outputs; dg_orig (argmax control) 0.740 — also
+%     delta=1 has low detection on short task outputs; dg_orig (argmax control) 0.740 — also
 %     fills the greedy Non-watermarked GSM8K cell; dg_wm 0.660 TPR@1% .12; dg_beam3 0.660
 %     TPR@1% .44. All accuracy deltas within noise at n=50 (SE of a difference ~0.09).
 %     KGW rows decode left-to-right (their green list requires it); caption says so.
@@ -18,7 +18,7 @@
 %     Non-wm cell) 0.840; dg_wm 0.560 and dg_beam3 0.560 — a REAL -0.28 accuracy cost
 %     (42/50 -> 28/50), beyond noise; beam3 detects .66@1% on task outputs, z +3.03.
 %   Shibboleth Dream row LANDED (exp/39, results/39_dream_gsm8k.json): control 0.660,
-%     R16k05 0.680, paired 9 up / 8 down = dead tie; control at null (0.00@1%), wm arm
+%     R16k05 0.680, paired 9 up / 8 down = dead tie; unwatermarked arm 0.00@1%, wm arm
 %     .22@1% on 256-tok outputs. Dream multinomial Non-wm cell = exp/39's control.
 %   MMLU LLaDA LANDED 2026-08-24 (exp/40, results/40_mmlu_llada.json; 200q, SE~3.5%):
 %     control 0.595, shib 0.575 (within noise); kgw_d0 0.530 / kgw_d1 0.535 (LTR base is

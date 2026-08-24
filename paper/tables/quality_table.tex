@@ -1,35 +1,39 @@
-% Compact main-text version: multinomial columns only. The full greedy+multinomial grid
-% (with provenance comments for every cell) lives in tables/quality_table_full.tex and is
-% shown in Appendix A. Keep BOTH in sync when a cell lands.
+% Each cell shows the method-specific unwatermarked run followed by the
+% watermarked run. Values come from the experiment records documented in
+% quality_table_full.tex.
 \begin{table}[t]
 \centering
 \footnotesize
-\renewcommand{\arraystretch}{0.74}
-\begin{tabular}{llrrr}
+\renewcommand{\arraystretch}{0.82}
+\setlength{\tabcolsep}{5.5pt}
+\begin{tabular}{lccc}
 \toprule
-Model & Method & MMLU Acc $\uparrow$ & GSM8K Acc $\uparrow$ & HumanEval Pass@1 $\uparrow$ \\
+Method & MMLU Acc $\uparrow$ & GSM8K Acc $\uparrow$ & HumanEval Pass@1 $\uparrow$ \\
 \midrule
-LLaDA-8B-Instruct & Non-watermarked & 0.595 & 0.640 & 0.335 \\
-      & KGW \citep{kirchenbauer2023watermark} & 0.535 & 0.740 & 0.293 \\
-      & dgMARK \citep{hong2026dgmark} & 0.530 & 0.660 & \tbd \\
-      & dgMARK $+3$-beam & 0.530 & 0.660 & \tbd \\
+\multicolumn{4}{@{}l}{\emph{LLaDA-8B-Instruct}}\\
+KGW \citep{kirchenbauer2023watermark}
+  & 0.530$\rightarrow$0.535 & 0.640$\rightarrow$0.740 & 0.329$\rightarrow$0.293 \\
+dgMARK \citep{hong2026dgmark}
+  & 0.605$\rightarrow$0.530 & 0.740$\rightarrow$0.660 & \tbd \\
+dgMARK $+3$-beam
+  & 0.605$\rightarrow$0.530 & 0.740$\rightarrow$0.660 & \tbd \\
 \rowcolor{finalres}
-      & \textcolor{oursemph}{Shibboleth} & 0.575 & 0.700 & 0.384 \\
+\textcolor{oursemph}{Shibboleth}
+  & 0.595$\rightarrow$0.575 & 0.640$\rightarrow$0.700 & 0.335$\rightarrow$0.384 \\
 \midrule
-Dream-7B-Instruct & Non-watermarked & 0.695 & 0.660 & \tbd \\
-      & KGW & 0.625 & 0.700 & \tbd \\
-      & dgMARK & 0.570 & 0.560 & \tbd \\
-      & dgMARK $+3$-beam & 0.645 & 0.560 & \tbd \\
+\multicolumn{4}{@{}l}{\emph{Dream-7B-Instruct}}\\
+KGW & 0.640$\rightarrow$0.625 & 0.700$\rightarrow$0.700 & \tbd \\
+dgMARK & 0.740$\rightarrow$0.570 & 0.840$\rightarrow$0.560 & \tbd \\
+dgMARK $+3$-beam & 0.740$\rightarrow$0.645 & 0.840$\rightarrow$0.560 & \tbd \\
 \rowcolor{finalres}
-      & \textcolor{oursemph}{Shibboleth} & 0.710 & 0.680 & \tbd \\
+\textcolor{oursemph}{Shibboleth}
+  & 0.695$\rightarrow$0.710 & 0.660$\rightarrow$0.680 & \tbd \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Text generation quality} under multinomial decoding: MMLU~\citep{hendrycks2021mmlu}
-(200 questions), GSM8K~\citep{cobbe2021gsm8k} (50 problems) and
-HumanEval~\citep{chen2021humaneval} (164 tasks, executed). Shibboleth uses $R=16,\kappa=0.05$.
-Each watermark decodes under its own regime — KGW left-to-right, dgMARK under confidence
-decoding — and is read against its own control (Appendix~\ref{app:tables}), not across rows;
-differences under one standard error ($0.035$ on MMLU, $0.07$ on GSM8K, $0.037$ on HumanEval)
-are noise. Greedy-decoding cells are in Table~\ref{tab:quality_full}.}
+\caption{\textbf{Task accuracy before and after watermarking.} Each cell is
+unwatermarked $\rightarrow$ watermarked under that method's decoder. MMLU uses 200 questions,
+GSM8K 50 problems, and HumanEval 164 executed tasks. Approximate standard errors are 0.035,
+0.07, and 0.037, respectively; \tbd\ denotes an unmeasured pair. Shibboleth uses
+$R=16,\kappa=0.05$.}
 \label{tab:quality}
 \end{table}

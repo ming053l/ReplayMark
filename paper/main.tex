@@ -22,11 +22,13 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{wrapfig}
 \floatstyle{ruled}
 \newfloat{algorithm}{tbp}{loa}
 \floatname{algorithm}{Algorithm}
 \usepackage{enumitem}
 \usepackage{amsthm}
+\theoremstyle{definition}
 \newtheorem{proposition}{Proposition}
 \usepackage{microtype}
 \usepackage{tikz}
@@ -46,7 +48,7 @@
 \usepackage{url}
 
 % Draft placeholder for a cell that has no measurement yet.
-\newcommand{\tbd}{\textcolor{BrickRed}{\textbf{??}}}
+\newcommand{\tbd}{\textemdash}
 \newcommand{\needcite}{\textcolor{BrickRed}{\textbf{[cite?]}}}
 
 \title{Shibboleth: Probe-and-Replay Model-Response\\Watermarking for Diffusion Language Models}
@@ -56,25 +58,25 @@
 \maketitle
 
 \begin{abstract}
-We propose Shibboleth, a model-response watermark for masked diffusion language models (DLMs).
-A masked DLM can be re-evaluated on its own output under any remasking of the context, and
-because a practical DLM shifts the likelihood of an emitted token by an amount its own weights
-determine, a watermarking channel opens in the relation between a text and the model rather
-than in the tokens. Shibboleth evaluates a keyed family of context probes against each masked
-block, admits as carriers only the positions whose block-masked conditional retains mass on
-both response signs, and resamples at those carriers from the live conditional until the
-requested sign is committed, leaving the model's probabilities and the decoding schedule
-untouched. Because the admitting gate is invariant to swapping two probes, it is blind to the
-sign the key will request, so carriers may be discovered adaptively without disturbing the
-null. Detection re-masks the finished text, rebuilds the probes and carriers, and counts keyed
-sign matches, whose null distribution is exactly binomial, so $p$-values are exact at finite
-sample size under carriers the method itself chose. It reaches $0.80$ TPR at $1\%$ FPR on
-LLaDA-8B-Instruct — below the strongest token-based detector there, at the only perplexity
-ratio reading below its own unwatermarked baseline — and $0.90$ on Dream-7B-Instruct, where
-every token-local baseline weakens under transfer and the model-response channel is the
-strongest detector measured. Verification costs one rerun of the checkpoint, and evidence
-written against a prefix degrades under dispersed editing, leaving the method suited to a
-verifier that holds the checkpoint rather than to open screening.
+Most text watermarks encode a secret in the chosen tokens and later inspect the text alone.
+We study a different channel available in masked diffusion language models (DLMs): after
+generation, the same model can reveal how an emitted token's probability changes when selected
+parts of its context are hidden. This reproducible response ties the watermark to both the text
+and the checkpoint.
+
+Shibboleth turns that response into a detector. It first finds positions whose candidate tokens
+span both response directions. Only after a position is selected does the key choose which
+direction to favour. The generator then resamples from the current model distribution, without
+changing the decoding schedule. Verification reconstructs the same masked contexts from the
+finished text and counts keyed sign agreements. Because position selection cannot observe the
+requested sign, text generated independently of the key produces an exact binomial count.
+
+At $1\%$ FPR, Shibboleth reaches $0.80$ TPR on LLaDA-8B-Instruct and $0.90$ on
+Dream-7B-Instruct. Token-based detectors reach $0.90$--$0.93$ on LLaDA, but Shibboleth is the
+only evaluated row there with a PPL ratio below its own unwatermarked run; on Dream it has the
+highest TPR under settings transferred unchanged from LLaDA. Verification requires 144 masked
+evaluations per 512-token document, access to the same checkpoint, and loses power under
+dispersed editing.
 \end{abstract}
 
 \input{sections/introduction}
@@ -86,25 +88,23 @@ verifier that holds the checkpoint rather than to open screening.
 \section{Conclusion}
 \label{sec:conclusion}
 
-Shibboleth argues provenance from a keyed probe that a masked DLM answers about its own output
-rather than from a pattern left in the tokens, and because the gate is settled before the key
-names the sign it accepts, carriers may be discovered adaptively at no cost to the detector's
-exact $p$-values. The trade pays where the decoding schedule must not change, where the
-evidence wanted is one a specified model can vouch for, which a key--token hash cannot
-supply, and, as the two-model comparison shows, where a token-local channel's strength would
-otherwise hinge on the decoder behaviour it exploits: both baselines weakened sharply when
-carried unchanged from LLaDA to Dream while the probe travelled with the model. Where a token-local watermark does
-bite, it stays cheaper and easier to resynchronise after edits.
+Shibboleth shows that a masked DLM can participate in authenticating its own output. The
+watermark is carried by reproducible changes in model probability under hidden context, rather
+than by a keyed token subset. Its central design choice is temporal: select a carrier from a
+symmetric response score first, then reveal the keyed orientation. This ordering gives an exact
+binomial test even though the text and model determine how many carriers are available.
+
+The result complements token-local watermarking rather than replacing it. Shibboleth preserves
+the deployed decoding schedule and transfers strongly from LLaDA to Dream, but its verifier must
+rerun the same checkpoint 144 times per 512-token document. Token-local detectors remain cheaper
+and, on LLaDA, reach higher TPR.
 
 \paragraph{Limitations.}
-That guarantee is one-sided: soundness holds for any text written without the key, nothing
-is claimed in the other direction, and dispersed editing degrades detection while contiguous
-edits cost nothing (Section~\ref{sec:calibration}), so Shibboleth claims resilience to light
-or localized editing at high redundancy and no more. Verification costs 144 masked evaluations per document,
-ruling out corpus screening, and is bound to one checkpoint and precision. The evaluation is
-narrow (two masked DLMs, one prompt corpus, cohorts of 16--50 documents, provenance only; the
-payload construction of Section~\ref{sec:theory} is unmeasured); Appendix~\ref{app:future}
-lists repairs.
+The false-positive guarantee does not imply detection after editing. Random $10\%$ re-denoising
+reduces TPR from $0.35$ to $0.05$ at $R=1$ and from $0.88$ to $0.50$ at $R=16$, although one
+contiguous edited span leaves the measured TPR unchanged. Replay also requires the same checkpoint
+and numerical precision. Evaluation covers two masked DLMs, one prompt corpus, cohorts of
+16--50 documents, and provenance only; payload recovery is not measured.
 
 \clearpage
 \bibliographystyle{plainnat}
@@ -115,44 +115,13 @@ lists repairs.
 \section{Additional Tables}
 \label{app:tables}
 
-Table~\ref{tab:quality_full} is the full quality grid, including the greedy-decoding
-cells that the compact Table~\ref{tab:quality} omits. Table~\ref{tab:validity} reports the false-positive rate of the deployed decision rule
-measured per key, the empirical counterpart of Proposition~\ref{prop:null} discussed in
-Section~\ref{sec:calibration}. Table~\ref{tab:robustness} lists every post-editing attack
-measured, at the weakest and the strongest setting, under the deployed pooled detector;
-Section~\ref{sec:calibration} discusses the block-local and windowed alternatives that
-were measured against it.
+Table~\ref{tab:validity} reports the measured false-positive rate of the deployed decision
+rule per key (Section~\ref{sec:calibration}). Table~\ref{tab:robustness} lists every
+post-editing attack measured, at both configurations, under the deployed pooled detector.
+Table~\ref{tab:quality_full} is the full task-accuracy grid behind Table~\ref{tab:quality},
+including the greedy-decoding cells.
 
 \input{tables/validity_table}
 \input{tables/robustness_table}
 \input{tables/quality_table_full}
-
-\section{Post-hoc Substitution}
-\label{app:posthoc}
-An embedder that swapped tokens in the finished text would be cheaper than one intervening
-during sampling, and we begin by measuring how much room such a swap has. Write $\tau$ for the
-likelihood budget of a substitution, the number of nats by which a replacement may fall below
-the live argmax. Across 36 settings that replace tokens after ordinary generation, the median
-selected position admits exactly one token at $\tau=3$, the mean rising only from $1.6$ at
-$\tau=3$ to $5.6$ at $\tau=6$, and the best setting inside a $1.35\times$ perplexity budget
-reaches no more than $0.10$ TPR at $1\%$ FPR. Conditionals this sharp leave too little room for
-a forced replacement, and the embedder must therefore write while the conditional is still
-live.
-
-\section{Future Work}
-\label{app:future}
-Each boundary suggests its own repair. Anchoring probe patterns to content rather than to
-absolute positions would stop an edit from desynchronising every carrier after it, which is the
-single change most likely to turn an abrupt collapse into a graceful decline; the attack
-still missing is copy--paste-style sparse survival, the one measured regime left where a
-per-block min-statistic could yet beat the pooled count. Verification cost
-is the easier target, since the binomial tail is monotone in the matches so far and a sequential
-test could stop once the evidence is decisive.
-Loosening the checkpoint requirement in turn asks for a contrast quantised coarsely enough that numerical
-drift cannot flip a sign, trading a little capacity for portability. Adaptive adversaries deserve
-their own study, since a detector answering queries leaks something about its key.
-Table~\ref{tab:baselines} finally argues for composition rather than a winner, with a cheap
-token-local screen deciding what is worth a model-response check.
-
-
 \end{document}

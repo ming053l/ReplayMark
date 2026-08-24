@@ -1,75 +1,58 @@
 \section{Shibboleth: Watermarking by Model Response}
 \label{sec:method}
 
-\subsection{Decoding and Notation}
+\subsection{Masked Decoding}
 \label{sec:prelim}
 
-Masked diffusion language models differ from autoregressive models in that they predict a
-missing token from an arbitrary subset of revealed tokens, and the same sequence can
-consequently be produced under many decoding orders. Let $x$ be a prompt and $y=(y_1,\ldots,y_N)$ the continuation to be
-generated, and for a revealed set $I\subset\{1,\ldots,N\}$ with a target position $i\notin I$,
-the model supplies a predictor $p_\theta(y_i\mid y_I,x)$ while the remaining positions carry the
-mask symbol, so that one sequence evaluation returns that distribution at every unresolved
-position at once.
+A masked DLM does not have a unique ``next token.'' It sees a sequence containing masks and
+returns a distribution at every unresolved position. Let $x$ be the prompt,
+$y=(y_1,\ldots,y_N)$ the continuation, and $I$ the positions already revealed. At any masked
+position $i\notin I$, the model provides $p_\theta(y_i\mid y_I,x)$. One sequence evaluation
+provides these distributions for all unresolved positions at once.
 
-Practical decoders nevertheless leave much of that freedom unused, and we study LLaDA's
-semi-autoregressive schedule, in which the continuation is partitioned into blocks that finish from left to right
-while diffusion resolves the masks inside the active
-block~\citep{arriola2025blockdiffusion,nie2025llada}, and the reference confidence rule decides
-which positions commit at each step. Everything below is therefore stated for one block $B_b$
-with the prefix $F_b$ that precedes it.
+We study the blockwise schedule used by LLaDA~\citep{arriola2025blockdiffusion,
+nie2025llada}. Blocks finish from left to right, while a confidence rule decides which masks
+inside the active block commit at each step. We write $B_b$ for the active block and $F_b$ for
+the completed prefix before it. Shibboleth keeps both the block order and this confidence rule.
 
 \subsection{Problem Setup}
 \label{sec:setup}
 
-Our goal is a watermark whose detector consults the model rather than the text alone, telling a
-continuation generated under a secret key from one generated without it at a false-positive rate
-the verifier states in advance, while disturbing the decoding schedule and the output quality as
-little as the channel allows.
+The goal is to distinguish text generated with a secret document key from text generated
+independently of that key, at a false-positive rate fixed in advance. The watermark may change
+which token is sampled, but it should not replace the model's decoder or its schedule.
 
-\paragraph{Embedder and verifier.}
-The embedder receives the model, the prompt, a secret key $K$, and the target bits, whereas the
-verifier later receives only the completed sequence, the same model, $K$, and the public
-parameters, without logits, random seeds, or commit order. Each document then draws its own key from
-$K$ and a fresh nonce through a keyed hash, $K_d=\mathrm{HMAC}(K,\mathrm{nonce}_d)$, which to
-anyone without $K$ behaves as a random function of the nonce~\citep{bellare1996hmac}. That
-document key generates both the probe family and the accepted answers, and the false-positive
-guarantee covers any text produced independently of it.
+\paragraph{What the two parties retain.}
+The embedder has the model, prompt, secret key $K$, and target bits. The verifier later has the
+completed sequence, the same checkpoint, $K$, and public parameters---but no generation trace,
+stored logits, random seed, or record of rejected samples. A nonce derives a fresh document key
+$K_d=\mathrm{HMAC}(K,\mathrm{nonce}_d)$~\citep{bellare1996hmac}. Separate hash domains use
+$K_d$ for probe construction, carrier assignment, and the requested response directions.
 
-\paragraph{Threat model.}
-Both the model and the algorithm may be public, since secrecy rests entirely in $K$. Concretely, the detector does not accuse innocent text, meaning that for every text written
-independently of the document key, machine text from another sampler included, a detector run at
-nominal level $\alpha$ fires with probability at most $\alpha$, and the bound holds at finite
-sample size and under carriers the method itself selects. We claim nothing
-in the complementary direction, and an adversary willing to edit the output can therefore suppress
-detection, as Section~\ref{sec:calibration} measures. We likewise claim nothing after key disclosure,
-under the detector-query access that recovers a key's behaviour~\citep{jovanovic2024stealing},
-or when verification runs a numerically different checkpoint.
+\paragraph{Guarantee and scope.}
+For any text produced independently of $K_d$, including output from another sampler, a detector
+run at level $\alpha$ fires with probability at most $\alpha$. This guarantee is finite-sample
+and permits the method to choose a data-dependent number of carriers. It does not promise
+detection after editing, key disclosure, adaptive detector queries
+~\citep{jovanovic2024stealing}, or replay with a numerically different checkpoint.
 
-\paragraph{Post-hoc substitution.}
+\paragraph{Why generation-time access is needed.}
+One might instead edit a finished text. Across 36 post-hoc substitution settings, however, the
+median selected position has only one candidate within a 3-nat likelihood budget, and the best
+setting below a $1.35\times$ PPL budget reaches $0.10$ TPR at $1\%$ FPR. Shibboleth therefore
+writes while the model's live distribution is available.
 \label{sec:posthoc}
-A cheaper embedder would swap tokens in the finished text; Appendix~\ref{app:posthoc}
-measures how little room such a swap has — across 36 settings the median selected position
-admits exactly one token at a 3-nat likelihood budget, and the best setting reaches $0.10$
-TPR at $1\%$ FPR inside a $1.35\times$ perplexity budget — so the embedder must write while
-the conditional is still live.
 
-\medskip\noindent
-We accordingly formalise the problem with three requirements.
-
+The design follows three requirements:
 \begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt,label=\arabic*.]
-\item \textbf{Replayability.} The verifier must be able to put exactly the question the embedder
-put, from the finished text and the key alone, with no generation trajectory, stored logits, or
-record of rejected samples.
-\item \textbf{Blind selection.} The set of positions that carry a bit may depend arbitrarily on
-the text and the model, but that choice has to be settled before the sign the key rewards is
-consulted, since otherwise the reported false-positive rate understates the true one.
-\item \textbf{Schedule preservation.} The block partition and the confidence order must survive
-unchanged, so that a production decoder keeps the latency and quality profile it was tuned for.
+\item \textbf{Replayability.} From the completed sequence, the verifier must reconstruct the
+same masked context that the embedder used.
+\item \textbf{Blind selection.} Carrier positions must be fixed before the key reveals which
+response direction counts as a match.
+\item \textbf{Schedule preservation.} Blocks and within-block commit order must remain those of
+the reference decoder.
 \end{enumerate}
 
-\noindent
-The first two pull against each other, since replayability wants every scored context
-recoverable from a text the model helped choose while blind selection wants that choice to say
-nothing about the sign the key rewards. Sections~\ref{sec:observable} to~\ref{sec:theory} meet each requirement
-with one mechanism.
+Replayability makes a generation-time response measurable later; blind selection keeps
+data-dependent carrier discovery from changing the stated false-positive rate. The next three
+subsections implement these requirements.

@@ -1,120 +1,65 @@
-% --- Pipeline figure, superseded by Figure~\ref{fig:paradigm}.
-% --- Uncomment to restore it; the body then runs to nine pages.
-% \begin{figure}[t]
-% \centering
-% \includegraphics[width=\linewidth]{figures/fig_retrace_pipeline.pdf}
-% \caption{\textbf{Overall Shibboleth pipeline.} The reference DLM keeps its block and confidence
-% schedule, so that RRB records the responses to the keyed probe family, BCG admits the token
-% positions holding mass on both signs, and RAR retries from the unchanged live conditional. RRV
-% then re-masks each completed block, rebuilds the identical probe and carriers, counts keyed
-% sign matches $T$, and returns an exact binomial $p$-value from the final text, model,
-% parameters, and key alone.}
-% \label{fig:pipeline}
-% \end{figure}
-
 \input{figures/fig_pipeline_tikz}
 
-\subsection{Probing the Model and Gating the Carriers}
+\subsection{Probing the Model and Selecting Carriers}
 \label{sec:observable}
 
-Unlike dgMARK, which obtains its channel by choosing which mask is resolved next, Shibboleth leaves
-the decoding schedule as the reference decoder set it. For block $B_b$, let $F_b$ be the prompt together
-with the completed prefix, and let $\theta$ denote the reference checkpoint with $p_\theta$ for
-its predictor. Shibboleth then
-constructs $L$ equal-size near, far, and keyed
-pseudorandom \emph{probe patterns} $D_{b,\ell}\subset F_b$ indexed by $\ell\in\{1,\ldots,L\}$,
-each the set of prefix positions it hides, and it masks $D_{b,\ell}$ together
-with the current block and the suffix, and one model evaluation therefore yields, for every token
-position $i\in B_b$ and every vocabulary item $v$, the log-probability
+For each unfinished block, Shibboleth asks the model the same question under several hidden-prefix
+views: how likely is each candidate token when this part of the earlier context is missing? A
+candidate's response is the change between two such views. A useful carrier is a position where
+the model still assigns probability mass to candidates with both response directions
+(Figures~\ref{fig:pipeline} and~\ref{fig:blindadmission}).
+
+Formally, Shibboleth constructs $L$ pseudorandom probe patterns
+$D_{b,\ell}\subset F_b$, where each pattern specifies prefix positions to hide. It also masks the
+current block $B_b$ and every later position. One model evaluation for pattern $\ell$ then gives
+the log-probability of vocabulary item $v$ at position $i$:
 \begin{equation}
 \lambda_{i,\ell}(v)
   = \log p_\theta\!\left(v \mid F_b\setminus D_{b,\ell};
                     B_b\text{ and suffix masked}\right).
 \label{eq:arm-logprob}
 \end{equation}
-Probing one block therefore costs $L+1$ sequence evaluations, one per pattern plus an unprobed
-baseline, and the verifier later repeats the same set.
+The block and suffix are hidden because neither was available when the probe was created. The
+verifier can therefore reconstruct the same state from the completed sequence instead of seeing
+later tokens that would alter the probabilities. Probing a block costs $L+1$ sequence evaluations:
+$L$ hidden-prefix views and one view with no prefix positions hidden.
 
-Re-masking the block and the suffix removes every token unavailable when the probe was first
-applied, which is what buys replayability: the verifier restores the same state from the final
-text alone, and a transient generation-time response becomes a document statistic. Masking only the probed
-prefix would fail on both sides, since token positions committed later in the same block would
-leak into verification-time logits while the future suffix was invisible during embedding.
-
-For an unordered pair of pattern indices $(\ell,\ell')$ and a candidate token $z$, define the
-contrast $g_i^{\ell,\ell'}(z)=\lambda_{i,\ell'}(z)-\lambda_{i,\ell}(z)$.
-Let $p_i^{\mathrm{base}}$ denote the block-masked conditional, the model distribution when $B_b$
-and the suffix are masked but no probe pattern is applied. The mass on each sign and the two-sided score built from them are
+For a pair $(\ell,\ell')$, define the response
+$g_i^{\ell,\ell'}(z)=\lambda_{i,\ell'}(z)-\lambda_{i,\ell}(z)$. Let
+$p_i^{\mathrm{base}}$ be the block-masked distribution with no hidden prefix. The probability
+mass on either response direction, and a symmetric score for the pair, are
 \begin{equation}
 q_{i,\pm}^{\ell,\ell'}=\sum_z p_i^{\mathrm{base}}(z)
                   \mathbf{1}[\pm g_i^{\ell,\ell'}(z)>0],\qquad
 S_i^{\ell,\ell'}=2\min(q_{i,+}^{\ell,\ell'},q_{i,-}^{\ell,\ell'}).
-\label{eq:gate}
+\label{eq:admission}
 \end{equation}
-Shibboleth selects, independently at each token position, the pair maximizing $S_i^{\ell,\ell'}$
-and stores its contrast as $g_i$ in the bank $\mathcal{R}_b$, after which the gate admits position
-$i$ whenever $S_i>s_{\min}$, subject to an optional per-block cap. Because
-$S_i^{\ell,\ell'}$ is unchanged when $\ell$ and $\ell'$ are swapped, the gate neither observes
-nor favours the orientation the key will request, which is what buys blind selection, and both
-the pair selection and the gating recompute from the block-masked state. Best-pair selection is moreover
-what makes the gate productive, raising the measured mean score from $0.28$ for a fixed near/far
-pair to $0.45$, although the score stays a symmetric proxy computed on the block-masked
-conditional while generation runs from an evolving live one.
+The score is high only when both directions remain available. At each position, Shibboleth keeps
+the pair with the largest $S_i$ and selects the position when $S_i>s_{\min}$, subject to an
+optional per-block cap. Choosing the best pair raises the measured mean score from $0.28$ for a
+fixed near/far pair to $0.45$.
 
-Once the gate has admitted a token position, the key supplies an orientation
-$\epsilon_i\in\{-1,+1\}$ from a PRF domain separate from pattern generation, pair selection,
-carrier assignment, and payload grouping. A target $w_i\in\{-1,+1\}$ then carries the desired
-provenance or message bit, so that for a candidate $z$ the shared embedding-and-verification
-predicate becomes
+Crucially, swapping $\ell$ and $\ell'$ leaves $S_i$ unchanged while reversing every response
+sign. Carrier selection therefore reveals nothing about which sign will later be rewarded.
+Figure~\ref{fig:blindadmission} makes this ordering explicit.
+\input{figures/fig_blind_admission}
+
+After selecting the carrier, a separate hash domain supplies
+$\epsilon_i\in\{-1,+1\}$. A target $w_i\in\{-1,+1\}$ represents the provenance or payload bit.
+Candidate $z$ counts as a match when
 \begin{equation}
 m_i(z)=\mathbf{1}[w_i\epsilon_i g_i(z)>0].
 \label{eq:m}
 \end{equation}
-Should $g_i(z)$ vanish exactly, a second domain-separated fair bit defines $m_i(z)$, and although
-such ties cannot be steered, the tie rule keeps the detector's $p$-values exact.
+If $g_i(z)=0$, a second domain-separated bit assigns the outcome. Such a tie cannot be steered,
+but it remains an independent fair outcome for detection.
 
 \subsection{Writing the Requested Answer}
 \label{sec:embedding}
 
-% --- Algorithm 1, commented out to hold the eight-page workshop limit.  Nothing in
-% --- the text referenced it, and Sections 4.2 to 4.4 specify the same three
-% --- procedures in prose and equations.  Uncomment to restore it at the cost of
-% --- roughly a third of a page.
-% \begin{algorithm}[H]
-% \caption{\textbf{Shibboleth embedding and detection.} RAR and RRV share \textsc{Build-RRB};
-% guided retries reuse the current probability row.}
-% \label{alg:retrace}
-% \footnotesize
-% \textbf{Input:} prompt $x_{<B_1}$, key $K$, retry budget $R$, floor $\kappa$,
-% threshold $s_{\min}$ \qquad \textbf{Output:} generated text $y$ or $p_{\mathrm{det}}$
-% \vspace{2pt}
-% 
-% \begin{tabular}{@{}r@{\hspace{0.65em}}p{0.91\linewidth}@{}}
-% \multicolumn{2}{@{}l}{\textsc{Build-RRB}$(x,b,K)$ --- Replayable Response Bank}\\
-% 1 & Mask the current block $B_b$ and suffix; construct $L$ keyed probe patterns over the prefix.\\
-% 2 & Evaluate the $L$ probed sequences and one unprobed sequence with the DLM.\\
-% 3 & For every $i\in B_b$, select $(\ell,\ell')=\arg\max_{\ell<\ell'}S_i^{\ell,\ell'}$ and store
-%     $g_i=\lambda_{i,\ell'}-\lambda_{i,\ell}$ and $S_i=2\min(q_{i,+},q_{i,-})$.\\[2pt]
-% \multicolumn{2}{@{}l}{\textsc{Embed}$(x,K,R,\kappa)$ --- Response-Aligned Resampler}\\
-% 4 & \textbf{for} each block $B_b$ in reference order \textbf{do}; compute
-%     $\mathcal{R}_b\leftarrow\textsc{Build-RRB}(x,b,K)$.\\
-% 5 & \quad\textbf{while} $B_b$ contains masks \textbf{do}; let the reference confidence
-%     rule select token positions and obtain each live row $p_i$.\\
-% 6 & \qquad\textbf{if} $S_i\leq s_{\min}$, draw $z\sim p_i$ once.\\
-% 7 & \qquad\textbf{else} draw at most $R$ proposals from $p_i$; accept the first
-%     $z$ satisfying $w_i\epsilon_i g_i(z)>0$ and $p_i(z)\geq\kappa\max_v p_i(v)$.\\
-% 8 & \qquad\textbf{if} no guided proposal is accepted, draw one fresh unchecked
-%     $z\sim p_i$; commit $z$.\\[2pt]
-% \multicolumn{2}{@{}l}{\textsc{Verify}$(y,K)$ --- Response-Replay Verifier}\\
-% 9 & Re-mask each completed block and suffix; rebuild $\mathcal{R}_b$ with
-%     \textsc{Build-RRB}$(y,b,K)$.\\
-% 10 & Apply the BCG, compute $m_i$ at admitted carriers, and return the exact binomial tail
-%      in Eq.~\eqref{eq:test}.\\
-% \end{tabular}
-% \end{algorithm}
-
-Shibboleth inherits the reference confidence order together with the live conditional $p_i$, and the
-token positions that the gate rejected are sampled normally. At an admitted carrier define
+The reference decoder still chooses the next position and supplies its live distribution $p_i$.
+Unselected positions are sampled once as usual. At a selected carrier, Shibboleth accepts a
+candidate only if it has the requested response and is not too far below the most likely token:
 \begin{equation}
 A_i=\left\{z:
  w_i\epsilon_i g_i(z)>0\ \text{ and }\
@@ -122,49 +67,30 @@ A_i=\left\{z:
 \right\}.
 \label{eq:accept-set}
 \end{equation}
-It draws from $p_i$ up to $R$ times and commits the first member of $A_i$, and after $R$ misses
-it commits one fresh unchecked draw instead. Because the row is never recomputed, those retries cost
-no model evaluation.
+It draws from the same $p_i$ up to $R$ times and commits the first member of $A_i$. If every
+proposal misses, it takes one fresh unchecked draw. The probability row is never recomputed, so
+retries add no model evaluation and do not alter the commit order.
 
-That procedure changes the sampling distribution, and by a stated amount. Let $a_i=p_i(A_i)$ be the
-acceptance mass and let $q_i=\sum_z p_i(z)m_i(z)$, where $m_i(z)$ applies Eq.~\eqref{eq:m} and the tie rule to candidate $z$, so that $q_i$ is the
-probability that an unconditional draw scores as a detector hit irrespective of the plausibility
-floor. The committed-token distribution is
-\begin{equation}
-\left(1-(1-a_i)^R\right)p_i(\cdot\mid A_i)
- +(1-a_i)^R p_i,
-\label{eq:dist}
-\end{equation}
-and its detector-hit probability is
+Let $a_i=p_i(A_i)$ be the mass that passes both conditions, and let
+$q_i=\sum_z p_i(z)m_i(z)$ be the chance that an unchecked draw scores as a match. The committed
+token comes from $p_i(\cdot\mid A_i)$ with probability $1-(1-a_i)^R$ and from $p_i$ otherwise.
+Its match probability is therefore
 \begin{equation}
 \Pr[m_i=1]=1-(1-a_i)^R(1-q_i).
 \label{eq:hit}
 \end{equation}
-Whenever $\kappa=0$ and the conditional places no mass on exact ties, $a_i=q_i$ and
-Eq.~\eqref{eq:hit} collapses to $1-(1-q_i)^{R+1}$, so that $a_i$ and $q_i$ diverge only under a
-floor or a tie rule, where an unchecked fallback may score as a hit without belonging to $A_i$.
-The floor meanwhile bounds each guided proposal's model NLL to within $-\log\kappa$ of the live argmax but
-constrains neither the fallback nor semantic quality, which is why being model-proposed remains
-a support statement rather than a distortion-free claim.
+With no plausibility floor and no ties, $a_i=q_i$, giving
+$1-(1-q_i)^{R+1}$. Increasing $R$ strengthens detection but changes the sampling distribution;
+$\kappa$ limits how unlikely a guided proposal may be relative to the live argmax. It does not
+constrain the unchecked fallback or guarantee semantic quality, which we measure separately.
 
 \subsection{Watermark Detection}
 \label{sec:theory}
-% REVIEWER-PROBE (from the detector survey, 2026-08-22): two things this subsection should
-% state explicitly before submission.
-% 1. Whether the verifier needs the original PROMPT to rebuild the probes, or only the
-%    finished text + key + checkpoint. Christ--Gunn--Zamir argue a realistic detector cannot
-%    have the prompt; if replay is prompt-free, say so prominently — it is a real advantage
-%    over LLR-style model-access detection (hu2024unbiased). If it is not, that is a stronger
-%    assumption than needing the model and must be stated.
-% 2. Replay determinism: same text + checkpoint + dtype + batch size must reproduce the same
-%    probe outcomes, or GPU nondeterminism silently inflates FPR. The validity table already
-%    measures the null through the real inference stack — say that here in one sentence.
 
-Given a completed text $y$, the verifier re-masks each block and suffix, rebuilds the probe from
-the fixed prefix, reapplies the gate, and evaluates $m_i=m_i(y_i)$ at the admitted positions, so
-that rejected proposals and the generation trajectory are irrelevant. For provenance-only detection, which is all we evaluate here, the admitted carriers form a presence
-pool $P$ with $w_i=+1$, whereas a payload implementation would keep the group for each payload
-bit separate, so that a balanced message cannot cancel positive against negative targets. The presence statistic and its one-sided $p$-value are
+The verifier re-masks each completed block and suffix, reconstructs the probe pairs and carriers,
+and evaluates $m_i(y_i)$. It needs no rejected samples or generation trace. For provenance
+detection, the selected carriers form a pool $P$ with $w_i=+1$; a payload implementation would
+keep a separate pool for each message bit. The document statistic and its one-sided $p$-value are
 \begin{equation}
 T=\sum_{i\in P}m_i,\qquad
 p_{\mathrm{det}}=\Pr\!\left[\mathrm{Binomial}(|P|,\tfrac12)\geq T\right].
@@ -172,22 +98,21 @@ p_{\mathrm{det}}=\Pr\!\left[\mathrm{Binomial}(|P|,\tfrac12)\geq T\right].
 \end{equation}
 
 \begin{proposition}[Exact false-positive control]
-\label{prop:null}
-Assume the PRF domains above behave as independent random functions. Fix any text $y$ written
-without the document key, and condition on the carrier set, selected pairs, contrast values,
-payload roles, and target bits. The orientation bits (and tie bits where needed) remain
-independent fair coins. Consequently the $m_i$ are independent $\mathrm{Bernoulli}(\tfrac12)$
-variables and $T\sim\mathrm{Binomial}(|P|,\tfrac12)$ exactly, so that $p_{\mathrm{det}}$ in
-Eq.~\eqref{eq:test} is an exact $p$-value and thresholding it at $\alpha$ holds the
-false-positive rate at or below $\alpha$ for every document length and carrier count.
+\label{prop:fpr}
+Assume the hash domains behave as independent random functions. For any text written without the
+document key, condition on the selected carriers, probe pairs, responses, and target bits. The
+orientation bits remain independent fair coins. Hence the $m_i$ are independent
+$\mathrm{Bernoulli}(\tfrac12)$ variables, $T\sim\mathrm{Binomial}(|P|,\tfrac12)$, and
+thresholding Eq.~\eqref{eq:test} at $\alpha$ gives false-positive rate at most $\alpha$ for every
+document length and carrier count.
 \end{proposition}
 
-The conditioning carries the result, since carrier count, selected pair, and contrast magnitude
-may all depend arbitrarily on the text and the model, yet each is fixed before the independent
-orientation bit is consulted. Flipping $\epsilon_i$ therefore flips $m_i$
-whenever $g_i(y_i)\neq 0$, the tie rule supplies a fresh fair bit when it vanishes, and the
-carriers stay independent of one another throughout. In particular, neither an asymptotic
-approximation nor a calibration corpus enters anywhere, unlike a $z$-score whose reference
-distribution has to be estimated. The guarantee does nevertheless
-assume text written without the key, together with independence among the several uses of the
-key, which the domain-separated hash supplies.
+\input{figures/fig_detection_wrap}
+
+\paragraph{Why adaptive carrier selection is allowed.}
+The text and model may determine how many carriers exist, which probe pair is chosen, and how
+large each response is. All of those choices are fixed before the independent orientation bit is
+used. Flipping $\epsilon_i$ then flips the match whenever $g_i(y_i)\neq0$; the tie rule supplies a
+fresh fair bit otherwise. The detector therefore needs neither an asymptotic approximation nor a
+calibration corpus. The guarantee still assumes text produced independently of the key and
+domain separation among the key's several roles.

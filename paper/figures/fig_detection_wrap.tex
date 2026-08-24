@@ -1,0 +1,80 @@
+% Compact document-level view of the detector for Section 3.5.
+\begin{wrapfigure}[14]{r}{0.40\textwidth}
+\vspace{-0.65\baselineskip}
+\centering
+\resizebox{0.98\linewidth}{!}{%
+\begin{tikzpicture}[
+  x=1cm, y=0.92cm,
+  font=\scriptsize,
+  >=Stealth,
+  note/.style={font=\tiny, text=black!61, align=center},
+  word/.style={draw=black!38, fill=white, rounded corners=0.8pt,
+               minimum height=4.4mm, inner xsep=2.5pt, font=\tiny},
+  carrier/.style={word, draw=oursemph, fill=oursemph!7,
+                  text=oursemph, line width=0.65pt},
+  miss/.style={circle, draw=black!38, fill=white, minimum size=4.8mm,
+               inner sep=0pt, text=black!57},
+  hit/.style={circle, draw=oursemph, fill=oursemph!8, minimum size=4.8mm,
+              inner sep=0pt, text=oursemph, line width=0.7pt},
+  result/.style={draw=oursemph, fill=oursemph!7, rounded corners=1.2pt,
+                 minimum height=5.8mm, inner xsep=5pt,
+                 font=\scriptsize\bfseries, text=oursemph,
+                 line width=0.7pt},
+  flow/.style={->, draw=oursemph, line width=0.72pt,
+               shorten <=1.4pt, shorten >=1.4pt}
+]
+
+\path[use as bounding box] (0,0) rectangle (6.0,-4.20);
+
+\node[font=\scriptsize\bfseries, anchor=west, text=black!78]
+  at (0.08,-0.18) {Replay the admitted carriers};
+\draw[oursemph, line width=1.0pt] (0.08,-0.34) -- (1.02,-0.34);
+
+\node[word]    (w1) at (0.45,-0.84) {the};
+\node[carrier] (w2) at (1.15,-0.84) {model};
+\node[carrier] (w3) at (2.02,-0.84) {left};
+\node[word]    (w4) at (2.58,-0.84) {a};
+\node[carrier] (w5) at (3.20,-0.84) {clear};
+\node[carrier] (w6) at (4.04,-0.84) {trace};
+\node[carrier] (w7) at (4.92,-0.84) {today};
+\node[note, anchor=west, text=oursemph] at (5.28,-0.84) {$P$};
+
+\node[hit]  (m1) at (1.15,-1.75) {$\checkmark$};
+\node[miss] (m2) at (2.02,-1.75) {$\times$};
+\node[hit]  (m3) at (3.20,-1.75) {$\checkmark$};
+\node[hit]  (m4) at (4.04,-1.75) {$\checkmark$};
+\node[hit]  (m5) at (4.92,-1.75) {$\checkmark$};
+\node[note, anchor=east] at (0.78,-1.75) {$m_i$};
+\draw[flow] (w2.south) -- (m1.north);
+\draw[flow] (w3.south) -- (m2.north);
+\draw[flow] (w5.south) -- (m3.north);
+\draw[flow] (w6.south) -- (m4.north);
+\draw[flow] (w7.south) -- (m5.north);
+
+\draw[decorate, decoration={brace, amplitude=3pt, mirror}, black!43]
+  (0.88,-2.08) -- (5.18,-2.08);
+\node[result] (count) at (3.03,-2.61) {$T=4$ of $|P|=5$};
+\draw[flow] (3.03,-2.24) -- (count.north);
+
+\draw[flow] (count.south) -- (3.03,-3.10);
+\node[note, anchor=west] at (0.10,-3.26) {reference distribution};
+% Schematic Binomial(5, 1/2) mass function; the right tail is highlighted.
+\foreach \x/\h in {0.95/0.13,1.55/0.42,2.15/0.82,2.75/0.82,3.35/0.42,3.95/0.13}{
+  \fill[black!26] (\x,-3.90) rectangle ({\x+0.38},{-3.90+\h});
+}
+\fill[oursemph!70] (3.35,-3.90) rectangle (3.73,-3.48);
+\fill[oursemph!70] (3.95,-3.90) rectangle (4.33,-3.77);
+\draw[black!42, line width=0.4pt] (0.85,-3.90) -- (4.44,-3.90);
+\node[note, text=oursemph, anchor=west] at (4.54,-3.60) {tail for\\$T=4$};
+\foreach \x/\k in {1.14/0,1.74/1,2.34/2,2.94/3,3.54/4,4.14/5}{
+  \node[note] at (\x,-4.06) {\k};
+}
+\node[note, anchor=west] at (4.43,-4.06) {hits};
+
+\end{tikzpicture}
+}%
+\caption{\textbf{Document-level detection.}
+Replayed carriers (blue outlines) determine $T$; the highlighted binomial tail gives the decision.}
+\label{fig:detection}
+\vspace{-0.80\baselineskip}
+\end{wrapfigure}

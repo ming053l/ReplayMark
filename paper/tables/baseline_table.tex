@@ -10,11 +10,11 @@
 % model, and restate the Dream sample sizes in the caption.
 %
 % POLICY (user, 2026-08-22): the comparison is LOCKED TO 512 TOKENS — the LLaDA block is
-% now fully length-matched. Provenance:
+% now evaluated at the same 512-token length. Provenance:
 %   dgMARK@512 <- exp/30-31 (logs/31_dg512eval.log): watermark n=30 ppl x1.445 TPR
 %     .90/.83/.80; beam3 n=30 ppl x1.208 TPR .93/.93/.93; control ppl 6.55, z +0.10.
 %   KGW@512    <- exp/35 (results/kgw512.json): delta=1 n=30 ppl x1.22 TPR .93/.90/.83
-%     (dedup); control z +0.21 BUT 2/30 nulls cross even the 0.1% threshold (dup bigrams
+%     (dedup); control z +0.21 BUT 2/30 unwatermarked samples cross even the 0.1% threshold (dup bigrams
 %     0.45 at 512 LTR) — quoted in the analysis text as the z-test calibration caveat.
 %
 % Cost accounting: detection replays L+1=9 masked evaluations per 32-token block, so 512
@@ -23,7 +23,8 @@
 \begin{table}[t]
 \centering
 \footnotesize
-\renewcommand{\arraystretch}{0.72}
+\renewcommand{\arraystretch}{0.78}
+\setlength{\tabcolsep}{5.8pt}
 \begin{tabular}{lllrrrrr}
 \toprule
 & & & & \multicolumn{2}{c}{TPR at FPR $\uparrow$}
@@ -32,14 +33,14 @@
 Method & Venue & Setting & PPL ratio $\downarrow$ & $1\%$ & $0.1\%$ & Generation & Detection \\
 \midrule
 \multicolumn{8}{@{}l}{\emph{LLaDA-8B-Instruct}}\\
-KGW \citep{kirchenbauer2023watermark} & ICML'23 & $\delta=1$, 512 tok & 1.22$\times$ & 0.90 & 0.83 & 512 & \textbf{0} \\
-dgMARK \citep{hong2026dgmark} & ICML'26 & $k=1$, 512 tok & 1.45$\times$ & 0.83 & 0.80 & 512 & \textbf{0} \\
-dgMARK \citep{hong2026dgmark} & ICML'26 & $+3$-beam, 512 tok & 1.21$\times$ & \textbf{0.93} & \textbf{0.93} & $\sim$2048 & \textbf{0} \\
+KGW \citep{kirchenbauer2023watermark} & ICML'23 & $\delta=1$ & 1.22$\times$ & 0.90 & 0.83 & 512 & \textbf{0} \\
+dgMARK \citep{hong2026dgmark} & ICML'26 & $k=1$ & 1.45$\times$ & 0.83 & 0.80 & 512 & \textbf{0} \\
+dgMARK \citep{hong2026dgmark} & ICML'26 & $+3$-beam & 1.21$\times$ & \textbf{0.93} & \textbf{0.93} & $\sim$2048 & \textbf{0} \\
 \addlinespace[1.5pt]
-\textcolor{oursemph}{Shibboleth} & ours & $R=1$, 512 tok & 0.97$\times$ & 0.43 & 0.20 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & ours & $R=1$ & 0.97$\times$ & 0.43 & 0.20 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & ours & $R=8,\kappa=0.1$ & 0.87$\times$ & 0.70 & 0.60 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{Shibboleth} & ours & $R=8,\kappa=0.1$, 512 tok & 0.87$\times$ & 0.70 & 0.60 & 656 & 144 \\
-\textcolor{oursemph}{Shibboleth} & ours & $R=16,\kappa=0.05$, 512 tok & \textbf{0.74}$\times$ & 0.80 & 0.60 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & ours & $R=16,\kappa=0.05$ & \textbf{0.74}$\times$ & 0.80 & 0.60 & 656 & 144 \\
 % ---- Dream-7B-Instruct block ----
 % Shibboleth rows <- exp/36 (results/36_dream.json, landed 2026-08-23): control sync 0.503
 %   TPR 0/0/0; R1 sync .596; R8k10 sync .648 ppl x0.788 (13 valid pairs); R16k05 sync .725
@@ -47,29 +48,26 @@ dgMARK \citep{hong2026dgmark} & ICML'26 & $+3$-beam, 512 tok & 1.21$\times$ & \t
 %   caption says so. NOTE: the floor's sub-control ppl did NOT replicate at R16 on Dream.
 % KGW/dgMARK rows <- exp/37 / exp/38 (landed 2026-08-23). Baseline settings were carried
 % over from LLaDA unchanged (delta=1; top-k 3 confidence decode) — both token-local
-% channels weaken sharply on Dream (KGW dup bigrams 0.84 under forced LTR; dgMARK parity
-% far weaker under Dream's schedule) while the model-response channel strengthens. The
+% channels have lower Dream TPR (KGW duplicate bigrams 0.84 under forced LTR; dgMARK parity
+% is lower under Dream's schedule), while the model-response channel has higher TPR. The
 % caption carries the same-settings caveat; do not tune baselines per-model without also
 % re-tuning ours.
 \midrule
 \multicolumn{8}{@{}l}{\emph{Dream-7B-Instruct}}\\
-KGW \citep{kirchenbauer2023watermark} & ICML'23 & $\delta=1$, 512 tok & 1.84$\times$ & 0.57 & 0.37 & 512 & \textbf{0} \\  % exp/37: dup bigrams 0.84 under forced LTR; control z +0.43, 0/30 @1%
-dgMARK \citep{hong2026dgmark} & ICML'26 & $k=1$, 512 tok & 1.75$\times$ & 0.37 & 0.27 & 512 & \textbf{0} \\  % exp/38: control z +0.10
-dgMARK \citep{hong2026dgmark} & ICML'26 & $+3$-beam, 512 tok & \textbf{0.71}$\times$ & 0.30 & 0.30 & $\sim$2048 & \textbf{0} \\  % exp/38
+KGW \citep{kirchenbauer2023watermark} & ICML'23 & $\delta=1$ & 1.84$\times$ & 0.57 & 0.37 & 512 & \textbf{0} \\  % exp/37: dup bigrams 0.84 under forced LTR; control z +0.43, 0/30 @1%
+dgMARK \citep{hong2026dgmark} & ICML'26 & $k=1$ & 1.75$\times$ & 0.37 & 0.27 & 512 & \textbf{0} \\  % exp/38: control z +0.10
+dgMARK \citep{hong2026dgmark} & ICML'26 & $+3$-beam & \textbf{0.71}$\times$ & 0.30 & 0.30 & $\sim$2048 & \textbf{0} \\  % exp/38
 \addlinespace[1.5pt]
-\textcolor{oursemph}{Shibboleth} & ours & $R=1$, 512 tok & 1.34$\times$ & 0.40 & 0.27 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & ours & $R=1$ & 1.34$\times$ & 0.40 & 0.27 & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & ours & $R=8,\kappa=0.1$ & 0.79$\times$ & 0.70 & 0.67 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{Shibboleth} & ours & $R=8,\kappa=0.1$, 512 tok & 0.79$\times$ & 0.70 & 0.67 & 656 & 144 \\
-\textcolor{oursemph}{Shibboleth} & ours & $R=16,\kappa=0.05$, 512 tok & 1.09$\times$ & \textbf{0.90} & \textbf{0.90} & 656 & 144 \\
+\textcolor{oursemph}{Shibboleth} & ours & $R=16,\kappa=0.05$ & 1.09$\times$ & \textbf{0.90} & \textbf{0.90} & 656 & 144 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Watermark detectability.} Detection rate, perplexity against each method's own
-matched unwatermarked baseline, and compute in sequence evaluations; all rows are local
-reproductions at 512 tokens, each method under its own decoding regime, so PPL ratios compare
-within a method and only indicatively across ($<1$ is not better semantics). Shibboleth rows
-use $n=30$ documents ($n=20$ for $R=16$); Dream PPL ratios rest on the 8--13 pairs per arm
-that survive the decoded-length rule. $\delta$ is KGW's logit bias, $k$ dgMARK's candidate
-count. Every method keeps its LLaDA-chosen setting on Dream, so cross-model rows measure
-transfer, not per-model optima.}
+\caption{\textbf{Detectability and cost at 512 tokens.} PPL ratio is measured against each
+method's own unwatermarked run and should be interpreted within that method. Shibboleth uses
+$n=30$ documents ($n=20$ for $R=16$); Dream PPL uses 8--13 valid pairs per arm. Settings chosen
+on LLaDA are transferred to Dream without retuning. $\delta$ is KGW's logit bias and $k$ is
+dgMARK's candidate count.}
 \label{tab:baselines}
 \end{table}
