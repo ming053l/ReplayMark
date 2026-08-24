@@ -2,9 +2,9 @@
 \label{sec:discussion}
 
 \paragraph{Deployment role.}
-Shibboleth is most useful when the question concerns a registered model release: for example,
-whether that checkpoint is consistent with a disputed document. Providers, centralised services,
-or auditors can retain the model without changing its production decoder. The method is a poor fit
+Shibboleth is most useful when the question concerns a registered model release — whether that
+checkpoint is consistent with a disputed document. Providers, centralised services, or auditors
+can retain the model without changing its production decoder. The method is a poor fit
 for browser-scale classification, unknown source models, short fragments, or heavily edited text.
 An inexpensive token-local detector can handle routine cases, with replay reserved for disputes
 that justify model-specific computation. We do not establish transfer across checkpoint copies.
@@ -12,29 +12,22 @@ that justify model-specific computation. We do not establish transfer across che
 \paragraph{Reducing the verifier burden.}
 Clients need not execute the model themselves. A provider can replay a document on the registered
 checkpoint and return a signed report; an independent auditor can instead use escrowed weights.
-Batching documents improves hardware utilisation, but each document induces different masked
-contexts, so 144 replay calls cannot become a fixed lookup. A surrogate checkpoint or cached
-responses may reconstruct different carriers and would need a separate false-positive analysis.
+Batching improves hardware utilisation, but each document induces different masked contexts, so
+replay cannot become a fixed lookup; a surrogate checkpoint or cached responses may reconstruct
+different carriers and would need their own false-positive analysis.
 
 \paragraph{Trust boundary.}
 A hosted verifier assumes that the service runs the registered checkpoint and receives the
 submitted document. A signed report records the service's claim; it does not prove correct execution
-or protect document privacy. Checkpoint and container hashes, append-only audit records, and an
-independent execution environment can strengthen this arrangement. Public proof of correct replay
-is a separate problem; we do not evaluate attestation, service compromise, or adversarial requests.
+or protect document privacy. Checkpoint and container hashes, append-only audit records, and
+independent execution can strengthen this arrangement; public proof of correct replay,
+attestation, service compromise, and adversarial requests are not evaluated here.
 
 \paragraph{Interpreting a detection result.}
 A low $p$-value has a narrow interpretation: under the registered key and replay
 procedure, the document contains more checkpoint-consistent carrier responses
 than expected by chance. It does not identify the person who requested the text,
 establish that every passage came from the model, or rule out editing; those questions
-require separate records. A report should include the $p$-value, carrier count, key identifier,
-checkpoint hash, precision, probe construction, and threshold. The count distinguishes a short,
-inconclusive document from checkpoint disagreement.
-
-\paragraph{Editing and quality.}
-Dispersed edits alter many later prefixes and reconstructed probes; a contiguous span preserves
-earlier carriers. Content-anchored probes may help, although the tested block-local and windowed
-variants did not. A PPL ratio below one does not imply better text, and the task cohorts are too
-small to interpret modest changes. Shibboleth changes task scores less than dgMARK does on Dream,
-but its verifier costs more.
+require separate records. A report should therefore include the $p$-value, carrier count, key
+identifier, checkpoint hash, precision, probe construction, and threshold; the count separates a
+short, inconclusive document from checkpoint disagreement.

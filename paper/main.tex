@@ -92,15 +92,18 @@ and 144 full-sequence calls per 512-token document, and dispersed edits reduce d
 Shibboleth encodes a keyed signal in reproducible model responses to hidden context. Selecting a
 carrier with a symmetric score before revealing the keyed direction yields an exact binomial test
 even with a data-dependent carrier count. The method preserves the deployed schedule and reaches
-$0.80$ TPR on LLaDA and $0.90$ on Dream without retuning, but needs 144 same-checkpoint calls per
-512-token document. It therefore complements cheaper token-local detectors, which perform better
+$0.80$ TPR on LLaDA and $0.90$ on Dream without retuning, but needs 144 same-checkpoint calls
+per 512-token document, so it complements cheaper token-local detectors, which perform better
 on LLaDA.
 
 \paragraph{Limitations.}
 The false-positive guarantee does not imply editing tolerance: random $10\%$ re-denoising reduces
-TPR from $0.35$ to $0.05$ at $R=1$ and from $0.88$ to $0.50$ at $R=16$. Replay requires the same
-checkpoint and precision; evaluation covers two masked DLMs, one corpus, 16--50 documents per
-cohort, and provenance only.
+TPR from $0.35$ to $0.05$ at $R=1$ and from $0.88$ to $0.50$ at $R=16$, while a contiguous span
+leaves earlier carriers intact; content-anchored probes may help, though the tested block-local
+and windowed variants did not. A PPL ratio below one does not imply better text, and the task
+cohorts are too small to interpret modest changes. Replay requires the same checkpoint and
+precision; evaluation covers two masked DLMs, one corpus, 16--50 documents per cohort, and
+provenance only.
 
 \clearpage
 \bibliographystyle{plainnat}
