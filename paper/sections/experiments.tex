@@ -114,6 +114,9 @@ watermark here that pays no measurable task accuracy for it. MMLU repeats the pa
 200 questions per cell: Shibboleth sits within noise of its control on both models
 ($0.575$ against $0.595$ on LLaDA, $0.710$ against $0.695$ on Dream), while dgMARK's
 direct variant gives up $0.075$ on LLaDA and $0.170$ on Dream against its own control.
+HumanEval pass@1 on LLaDA, scored by executing the official tests, reads $0.384$ for
+Shibboleth against $0.335$ for its control and $0.293$ for KGW against $0.329$, again within
+noise at 164 tasks.
 
 \paragraph{Cost against token-local detectors.}
 Detection trails the token-based detectors at matched length: dgMARK's three-beam variant
