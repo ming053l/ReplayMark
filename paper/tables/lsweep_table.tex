@@ -1,0 +1,26 @@
+% Probe-count ablation (exp/47, run on server B; LLaDA @512, R=16 kappa=0.05, n=30, fresh
+% C4 cohort skip=2500). PROVENANCE: numbers relayed from server B 2026-08-24; reconcile
+% against results/47_*.json when the serverB branch lands — do not edit cells by hand.
+% Verification calls = 16 blocks x (L+1). This cohort's L=8 row (0.77@1%) is the same
+% setting as Table 1's 0.80@1% on a different 30-prompt cohort (SE ~0.08): consistent.
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{0.85}
+\begin{tabular}{rrrrrr}
+\toprule
+& & \multicolumn{3}{c}{TPR at FPR $\uparrow$} & \\
+\cmidrule(lr){3-5}
+$L$ & Verify calls $\downarrow$ & $5\%$ & $1\%$ & $0.1\%$ & Sync rate \\
+\midrule
+2 & 48  & 0.73 & 0.57 & 0.50 & 0.629 \\
+4 & 80  & 0.77 & 0.70 & 0.67 & 0.650 \\
+8 & 144 & 0.77 & 0.77 & 0.73 & 0.658 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Probe-count ablation.} Detection under $L$ probe patterns at
+$R=16,\kappa=0.05$ on LLaDA (512 tokens, $n=30$, a fresh prompt cohort). Verification costs
+$16(L+1)$ model calls. $L=4$ keeps most of the detection at $56\%$ of the default cost;
+$L=2$ loses a further tenth at every operating point.}
+\label{tab:lsweep}
+\end{table}

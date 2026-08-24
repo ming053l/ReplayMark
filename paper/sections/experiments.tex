@@ -70,7 +70,10 @@ On LLaDA, Shibboleth's $0.80/0.60$ TPR at $1\%/0.1\%$ FPR trails three-beam dgMA
 $0.93/0.93$ and KGW's $0.90/0.83$, while requiring 144 verification calls instead of zero.
 KGW's left-to-right decoder also repeats heavily: $37\%$ of unwatermarked documents cross the
 threshold before bigram deduplication, and two of thirty cross $0.1\%$ afterward. With 20--30
-documents, TPR differences near $0.1$ remain imprecise.
+documents, TPR differences near $0.1$ remain imprecise. The verification cost is also
+tunable: $L=4$ probe patterns cut the replay to $80$ calls and keep $0.70$ TPR at $1\%$ FPR
+on a fresh 30-prompt cohort, against $0.77$ for the default $L=8$ at $144$ calls, while
+$L=2$ ($48$ calls) falls to $0.57$ (Appendix Table~\ref{tab:lsweep}).
 
 \subsection{Calibration and Robustness}
 \label{sec:calibration}
