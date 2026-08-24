@@ -1,80 +1,75 @@
-% Compact document-level view of the detector for Section 3.5.
-\begin{wrapfigure}[14]{r}{0.40\textwidth}
-\vspace{-0.65\baselineskip}
+% A shallow, page-stable view of the document-level detector for Section 3.5.
+\begin{figure}[!ht]
 \centering
-\resizebox{0.98\linewidth}{!}{%
+\resizebox{0.94\linewidth}{!}{%
 \begin{tikzpicture}[
-  x=1cm, y=0.92cm,
+  x=1cm, y=1cm,
   font=\scriptsize,
   >=Stealth,
-  note/.style={font=\tiny, text=black!61, align=center},
-  word/.style={draw=black!38, fill=white, rounded corners=0.8pt,
-               minimum height=4.4mm, inner xsep=2.5pt, font=\tiny},
-  carrier/.style={word, draw=oursemph, fill=oursemph!7,
-                  text=oursemph, line width=0.65pt},
-  miss/.style={circle, draw=black!38, fill=white, minimum size=4.8mm,
-               inner sep=0pt, text=black!57},
-  hit/.style={circle, draw=oursemph, fill=oursemph!8, minimum size=4.8mm,
-              inner sep=0pt, text=oursemph, line width=0.7pt},
-  result/.style={draw=oursemph, fill=oursemph!7, rounded corners=1.2pt,
-                 minimum height=5.8mm, inner xsep=5pt,
-                 font=\scriptsize\bfseries, text=oursemph,
-                 line width=0.7pt},
-  flow/.style={->, draw=oursemph, line width=0.72pt,
-               shorten <=1.4pt, shorten >=1.4pt}
+  heading/.style={font=\scriptsize\bfseries, text=black!78, anchor=west},
+  note/.style={font=\tiny, text=black!58, align=center},
+  carrier/.style={draw=oursemph, fill=oursemph!7, rounded corners=0.8pt,
+                  minimum width=7.1mm, minimum height=4.5mm, inner sep=1.4pt,
+                  font=\tiny, text=oursemph, line width=0.62pt},
+  hit/.style={circle, draw=oursemph, fill=oursemph!8, minimum size=4.2mm,
+              inner sep=0pt, font=\tiny, text=oursemph, line width=0.62pt},
+  miss/.style={circle, draw=black!35, fill=white, minimum size=4.2mm,
+               inner sep=0pt, font=\tiny, text=black!55},
+  count/.style={draw=oursemph, fill=oursemph!7, rounded corners=1.2pt,
+                minimum width=15mm, minimum height=8.5mm, align=center,
+                font=\scriptsize\bfseries, text=oursemph, line width=0.72pt},
+  flow/.style={->, draw=oursemph, line width=0.78pt,
+               shorten <=1.5pt, shorten >=1.5pt}
 ]
 
-\path[use as bounding box] (0,0) rectangle (6.0,-4.20);
+\path[use as bounding box] (0,0) rectangle (11.85,-2.02);
 
-\node[font=\scriptsize\bfseries, anchor=west, text=black!78]
-  at (0.08,-0.18) {Replay the admitted carriers};
-\draw[oursemph, line width=1.0pt] (0.08,-0.34) -- (1.02,-0.34);
-
-\node[word]    (w1) at (0.45,-0.84) {the};
-\node[carrier] (w2) at (1.15,-0.84) {model};
-\node[carrier] (w3) at (2.02,-0.84) {left};
-\node[word]    (w4) at (2.58,-0.84) {a};
-\node[carrier] (w5) at (3.20,-0.84) {clear};
-\node[carrier] (w6) at (4.04,-0.84) {trace};
-\node[carrier] (w7) at (4.92,-0.84) {today};
-\node[note, anchor=west, text=oursemph] at (5.28,-0.84) {$P$};
-
-\node[hit]  (m1) at (1.15,-1.75) {$\checkmark$};
-\node[miss] (m2) at (2.02,-1.75) {$\times$};
-\node[hit]  (m3) at (3.20,-1.75) {$\checkmark$};
-\node[hit]  (m4) at (4.04,-1.75) {$\checkmark$};
-\node[hit]  (m5) at (4.92,-1.75) {$\checkmark$};
-\node[note, anchor=east] at (0.78,-1.75) {$m_i$};
-\draw[flow] (w2.south) -- (m1.north);
-\draw[flow] (w3.south) -- (m2.north);
-\draw[flow] (w5.south) -- (m3.north);
-\draw[flow] (w6.south) -- (m4.north);
-\draw[flow] (w7.south) -- (m5.north);
-
-\draw[decorate, decoration={brace, amplitude=3pt, mirror}, black!43]
-  (0.88,-2.08) -- (5.18,-2.08);
-\node[result] (count) at (3.03,-2.61) {$T=4$ of $|P|=5$};
-\draw[flow] (3.03,-2.24) -- (count.north);
-
-\draw[flow] (count.south) -- (3.03,-3.10);
-\node[note, anchor=west] at (0.10,-3.26) {reference distribution};
-% Schematic Binomial(5, 1/2) mass function; the right tail is highlighted.
-\foreach \x/\h in {0.95/0.13,1.55/0.42,2.15/0.82,2.75/0.82,3.35/0.42,3.95/0.13}{
-  \fill[black!26] (\x,-3.90) rectangle ({\x+0.38},{-3.90+\h});
+% Replay the keyed positions.
+\node[heading] at (0.08,-0.18) {Carrier replay};
+\draw[oursemph, line width=0.95pt] (0.08,-0.34) -- (0.86,-0.34);
+\node[carrier] (w1) at (0.50,-0.82) {model};
+\node[carrier] (w2) at (1.35,-0.82) {left};
+\node[carrier] (w3) at (2.20,-0.82) {clear};
+\node[carrier] (w4) at (3.05,-0.82) {trace};
+\node[carrier] (w5) at (3.90,-0.82) {today};
+\node[hit]  (m1) at (0.50,-1.48) {$\checkmark$};
+\node[miss] (m2) at (1.35,-1.48) {$\times$};
+\node[hit]  (m3) at (2.20,-1.48) {$\checkmark$};
+\node[hit]  (m4) at (3.05,-1.48) {$\checkmark$};
+\node[hit]  (m5) at (3.90,-1.48) {$\checkmark$};
+\foreach \w/\m in {w1/m1,w2/m2,w3/m3,w4/m4,w5/m5}{
+  \draw[black!30, line width=0.4pt] (\w.south) -- (\m.north);
 }
-\fill[oursemph!70] (3.35,-3.90) rectangle (3.73,-3.48);
-\fill[oursemph!70] (3.95,-3.90) rectangle (4.33,-3.77);
-\draw[black!42, line width=0.4pt] (0.85,-3.90) -- (4.44,-3.90);
-\node[note, text=oursemph, anchor=west] at (4.54,-3.60) {tail for\\$T=4$};
-\foreach \x/\k in {1.14/0,1.74/1,2.34/2,2.94/3,3.54/4,4.14/5}{
-  \node[note] at (\x,-4.06) {\k};
+\node[note, anchor=west] at (0.08,-1.86) {match or mismatch at each replayed carrier};
+
+% Aggregate the binary outcomes.
+\draw[flow] (4.43,-1.06) -- (4.91,-1.06);
+\node[heading] at (5.00,-0.18) {Document score};
+\draw[oursemph, line width=0.95pt] (5.00,-0.34) -- (5.78,-0.34);
+\node[count] (total) at (5.94,-1.06) {4 of 5\\[-1pt]carriers match};
+
+% Compare with the exact reference distribution.
+\draw[flow] (total.east) -- (7.25,-1.06);
+\node[heading] at (7.36,-0.18) {Chance under fair coins};
+\draw[oursemph, line width=0.95pt] (7.36,-0.34) -- (8.14,-0.34);
+\node[note] at (8.47,-0.59) {$\mathrm{Binomial}(5,\tfrac12)$};
+\foreach \x/\h in {7.49/0.11,8.03/0.34,8.57/0.67,9.11/0.67,9.65/0.34,10.19/0.11}{
+  \fill[black!25] (\x,-1.67) rectangle ({\x+0.34},{-1.67+\h});
 }
-\node[note, anchor=west] at (4.43,-4.06) {hits};
+\fill[oursemph!72] (9.65,-1.67) rectangle (9.99,-1.33);
+\fill[oursemph!72] (10.19,-1.67) rectangle (10.53,-1.56);
+\draw[oursemph, densely dashed, line width=0.55pt] (9.65,-1.72) -- (9.65,-0.94);
+\node[note, text=oursemph, anchor=west] at (9.80,-0.82) {observed: 4};
+\draw[black!42, line width=0.4pt] (7.39,-1.67) -- (10.63,-1.67);
+\foreach \x/\k in {7.66/0,8.20/1,8.74/2,9.28/3,9.82/4,10.36/5}{
+  \node[note] at (\x,-1.84) {\k};
+}
+\node[note, text=oursemph, anchor=west] at (10.69,-1.28) {blue tail:\\at least 4};
 
 \end{tikzpicture}
 }%
 \caption{\textbf{Document-level detection.}
-Replayed carriers (blue outlines) determine $T$; the highlighted binomial tail gives the decision.}
+The verifier replays each carrier and records a match. Here four of five match; the blue bars give the
+exact chance of observing at least four matches under fair coins.}
 \label{fig:detection}
-\vspace{-0.80\baselineskip}
-\end{wrapfigure}
+\end{figure}
