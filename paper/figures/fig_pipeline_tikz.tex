@@ -1,146 +1,83 @@
-% Mechanism overview. Concrete sequences and model responses show the procedure;
-% formal definitions remain in the body.
+% Pipeline overview, three panels in the manner of dgMARK's Figure 1.
+% Each panel carries a picture, one equation, and one line of text; the explanation
+% belongs to Section 3, not to the figure.
 \begin{figure}[tb]
 \centering
-\resizebox{\linewidth}{!}{%
-\begin{tikzpicture}[
-  x=1cm, y=1.10cm,
-  font=\scriptsize,
-  >=Stealth,
-  section/.style={font=\scriptsize\bfseries, text=black!78, anchor=west},
-  note/.style={font=\tiny, text=black!61, align=center},
-  cell/.style={draw=black!38, fill=white, minimum width=2.55mm,
-               minimum height=2.55mm, inner sep=0pt, line width=0.4pt},
-  pale/.style={cell, fill=black!8},
-  hide/.style={cell, fill=black!63, draw=black!63},
-  mask/.style={cell, fill=black!17, draw=black!32},
-  word/.style={draw=black!38, fill=white, rounded corners=0.7pt,
-               minimum height=3.5mm, inner xsep=2.2pt, inner ysep=0.6pt,
-               font=\tiny},
-  markedword/.style={word, draw=oursemph, fill=oursemph!8,
-                     line width=0.75pt, text=oursemph},
-  maskword/.style={word, fill=black!13, text=black!58,
-                   minimum width=5.4mm},
-  miss/.style={circle, draw=black!36, fill=white, minimum size=4.9mm,
-               inner sep=0pt, text=black!53},
-  hit/.style={circle, draw=oursemph, fill=oursemph!8, minimum size=4.9mm,
-              inner sep=0pt, text=oursemph, line width=0.7pt},
-  result/.style={draw=oursemph, fill=oursemph!6, rounded corners=1.5pt,
-                 minimum height=5.8mm, inner xsep=5pt, text=oursemph,
-                 font=\scriptsize\bfseries},
-  flow/.style={->, draw=black!53, line width=0.5pt},
-  mainflow/.style={->, draw=oursemph, line width=0.82pt},
-  keyflow/.style={->, draw=oursemph, dashed, line width=0.55pt}
+\scalebox{0.8}{\begin{tikzpicture}[
+  font=\scriptsize, >=Stealth,
+  panel/.style ={draw=black!25, rounded corners=2.5pt, fill=black!2},
+  ttl/.style   ={font=\scriptsize\bfseries, anchor=west},
+  badge/.style ={circle, draw=oursemph, fill=finalres, inner sep=0.9pt,
+                 font=\tiny\bfseries, text=oursemph},
+  tok/.style   ={draw=black!40, fill=white, minimum width=2.5mm,
+                 minimum height=2.5mm, inner sep=0pt},
+  hid/.style   ={tok, fill=black!50, draw=black!50},
+  msk/.style   ={tok, fill=black!10, draw=black!30},
+  ctok/.style  ={tok, draw=oursemph, fill=finalres, line width=0.6pt},
+  lgd/.style   ={font=\tiny, text=black!55},
+  eq/.style    ={anchor=north west, inner sep=0pt},
+  note/.style  ={font=\tiny, text=black!60, anchor=north west, inner sep=0pt,
+                 text width=3.9cm, align=left},
+  big/.style   ={->, draw=oursemph, line width=0.9pt}
 ]
 
-% Fixed editorial canvas; no enclosing dashboard frame.
-\path[use as bounding box] (0,0) rectangle (13.88,-3.30);
+\def\ph{2.54}
 
-% ============================= GENERATION ================================
-\node[section] at (0.08,-0.20) {Generation};
-\draw[oursemph, line width=1.1pt] (0.08,-0.36) -- (0.92,-0.36);
+% ===================== 1. probe =====================
+\draw[panel] (0,0) rectangle (4.25,-\ph);
+\node[badge] at (0.32,-0.30) {1};
+\node[ttl]   at (0.54,-0.30) {Probe the model};
 
-\node[note] at (1.62,-0.52) {keyed context probes};
-\node[note] at (0.38,-0.88) {$\ell$};
-\node[note] at (0.38,-1.22) {$\ell'$};
-\foreach \i in {0,...,7}{
-  \node[pale] at ({0.72+0.27*\i},-0.88) {};
-  \node[pale] at ({0.72+0.27*\i},-1.22) {};
-}
-\foreach \i in {5,...,7}{
-  \node[mask] at ({0.72+0.27*\i},-0.88) {};
-  \node[mask] at ({0.72+0.27*\i},-1.22) {};
-}
-\node[hide] at ({0.72+0.27*1},-0.88) {};
-\node[hide] at ({0.72+0.27*3},-0.88) {};
-\node[hide] at ({0.72+0.27*0},-1.22) {};
-\node[hide] at ({0.72+0.27*4},-1.22) {};
-\node[note] at (1.26,-1.48) {prefix};
-\node[note] at (2.35,-1.48) {block $+$ suffix};
+\foreach \i in {0,...,9}{\node[tok] at ({0.45+0.30*\i},-0.92) {};}
+\node[hid] at (0.75,-0.92) {};
+\node[hid] at (1.35,-0.92) {};
+\foreach \i in {4,...,9}{\node[msk] at ({0.45+0.30*\i},-0.92) {};}
+\node[lgd, anchor=west] at (3.40,-0.92) {$\times(L{+}1)$};
+\node[lgd, anchor=north] at (0.90,-1.12) {prefix};
+\node[lgd, anchor=north] at (2.55,-1.12) {block $+$ suffix};
 
-\node[circle, draw=black!40, fill=white, minimum size=5.8mm,
-      inner sep=0pt] (embedmodel) at (3.22,-1.05) {$\theta$};
-\draw[flow] (2.76,-0.88) -- (embedmodel.north west);
-\draw[flow] (2.76,-1.22) -- (embedmodel.south west);
+\node[eq]   at (0.22,-1.60) {$g_i=\lambda_{i,\ell'}-\lambda_{i,\ell}$};
+\node[note] at (0.22,-2.06) {the model's response to two hidings};
 
-% The response is shown as probability mass on each sign, not as an extra
-% equation competing with the diagram.
-\node[note] at (4.67,-0.52) {response mass};
-\fill[black!36] (3.80,-0.96) rectangle (4.66,-1.16);
-\fill[oursemph!66] (4.66,-0.96) rectangle (5.55,-1.16);
-\draw[black!43, line width=0.35pt] (3.80,-0.96) rectangle (5.55,-1.16);
-\draw[white, line width=0.65pt] (4.66,-0.96) -- (4.66,-1.16);
-\node[font=\tiny, text=white] at (4.23,-1.06) {$-$};
-\node[font=\tiny, text=white] at (5.11,-1.06) {$+$};
-\draw[mainflow] (embedmodel.east) -- (3.70,-1.06);
+% ===================== 2. gate, then write =====================
+\draw[panel] (4.82,0) rectangle (9.07,-\ph);
+\node[badge] at (5.14,-0.30) {2};
+\node[ttl]   at (5.36,-0.30) {Gate, then write};
 
-% A small funnel is visually distinct from a generic process box.
-\node[note] at (6.45,-1.45) {blind gate};
-\draw[black!45, fill=black!4, line width=0.45pt]
-  (6.08,-0.90) -- (6.82,-0.90) -- (6.62,-1.20) -- (6.28,-1.20) -- cycle;
-\draw[mainflow] (5.61,-1.06) -- (6.03,-1.06);
+\fill[oursemph!55] (5.32,-0.84) rectangle (6.42,-1.00);
+\node[lgd, anchor=west] at (6.52,-0.92) {$q_{i,+}$};
+\fill[black!30]    (5.32,-1.08) rectangle (6.18,-1.24);
+\node[lgd, anchor=west] at (6.52,-1.16) {$q_{i,-}$};
 
-\node[font=\tiny\bfseries, text=oursemph] (key) at (7.36,-0.52)
-  {$K\mapsto\epsilon_i$};
-\draw[keyflow] (key.south) -- (7.36,-1.06);
+\node[eq]   at (5.04,-1.60) {$S_i=2\min(q_{i,+},q_{i,-})>s_{\min}$};
+\node[note] at (5.04,-2.06)
+  {blind to the requested sign; then draw ${\leq}R$};
 
-\node[miss] (z1) at (7.72,-1.06) {$\times$};
-\node[miss] (z2) at (8.43,-1.06) {$\times$};
-\node[hit]  (z3) at (9.14,-1.06) {$\checkmark$};
-\node[note] at (8.43,-1.45) {$\leq R$ live draws};
-\draw[mainflow] (6.72,-1.06) -- (z1.west);
-\draw[flow] (z1.east) -- (z2.west);
-\draw[flow] (z2.east) -- (z3.west);
+% ===================== 3. replay and test =====================
+\draw[panel] (9.64,0) rectangle (13.89,-\ph);
+\node[badge] at (9.96,-0.30) {3};
+\node[ttl]   at (10.18,-0.30) {Replay and test};
 
-\node[note] at (9.62,-0.52) {commit first match};
-\node[word]       (w1) at (9.94,-1.06) {the};
-\node[word]       (w2) at (10.54,-1.06) {model};
-\node[markedword] (w3) at (11.28,-1.06) {left};
-\node[word]       (w4) at (11.80,-1.06) {a};
-\node[word]       (w5) at (12.32,-1.06) {clear};
-\node[word]       (w6) at (13.00,-1.06) {trace};
-\node[note] at (11.48,-1.45) {finished text $y$};
-\draw[mainflow] (z3.east) -- (w1.west);
+\foreach \i in {0,...,9}{\node[tok] at ({10.09+0.30*\i},-0.92) {};}
+\node[hid]  at (10.39,-0.92) {};
+\node[hid]  at (10.99,-0.92) {};
+\node[ctok] at (11.89,-0.92) {};
+\node[ctok] at (12.79,-0.92) {};
+\node[lgd, text=oursemph] at (11.89,-1.20) {$m_i$};
+\node[lgd, text=oursemph] at (12.79,-1.20) {$m_i$};
 
-% The output itself turns into the input to verification.
-\draw[mainflow, rounded corners=4pt]
-  (w6.east) -- (13.58,-1.06) -- (13.58,-2.53) -- (13.24,-2.53);
+\node[eq]   at (9.86,-1.60)
+  {$T\sim\mathrm{Binomial}(|P|,\tfrac12)$};
+\node[note] at (9.86,-2.06) {an exact $p$-value, with no calibration};
 
-% ============================ VERIFICATION ===============================
-\node[section] at (0.08,-1.91) {Verification};
-\draw[oursemph, line width=1.1pt] (0.08,-2.07) -- (1.03,-2.07);
+% ===================== flow =====================
+\draw[big] (4.34,-1.27) -- (4.74,-1.27);
+\draw[big] (9.16,-1.27) -- (9.56,-1.27);
 
-\node[note] at (11.55,-2.19) {re-mask block $+$ suffix};
-\node[word]     (r1) at (10.02,-2.53) {the};
-\node[word]     (r2) at (10.64,-2.53) {model};
-\node[maskword] (r3) at (11.36,-2.53) {[M]};
-\node[maskword] (r4) at (11.88,-2.53) {[M]};
-\node[maskword] (r5) at (12.40,-2.53) {[M]};
-\node[maskword] (r6) at (12.92,-2.53) {[M]};
-
-\node[circle, draw=black!40, fill=white, minimum size=5.8mm,
-      inner sep=0pt] (replaymodel) at (9.18,-2.53) {$\theta$};
-\node[note] at (9.18,-2.91) {same checkpoint};
-\draw[mainflow] (r1.west) -- (replaymodel.east);
-
-\node[hit]  (m1) at (7.82,-2.53) {$\checkmark$};
-\node[hit]  (m2) at (7.15,-2.53) {$\checkmark$};
-\node[miss] (m3) at (6.48,-2.53) {$\times$};
-\node[note] at (7.15,-2.19) {key matches};
-\draw[mainflow] (replaymodel.west) -- (m1.east);
-\draw[flow] (m1.west) -- (m2.east);
-\draw[flow] (m2.west) -- (m3.east);
-
-\node[result, text width=2.55cm, align=center]
-  (pvalue) at (3.92,-2.53) {exact binomial $p$-value};
-\node[note] at (3.92,-2.93) {no calibration corpus};
-\draw[mainflow] (m3.west) -- (pvalue.east);
-
-\end{tikzpicture}
-}%
-\caption{\textbf{Shibboleth generation and verification.}
-Two keyed hidings expose response mass on both signs. A blind gate admits the carrier before the
-key supplies its orientation, and generation commits the first matching draw. Verification restores
-the same masked state, replays $\theta$, and returns an exact binomial $p$-value.}
+\end{tikzpicture}}
+\caption{\textbf{How Shibboleth writes a mark and reads it back.} The same three steps run at
+generation and at verification, which is what makes the evidence replayable, and the gate in the
+middle step is settled before the key names the sign it accepts, which is what keeps its
+$p$-values exact.}
 \label{fig:pipeline}
 \end{figure}

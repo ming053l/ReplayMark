@@ -5,14 +5,11 @@
 Discrete and masked diffusion objectives carry diffusion~\citep{ho2020ddpm} over to text
 \citep{austin2021d3pm,lou2024sedd,sahoo2024mdlm,shi2024simplified,ou2025radd} and now support
 instruction-following systems such as LLaDA and Dream
-\citep{nie2025llada,zhu2025llada15,ye2025dream}, with commercial deployments following the same
-recipe~\citep{labs2025mercury}. Because the order in which positions commit
-affects quality and throughput \citep{arriola2025blockdiffusion,kim2025ordering,wu2026fastdllm,
-wei2026slowfast,benhamu2025entropy}, and because a run can equally be stopped before its step
-budget is spent~\citep{lee2026commitlocallyexitglobally}, accelerators treat the whole schedule
-as a tunable degree of freedom. Shibboleth, by contrast, treats it as
-an invariant and draws on masked-token reconstruction only to define a probe it can later
-repeat.
+\citep{nie2025llada,zhu2025llada15,ye2025dream,labs2025mercury}. Since commit order affects
+quality and throughput~\citep{arriola2025blockdiffusion,kim2025ordering,wu2026fastdllm,
+wei2026slowfast,benhamu2025entropy,lee2026commitlocallyexitglobally}, accelerators treat the
+schedule as a tunable degree of freedom; Shibboleth treats it as an invariant and uses
+masked-token reconstruction only to define a probe it can later repeat.
 
 \paragraph{Watermarking autoregressive text.}
 Autoregressive watermarks bias keyed token subsets~\citep{kirchenbauer2023watermark} or couple
@@ -27,35 +24,30 @@ DLM-specific methods restore a well-defined keyed partition by other means, whet
 prefix dependence~\citep{chen2025orderagnostic}, by averaging a red--green bias over unresolved
 context~\citep{gloaguen2026watermarking}, by keyed sampling~\citep{bagchi2025discrete}, or by
 exploiting the decoding order itself~\citep{wu2025dmark,raban2026lrdwm,hong2026dgmark}. We
-compare against dgMARK, an order-steering baseline with a zero-inference
-detector. Shibboleth differs from all of them in where the watermark signal is stored: dgMARK
-modifies commit order and reads the outcome from the text, whereas
-Shibboleth leaves the schedule unchanged and has the verifier rerun the exact checkpoint. Its
-statistic is therefore bound to model behaviour, and detection requires more than the text and key.
+compare against dgMARK, the strongest order-steering baseline with a zero-inference
+detector. Shibboleth differs from all of them in where the evidence resides, since
+dgMARK spends the DLM's freedom over commit order and reads the outcome off the text, whereas
+Shibboleth spends nothing from the schedule and instead has the verifier rerun the exact checkpoint,
+buying a statistic bound to model behaviour at the price of a detector that no longer runs on
+text alone.
 
 \paragraph{Detector statistics.}
-Detector designs include alternatives to the asymptotic $z$-test: exact tails (binomial for green
-counts, Gamma for Gumbel sums) avoid discrepancies between nominal and empirical FPR caused by
-Gaussian approximations at small $\alpha$~\citep{fernandez2023bricks}, permutation tests give
-non-asymptotic $p$-values for otherwise intractable alignment
-statistics~\citep{kuditipudi2024distortionfree}, and windowed maxima must either pay an explicit
-union-bound correction or be calibrated empirically~\citep{kirchenbauer2024reliability}. When
-edits leave the watermark signal in only a fraction of the text, sum-based pooling is provably
-dominated by statistics that concentrate on the surviving fraction~\citep{li2025editrobust}.
-Shibboleth's binomial tail belongs to the exact-test family, and its block structure admits the
-same sparse-signal statistics. Under the uniformly random edits in
-Section~\ref{sec:calibration}, the pooled statistic has higher measured TPR than the per-block
-minimum statistic.
+Detector design has moved past the asymptotic $z$-test toward exact
+tails~\citep{fernandez2023bricks}, permutation $p$-values for alignment
+statistics~\citep{kuditipudi2024distortionfree}, and union-bound corrections for windowed
+maxima~\citep{kirchenbauer2024reliability}; when edits leave evidence in only a fraction of
+the text, sum-based pooling is provably dominated by statistics that concentrate on the
+surviving fraction~\citep{li2025editrobust}. Shibboleth's binomial tail is an exact test, and
+Section~\ref{sec:calibration} measures the sparse-signal alternatives against it.
 
 \paragraph{Detection that consults the model.}
-Every DLM watermark above detects from the text and key alone. Other model-dependent or
-compute-intensive detectors include Kuditipudi et al.'s edit-distance detector, which uses quadratic
-alignment under thousands of permutation resamples~\citep{kuditipudi2024distortionfree}; with
-model access, the Neyman--Pearson score strictly dominates the key-only Gumbel
-statistic~\citep{fernandez2023bricks}, and log-likelihood-ratio detection reads both the
-watermarked and base conditionals~\citep{hu2024unbiased}. GaussMark places its key in a
-Gaussian perturbation of the weights and verifies with one forward--backward pass of the
-generator~\citep{block2025gaussmark}, and watermarks built to expose model theft assume the
-verifier can query the suspect system~\citep{zhao2023invisible}. Unlike GaussMark, which ships
-a perturbed checkpoint, Shibboleth leaves the released weights as they are and puts the key in
-the questions asked of them, and one deployed model therefore serves every document key.
+Every DLM watermark above detects from the text and key alone, but detectors that pay more for
+their evidence are not new: edit-distance detection runs quadratic alignment under thousands
+of permutation resamples~\citep{kuditipudi2024distortionfree}, model access makes the
+Neyman--Pearson score strictly dominate the key-only Gumbel
+statistic~\citep{fernandez2023bricks}, likelihood-ratio detection reads both the watermarked
+and base conditionals~\citep{hu2024unbiased}, GaussMark keys a Gaussian weight perturbation
+and verifies with one forward--backward pass~\citep{block2025gaussmark}, and model-theft
+watermarks assume the verifier can query the suspect system~\citep{zhao2023invisible}. Unlike
+GaussMark, which ships a perturbed checkpoint, Shibboleth leaves the released weights as they
+are and puts the key in the questions asked of them, so one deployed model serves every key.

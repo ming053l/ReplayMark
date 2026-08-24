@@ -12,7 +12,7 @@ the model supplies a predictor $p_\theta(y_i\mid y_I,x)$ while the remaining pos
 mask symbol, so that one sequence evaluation returns that distribution at every unresolved
 position at once.
 
-Deployed decoders often restrict that freedom; we study LLaDA's
+Practical decoders nevertheless leave much of that freedom unused, and we study LLaDA's
 semi-autoregressive schedule, in which the continuation is partitioned into blocks that finish from left to right
 while diffusion resolves the masks inside the active
 block~\citep{arriola2025blockdiffusion,nie2025llada}, and the reference confidence rule decides
@@ -24,8 +24,8 @@ with the prefix $F_b$ that precedes it.
 
 Our goal is a watermark whose detector consults the model rather than the text alone, telling a
 continuation generated under a secret key from one generated without it at a false-positive rate
-the verifier states in advance, while preserving the decoding schedule and measuring changes in
-output quality.
+the verifier states in advance, while disturbing the decoding schedule and the output quality as
+little as the channel allows.
 
 \paragraph{Embedder and verifier.}
 The embedder receives the model, the prompt, a secret key $K$, and the target bits, whereas the
@@ -37,8 +37,8 @@ document key generates both the probe family and the accepted answers, and the f
 guarantee covers any text produced independently of it.
 
 \paragraph{Threat model.}
-Both the model and the algorithm may be public, since secrecy rests entirely in $K$. For every text written
-independently of the document key, including machine text from another sampler, a detector run at
+Both the model and the algorithm may be public, since secrecy rests entirely in $K$. Concretely, the detector does not accuse innocent text, meaning that for every text written
+independently of the document key, machine text from another sampler included, a detector run at
 nominal level $\alpha$ fires with probability at most $\alpha$, and the bound holds at finite
 sample size and under carriers the method itself selects. We claim nothing
 in the complementary direction, and an adversary willing to edit the output can therefore suppress
@@ -48,14 +48,11 @@ or when verification runs a numerically different checkpoint.
 
 \paragraph{Post-hoc substitution.}
 \label{sec:posthoc}
-Post-hoc token substitution avoids intervention during sampling. We measure the number of
-available replacements under this design. Write $\tau$ for the
-likelihood budget of a substitution, the number of nats by which a replacement may fall below
-the live argmax. Across 36 settings that replace tokens after ordinary generation, the median
-selected position admits exactly one token at $\tau=3$, the mean rises from $1.6$ at
-$\tau=3$ to $5.6$ at $\tau=6$, and the highest TPR inside a $1.35\times$ perplexity budget is
-$0.10$ at $1\%$ FPR. The evaluated method therefore embeds while the conditional is available
-during generation.
+A cheaper embedder would swap tokens in the finished text; Appendix~\ref{app:posthoc}
+measures how little room such a swap has — across 36 settings the median selected position
+admits exactly one token at a 3-nat likelihood budget, and the best setting reaches $0.10$
+TPR at $1\%$ FPR inside a $1.35\times$ perplexity budget — so the embedder must write while
+the conditional is still live.
 
 \medskip\noindent
 We accordingly formalise the problem with three requirements.
@@ -72,6 +69,7 @@ unchanged, so that a production decoder keeps the latency and quality profile it
 \end{enumerate}
 
 \noindent
-The first two requirements interact: every scored context must be recoverable from the generated
-text, while carrier selection must remain independent of the keyed sign.
-Sections~\ref{sec:observable} to~\ref{sec:theory} specify the corresponding mechanisms.
+The first two pull against each other, since replayability wants every scored context
+recoverable from a text the model helped choose while blind selection wants that choice to say
+nothing about the sign the key rewards. Sections~\ref{sec:observable} to~\ref{sec:theory} meet each requirement
+with one mechanism.

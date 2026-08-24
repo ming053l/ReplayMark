@@ -36,10 +36,10 @@ Probing one block therefore costs $L+1$ sequence evaluations, one per pattern pl
 baseline, and the verifier later repeats the same set.
 
 Re-masking the block and the suffix removes every token unavailable when the probe was first
-applied, which provides replayability: the verifier restores the same state from the final
+applied, which is what buys replayability: the verifier restores the same state from the final
 text alone, and a transient generation-time response becomes a document statistic. Masking only the probed
-prefix would not reproduce the embedding state: token positions committed later in the same block
-would enter verification-time logits although the future suffix was masked during embedding.
+prefix would fail on both sides, since token positions committed later in the same block would
+leak into verification-time logits while the future suffix was invisible during embedding.
 
 For an unordered pair of pattern indices $(\ell,\ell')$ and a candidate token $z$, define the
 contrast $g_i^{\ell,\ell'}(z)=\lambda_{i,\ell'}(z)-\lambda_{i,\ell}(z)$.
@@ -55,9 +55,10 @@ Shibboleth selects, independently at each token position, the pair maximizing $S
 and stores its contrast as $g_i$ in the bank $\mathcal{R}_b$, after which the gate admits position
 $i$ whenever $S_i>s_{\min}$, subject to an optional per-block cap. Because
 $S_i^{\ell,\ell'}$ is unchanged when $\ell$ and $\ell'$ are swapped, the gate neither observes
-nor favours the orientation the key will request, which establishes blind selection, and both
-the pair selection and the gating recompute from the block-masked state. Maximizing over pairs
-raises the measured mean score from $0.28$ for a fixed near/far pair to $0.45$, although the score remains a symmetric proxy computed on the block-masked
+nor favours the orientation the key will request, which is what buys blind selection, and both
+the pair selection and the gating recompute from the block-masked state. Best-pair selection is moreover
+what makes the gate productive, raising the measured mean score from $0.28$ for a fixed near/far
+pair to $0.45$, although the score stays a symmetric proxy computed on the block-masked
 conditional while generation runs from an evolving live one.
 
 Once the gate has admitted a token position, the key supplies an orientation
@@ -72,7 +73,7 @@ m_i(z)=\mathbf{1}[w_i\epsilon_i g_i(z)>0].
 Should $g_i(z)$ vanish exactly, a second domain-separated fair bit defines $m_i(z)$, and although
 such ties cannot be steered, the tie rule keeps the detector's $p$-values exact.
 
-\subsection{Embedding the Target Sign}
+\subsection{Writing the Requested Answer}
 \label{sec:embedding}
 
 % --- Algorithm 1, commented out to hold the eight-page workshop limit.  Nothing in
@@ -125,7 +126,7 @@ It draws from $p_i$ up to $R$ times and commits the first member of $A_i$, and a
 it commits one fresh unchecked draw instead. Because the row is never recomputed, those retries cost
 no model evaluation.
 
-The resulting sampling distribution can be written explicitly. Let $a_i=p_i(A_i)$ be the
+That procedure changes the sampling distribution, and by a stated amount. Let $a_i=p_i(A_i)$ be the
 acceptance mass and let $q_i=\sum_z p_i(z)m_i(z)$, where $m_i(z)$ applies Eq.~\eqref{eq:m} and the tie rule to candidate $z$, so that $q_i$ is the
 probability that an unconditional draw scores as a detector hit irrespective of the plausibility
 floor. The committed-token distribution is
@@ -181,7 +182,8 @@ Eq.~\eqref{eq:test} is an exact $p$-value and thresholding it at $\alpha$ holds 
 false-positive rate at or below $\alpha$ for every document length and carrier count.
 \end{proposition}
 
-Conditioning fixes the carrier count, selected pair, and contrast magnitude before the independent
+The conditioning carries the result, since carrier count, selected pair, and contrast magnitude
+may all depend arbitrarily on the text and the model, yet each is fixed before the independent
 orientation bit is consulted. Flipping $\epsilon_i$ therefore flips $m_i$
 whenever $g_i(y_i)\neq 0$, the tie rule supplies a fresh fair bit when it vanishes, and the
 carriers stay independent of one another throughout. In particular, neither an asymptotic

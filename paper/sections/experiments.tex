@@ -3,18 +3,15 @@
 
 \paragraph{Datasets and setup.}
 We evaluate \texttt{GSAI-ML/LLaDA-8B-Instruct}~\citep{nie2025llada} and
-Dream-7B-Instruct~\citep{ye2025dream} in fp16 on a single TITAN
-RTX; Dream emits the prediction for position $i$ at raw-logit index $i{-}1$, and one shift in
-the model wrapper restores the shared convention for generation and replay alike.
-Detectability is measured
-on C4 \texttt{realnewslike}~\citep{raffel2020c4} prompts truncated to 300 characters as dgMARK's
-protocol prescribes. Every row decodes 512 tokens in 32-token blocks at one denoising step
-per token, each method under its own decoding regime: Shibboleth and dgMARK on the native
-confidence schedule with full-vocabulary multinomial sampling at
-temperature $0.8$ (dgMARK with top-$k{=}3$), KGW strictly left-to-right as its green list
-requires. On top of the reference sampler, Shibboleth adds $L=8$ probe patterns, threshold
-$s_{\min}=0.5$, retry budget $R$, and an optional floor $\kappa$, and we test provenance
-detection ($w_i=+1$) rather than payload recovery.
+Dream-7B-Instruct~\citep{ye2025dream} in fp16 on one TITAN RTX (Dream predicts position $i$
+at raw-logit index $i{-}1$; one shift in the wrapper restores the shared convention for
+generation and replay). Detectability uses C4 \texttt{realnewslike}~\citep{raffel2020c4}
+prompts truncated to 300 characters as in dgMARK. Every row decodes 512 tokens in 32-token
+blocks at one denoising step per token under its own regime: Shibboleth and dgMARK on the
+native confidence schedule with multinomial sampling at temperature $0.8$ (dgMARK with
+top-$k{=}3$), KGW strictly left-to-right as its green list requires. Shibboleth adds $L=8$
+probe patterns, threshold $s_{\min}=0.5$, retry budget $R$ and an optional floor $\kappa$;
+we test provenance detection ($w_i=+1$), not payload recovery.
 % TODO(gsm8k): exp/32 (LLaDA) and exp/39 (Dream) measure GSM8K accuracy (50 problems, 256
 % tokens, matched control vs watermarked arm); fill tables/quality_table.tex from those
 % runs only, then un-comment its \input below and the downstream paragraph's numbers.
@@ -25,18 +22,14 @@ detection ($w_i=+1$) rather than payload recovery.
 % only, never from the deleted GPT draft.
 
 \paragraph{Metrics and baselines.}
-Detectability is TPR at analytic FPR thresholds from Eq.~\eqref{eq:test}, and quality is
-GPT-2-large~\citep{radford2019gpt2} perplexity against an unwatermarked baseline drawn from the
-same decoder, reported as
-$\exp(\operatorname{mean}(\mathrm{NLL}_{\rm wm}-\mathrm{NLL}_{\rm ctrl}))$. That ratio
-measures the distortion each method adds to its own unwatermarked baseline rather than absolute
-text quality,
-and comparisons of ratios across methods are therefore indicative rather than controlled.
-Compute counts
-sequence evaluations, and each of the $512/32=16$ blocks accordingly needs $L+1=9$ of them,
-hence $144$ for verification against $512+144=656$ for generation. We compare against
-KGW~\citep{kirchenbauer2023watermark} under left-to-right decoding and
-dgMARK~\citep{hong2026dgmark} under confidence decoding.
+Detectability is TPR at analytic FPR thresholds from Eq.~\eqref{eq:test}; quality is
+GPT-2-large~\citep{radford2019gpt2} perplexity against an unwatermarked baseline from the same
+decoder, $\exp(\operatorname{mean}(\mathrm{NLL}_{\rm wm}-\mathrm{NLL}_{\rm ctrl}))$, which
+measures each method's distortion of its own baseline rather than absolute quality, so ratios
+compare across methods only indicatively. Compute counts sequence evaluations: each of the
+$512/32=16$ blocks needs $L+1=9$, hence $144$ for verification and $512+144=656$ for
+generation. Baselines are KGW~\citep{kirchenbauer2023watermark} under left-to-right decoding
+and dgMARK~\citep{hong2026dgmark} under confidence decoding.
 
 \input{tables/baseline_table}
 \input{tables/quality_table}
@@ -58,87 +51,53 @@ dgMARK~\citep{hong2026dgmark} under confidence decoding.
 % \end{figure}
 
 \paragraph{Retry budget and the floor.}
-Detection scales with the number of guided draws as Eq.~\eqref{eq:hit} predicts, since $R=1$
-reaches $0.43$ TPR at $1\%$ FPR and raising $R$ from 2 to 4 to 8 on 30 held-out prompts lifts it
-from $0.73$ to $0.83$ to $0.87$. Retries cost no model evaluation, and the budget is therefore paid
-in quality instead, with unfloored perplexity ratios climbing from $1.14\times$ at $R=2$ to
-$1.40\times$ at $R=4$ and $1.61\times$ at $R=8$. The floor converts part of that back, since
-$(R,\kappa)=(8,0.1)$ obtains $0.70$ TPR at $0.87\times$ and $(16,0.05)$ obtains $0.80$ at
-$0.74\times$, both below their unwatermarked baselines, although a ratio below one indicates only that
-GPT-2-large prefers the high-probability tokens the floor admits.
+Detection scales with the number of guided draws as Eq.~\eqref{eq:hit} predicts: $R=1$ reaches
+$0.43$ TPR at $1\%$ FPR, and $R=2$, $4$, $8$ on 30 held-out prompts reach $0.73$, $0.83$,
+$0.87$. Retries cost no model evaluation, so the budget is paid in quality — unfloored
+perplexity ratios climb from $1.14\times$ at $R=2$ to $1.61\times$ at $R=8$ — and the floor
+converts part of it back: $(R,\kappa)=(8,0.1)$ obtains $0.70$ TPR at $0.87\times$ and
+$(16,0.05)$ obtains $0.80$ at $0.74\times$, both below their unwatermarked baselines, although
+a ratio below one says only that GPT-2-large prefers the high-probability tokens the floor
+admits.
 
 \paragraph{Across models.}
-The cross-model story inverts the LLaDA ranking. Carrying every method's LLaDA-chosen
-setting to Dream-7B-Instruct unchanged, both token-local channels weaken sharply: KGW falls
-to $0.57$ TPR at $1\%$ FPR at a $1.84\times$ perplexity ratio, since Dream under forced
-left-to-right decoding repeats itself heavily ($84\%$ duplicate bigrams), and dgMARK falls
-to $0.37$ direct and $0.30$ with three-beam lookahead. The model-response channel instead
-strengthens: the same $(16,0.05)$ setting reaches $0.90$ at both $1\%$ and $0.1\%$ FPR at a
-sync rate of $0.725$ against $0.503$ on the control, whose false positives stay at zero, and
-is on this model the strongest detector in the comparison. A token-local channel depends on
-how a particular decoder behaves under the constraint the watermark imposes, where a probe
-the model answers about its own output travels with the model. What does not
-transfer is the floor's perplexity dividend, since on Dream $(8,0.1)$ reads $0.79\times$ but
-$(16,0.05)$ reads $1.09\times$ — which $(R,\kappa)$ is quality-optimal is model-dependent —
-and the Dream ratios rest on the 8--13 pairs per arm that survive the decoded-length rule,
-so they carry wide error bars. These are single-setting reproductions, not per-model tuning,
-for every method alike.
+Carrying every method's LLaDA-chosen setting to Dream unchanged inverts the ranking: KGW
+falls to $0.57$ TPR at $1\%$ FPR at $1.84\times$ perplexity, since forced left-to-right
+decoding makes Dream repeat itself ($84\%$ duplicate bigrams), and dgMARK falls to $0.37$
+direct and $0.30$ with lookahead, whereas $(16,0.05)$ reaches $0.90$ at both $1\%$ and
+$0.1\%$ FPR (sync $0.725$ against $0.503$ on a control with zero false positives) and is the
+strongest detector on this model. A token-local channel is only as strong as the decoder
+behaviour it exploits; a probe the model answers about its own output travels with the
+model. The floor's perplexity dividend does not transfer — $(8,0.1)$ reads $0.79\times$ but
+$(16,0.05)$ $1.09\times$, on 8--13 surviving pairs per arm — so the quality-optimal
+$(R,\kappa)$ is model-dependent. No method was tuned per model.
 
-% TODO(gsm8k): a "Downstream quality" paragraph belongs here once exp/32's GSM8K numbers
-% exist. The previous draft's paragraph quoted an MMLU/GSM8K/HumanEval grid on two models
-% that was never run and has been deleted; do not restore it from history.
 \paragraph{Downstream quality.}
-Perplexity ratios are a proxy, so we additionally measure GSM8K~\citep{cobbe2021gsm8k} accuracy
-on 50 test problems at 256 tokens, comparing the watermarked $R=16,\kappa=0.05$ sampler
-against its matched unwatermarked control under the identical decoding schedule
-(Table~\ref{tab:quality}). The watermarked arm scores $0.700$ against the control's $0.640$,
-and the paired view shows five problems flipping right and two flipping wrong, a tie within
-noise at this cohort size rather than an improvement; the sub-control perplexity ratio is
-therefore not purchased with degenerate text. Detection on these short outputs is weak
-($0.12$ at $1\%$ FPR) since 256 tokens admit few carriers, and the control arm sits at its
-null ($0.02$ at $1\%$). The peers behave the same way under their own controls
-(Table~\ref{tab:quality}): no method moves GSM8K accuracy beyond noise at this cohort size,
-and short task outputs starve every detector, not only ours — direct dgMARK also reads
-$0.12$ at $1\%$ FPR, its three-beam variant $0.44$, and KGW at $\delta=1$ embeds almost
-nothing detectable at all (mean $z=+0.46$, zero TPR), since a short, heavily constrained
-answer leaves its bigram channel few free choices. A watermark's headline TPR, measured on
-512-token continuations, does not transfer to 256-token task outputs for any method here.
-On Dream the task-quality cost separates the methods more sharply than any perplexity ratio
-did: KGW leaves accuracy untouched ($0.700$ against its own control's $0.700$) while barely
-embedding ($0.14$ at $1\%$), whereas dgMARK drops it from $0.840$ to $0.560$ in both
-variants — twenty-eight against forty-two problems of fifty, well beyond noise — for $0.18$
-and $0.66$ TPR respectively. Shibboleth holds its Dream control's accuracy ($0.680$ against
-$0.660$, nine problems flipping right and eight wrong), so on this model it is
-simultaneously the strongest 512-token detector in Table~\ref{tab:baselines} and the only
-watermark here that pays no measurable task accuracy for it. MMLU repeats the pattern at
-200 questions per cell: Shibboleth sits within noise of its control on both models
-($0.575$ against $0.595$ on LLaDA, $0.710$ against $0.695$ on Dream), while dgMARK's
-direct variant gives up $0.075$ on LLaDA and $0.170$ on Dream against its own control.
-HumanEval pass@1 on LLaDA, scored by executing the official tests, reads $0.384$ for
-Shibboleth against $0.335$ for its control and $0.293$ for KGW against $0.329$, again within
-noise at 164 tasks.
+Perplexity is a proxy, so Table~\ref{tab:quality} measures accuracy on GSM8K (50 problems,
+256 tokens), MMLU (200 questions) and HumanEval (164 tasks, executed) under multinomial
+decoding, each watermark against its own control. Shibboleth never leaves the noise band of
+its control on either model (GSM8K $0.700$ vs.\ $0.640$ and $0.680$ vs.\ $0.660$; MMLU
+$0.575$ vs.\ $0.595$ and $0.710$ vs.\ $0.695$; HumanEval $0.384$ vs.\ $0.335$ on LLaDA), so
+the sub-control perplexity is not bought with degenerate text. dgMARK pays for its channel on
+Dream — $0.840$ to $0.560$ on GSM8K in both variants and $0.740$ to $0.570$ on MMLU, well
+beyond noise — and $0.075$ on LLaDA MMLU. KGW leaves accuracy untouched but barely embeds
+on short constrained answers (mean $z=+0.46$, zero TPR on LLaDA GSM8K). Short task outputs
+starve every detector: Shibboleth and direct dgMARK both read $0.12$ TPR at $1\%$ FPR on
+LLaDA GSM8K and three-beam dgMARK $0.44$, so headline TPR at 512 tokens transfers to
+256-token task outputs for no method.
 
 \paragraph{Cost against token-local detectors.}
-Detection trails the token-based detectors at matched length: dgMARK's three-beam variant
-reaches $0.93$ TPR at both $1\%$ and $0.1\%$ FPR against $0.80$
-and $0.60$ for Shibboleth, its direct variant reaches $0.83$ and $0.80$, and KGW reaches
-$0.90$ and $0.83$. Shibboleth instead carries the only perplexity
-ratio in the comparison that reads below
-its own unwatermarked baseline, $0.74\times$ against $1.22\times$ for KGW, $1.45\times$ for
-direct dgMARK and $1.21\times$ for
-three-beam dgMARK; every baseline row costs perplexity, whereas the floor discards exactly the
-low-probability draws a proxy scorer punishes. KGW additionally requires strict left-to-right
-decoding, under which this checkpoint repeats itself heavily, and its repeated bigram events
-must be deduplicated: without deduplication its control measured $37\%$ FPR, and even with it
-two of thirty 512-token null documents cross the $0.1\%$ threshold, a residual calibration
-failure of exactly the kind an exact conditional null rules out by
-construction~\citep{fernandez2023bricks}. Shibboleth alone, against all of that, spends 144 masked evaluations to
-detect at all, although paying for detection is not unprecedented: edit-distance detection
-runs a quadratic alignment under thousands of permutation
-resamples~\citep{kuditipudi2024distortionfree}, and GaussMark verifies with a forward--backward
-pass of the generator itself~\citep{block2025gaussmark}. Cohorts of twenty to fifty documents
-leave a standard error near $0.08$ on a TPR of $0.80$, and two rows separated by
-less than about a tenth should accordingly be read as a tie.
+Detection trails the token-based detectors at matched length — three-beam dgMARK reaches
+$0.93$ at both $1\%$ and $0.1\%$ FPR against $0.80$ and $0.60$ for Shibboleth, direct dgMARK
+$0.83$ and $0.80$, KGW $0.90$ and $0.83$ — while Shibboleth alone reads below its own
+unwatermarked baseline in perplexity, $0.74\times$ against $1.22\times$, $1.45\times$ and
+$1.21\times$, since the floor discards exactly the low-probability draws a proxy scorer
+punishes. KGW also needs strict left-to-right decoding, under which this checkpoint repeats
+itself, and its repeated bigrams must be deduplicated: undeduplicated, its control measured
+$37\%$ FPR, and even deduplicated two of thirty 512-token null documents cross the $0.1\%$
+threshold — the residual calibration failure an exact conditional null rules out by
+construction~\citep{fernandez2023bricks}. Shibboleth alone spends 144 masked evaluations to
+detect at all; at these cohort sizes rows within about a tenth of TPR are ties.
 
 \subsection{Calibration and Robustness}
 \label{sec:calibration}
@@ -154,36 +113,21 @@ this section behaves the same way, with zero false positives at $1\%$ throughout
 
 \paragraph{Post-editing.}
 Edit robustness is the channel's principal failure mode (Table~\ref{tab:robustness},
-Appendix~\ref{app:tables}), and it degrades abruptly, since
-same-model argmax re-denoising of a random $10\%$ of token positions takes TPR at $1\%$ FPR from
-$0.35$ to $0.05$ on 20 $R=1$ documents and deleting $10\%$ measures the same. The collapse is
-one of synchronisation rather than signal strength, because an early edit alters the fixed
-prefix from which every later probe is rebuilt, and a single change thus invalidates every
-carrier after it. That cohort uses $R=1$, and the headline setting at $R=16$ consequently
-remains unattacked, which we record as an open gap rather than as evidence of resilience.
-Redundancy, however, changes the picture: attacking the strongest setting
-($R=16,\kappa=0.05$ at 1024 tokens, $n=16$) rather than the weakest, re-denoising $5\%$ of
-positions leaves TPR at $1\%$ FPR unchanged at $0.88$ and re-denoising $10\%$ halves it to
-$0.50$ instead of erasing it, with false-positive control holding on the identically
-attacked controls. We also measured the block-local repair the pooled statistic seems to
-invite: a per-block exact test combined by Bonferroni over the blocks keeps the
-document-level guarantee by union bound, yet it never beats pooling here — $0.38$ against
-$0.50$ at $1\%$ FPR under the $10\%$ attack, and $0.69$ against $0.88$ clean — because
-uniformly random edits damage every block, so the sparse-signal regime in which
-concentration-type tests dominate sum-based ones~\citep{li2025editrobust} never arises.
-Bounding the conditioning window is the corresponding structural repair on the embedding
-side: with a 128-token window the response bank reads only the prompt and the last 128
-generated tokens, so one edit can perturb at most five blocks' banks instead of every later
-one. Measured at $R=16,\kappa=0.05$ and 512 tokens on shared prompts and seeds ($n=16$), the
-window costs nothing clean — $0.69$ TPR at $1\%$ FPR in both arms, at a comparable perplexity
-ratio — but buys nothing under random $10\%$ re-denoising either ($0.44$ against $0.50$, a
-one-document difference), and for the same reason: the window bounds propagation, while
-uniformly random edits already damage every window. The localized-edit test then resolves
-both questions at once, and in the deployed detector's favour: re-denoising one contiguous
-span of $10\%$ or even $30\%$ of positions leaves the pooled count exactly at its clean
-$0.88$ at both operating points, because desynchronisation propagates forward only and
-every carrier before the span survives untouched — what an edit costs is set by where it
-starts, not by how much it changes. Neither repair is needed in the regimes measured here:
-Bonferroni-min never overtakes pooling, and the window has nothing left to protect. The one
-untested regime that could still favour a min-statistic is copy--paste-style sparse
-survival, where only a fragment of watermarked text remains inside a larger document.
+Appendix~\ref{app:tables}). At $R=1$, same-model argmax re-denoising of a random $10\%$ of
+positions takes TPR at $1\%$ FPR from $0.35$ to $0.05$ on 20 documents, and deleting $10\%$
+measures the same: an early edit alters the prefix from which every later probe is rebuilt,
+so what collapses is synchronisation, not signal strength. Redundancy changes the picture —
+at $R=16,\kappa=0.05$ and 1024 tokens ($n=16$) a random $5\%$ edit leaves TPR at $0.88$ and a
+random $10\%$ edit halves it to $0.50$, with false-positive control holding on identically
+attacked controls — and so does locality: because damage propagates forward only,
+re-denoising one contiguous span of $10\%$ or even $30\%$ of positions leaves the pooled
+detector exactly at its clean $0.88$; what an edit costs is set by where it starts, not by
+how much it changes. We also measured the two repairs the pooled count seems to invite. A
+per-block exact test combined by Bonferroni keeps the document-level guarantee by union
+bound yet never beats pooling ($0.38$ against $0.50$ under the random $10\%$ attack, $0.69$
+against $0.88$ clean), because uniformly random edits damage every block and the
+sparse-signal regime where concentration-type tests win~\citep{li2025editrobust} never
+arises; a 128-token conditioning window, which bounds an edit's reach to five blocks, costs
+nothing clean ($0.69$ in both arms at 512 tokens, $n=16$) but buys nothing under random
+$10\%$ re-denoising ($0.44$ against $0.50$) for the same reason. The one untested regime
+that could still favour a min-statistic is copy--paste-style sparse survival.

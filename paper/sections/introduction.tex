@@ -3,18 +3,18 @@
 
 \input{figures/fig_paradigm}
 
-Language-model text can be difficult for readers to distinguish from human writing, creating
-provenance risks in settings that include disinformation, phishing, and academic-integrity
-review~\citep{liang2026survey,krishna2023paraphrasing}. Post-hoc detectors are fitted to a
-generation process, so their operating characteristics can change when the decoding mechanism
-changes, including for masked diffusion language models. Watermarking instead embeds a keyed
-statistical signal during generation and allows a key holder to test a later
-document~\citep{petitcolas1999hiding,kirchenbauer2023watermark}. Because a false positive can
-misattribute human-written text, deployment requires a specified false-positive rate rather than
-one inferred only from a calibration corpus. Since
-adversaries also paraphrase output and learn a key's behaviour from detector
-queries~\citep{krishna2023paraphrasing,jovanovic2024stealing}, we study finite-sample control under
-adaptively selected trials~\citep{zhao2024provable,christ2024undetectable}.
+Language models now write text that readers cannot reliably tell from human writing, and
+provenance becomes a security problem once disinformation, phishing and academic fraud stop
+needing an author~\citep{liang2026survey}. A post-hoc detector is fitted to one generation
+process and weakens as deployment moves to models that decode by another mechanism, masked
+diffusion models among them; watermarking instead plants a keyed signal during generation and
+lets the key holder test a document
+later~\citep{petitcolas1999hiding,kirchenbauer2023watermark}. A watermark is worth only the
+guarantee behind its verdict — a false positive accuses a human author — so a deployment
+needs a false-positive rate it can state in advance rather than fit to a corpus, and, since
+adversaries paraphrase and learn a key from detector
+queries~\citep{krishna2023paraphrasing,jovanovic2024stealing}, one that survives finite
+samples and adaptively chosen trials~\citep{zhao2024provable,christ2024undetectable}.
 
 Existing watermarks place their secret in the tokens, whether by biasing keyed vocabulary
 subsets~\citep{kirchenbauer2023watermark}, by coupling each draw to
@@ -25,13 +25,14 @@ consulted. Masked DLMs, by contrast, permit a different arrangement,
 since a finished text can be fed back to the model with selected context hidden and the
 likelihood of an emitted token then moves by an amount the checkpoint alone determines. Hiding a
 keyed subset of the context is in this sense a \emph{context probe}, the direction in which the
-likelihood moves is the model's response to it, and agreement between the keyed sign and that
-response defines the provenance statistic. We apply a probe where the masked-position conditional assigns nonzero mass to
-multiple plausible tokens whose responses to two patterns have opposite signs.
+likelihood moves is the model's response to it, and provenance can be argued from the agreement
+between the two. Such a probe is worth applying only where the model has a genuine choice of
+answer, that is where several plausible tokens coexist at a masked position and react with
+opposite signs to two patterns.
 
 % --- Motivation figure (illustrative values, not measurements).  Commented out to
 % --- hold the eight-page workshop limit now that Tables 2 and 3 carry the
-% --- security-relevant results.  Uncomment to restore it at the cost of a page.
+% --- security-relevant evidence.  Uncomment to restore it at the cost of a page.
 % \begin{figure}[t]
 % \centering
 % \includegraphics[width=\linewidth]{figures/fig_retrace_motivation.pdf}
@@ -43,9 +44,8 @@ multiple plausible tokens whose responses to two patterns have opposite signs.
 % \label{fig:motivation}
 % \end{figure}
 
-Moving the keyed signal from token identities to this relation introduces two requirements absent
-from token-local detection: the verifier must reproduce the embedder's probe, and carrier selection
-must be completed before the accepted answer is known. A gate with access to the rewarded sign would
+Moving the secret out of the tokens and into that relation, however, costs two things a token-local detector obtains for nothing, since the verifier must apply exactly the probe the embedder
+applied, and the choice of carriers must be settled before the accepted answer is known; a gate with sight of the rewarded sign would
 otherwise inflate the false-positive rate above the level the detector reports.
 Section~\ref{sec:setup} states both as requirements, and existing DLM watermarks avoid them by
 keeping detection token-local, whether by removing prefix dependence~\citep{chen2025orderagnostic}, by averaging a
@@ -58,7 +58,7 @@ replayability by re-masking the current block together with its suffix before sc
 family, and the state it measures therefore follows from the final text alone. A \emph{balanced gate} then admits as carriers only the unresolved positions whose block-masked
 conditional retains mass on both response signs, scoring them in a way that is invariant to
 swapping the two patterns and therefore blind to the sign the key will ask for.
-For generation, Shibboleth draws at most $R$ proposals from the
+Writing the answer is the easier half, since Shibboleth draws at most $R$ proposals from the
 unchanged live row at an admitted position and commits the first one carrying that sign, which
 amounts to rejection sampling and does change the output distribution, although every committed
 token remains one the model proposed. Verification afterwards re-applies the same probe,
@@ -68,17 +68,17 @@ reference schedule has produced a row, and therefore leaves the block partition 
 confidence order untouched.
 
 \begin{itemize}[leftmargin=1.2em,itemsep=1pt,topsep=2pt]
-\item Across 36 post-hoc substitution settings, the highest-TPR configuration within a $1.35\times$
-perplexity budget reaches $0.10$ TPR at $1\%$ FPR; we therefore embed while the conditional is
-available during generation (Section~\ref{sec:posthoc}).
+\item We show across 36 settings that this checkpoint's conditionals are too sharp for answers
+to be inserted after the fact, and the answer must therefore be written while the conditional is
+still live (Section~\ref{sec:posthoc}).
 \item We propose Shibboleth, in which block-and-suffix re-masking makes the probe replayable from
 the finished text and orientation-blind gating keeps the accepted answer independent of how the
-carriers were discovered, which together keep the detector's $p$-values exact without a
-calibration corpus (Sections~\ref{sec:observable} to~\ref{sec:theory}).
+carriers were discovered, which together keep the detector's $p$-values exact and free of
+calibration (Sections~\ref{sec:observable} to~\ref{sec:theory}).
 \item We evaluate Shibboleth on LLaDA-8B-Instruct and Dream-7B-Instruct and report both sides
-of the trade: $R=16,\kappa=0.05$ reaches $0.80$ and $0.90$ TPR at $1\%$ FPR — on
-LLaDA with the lowest perplexity ratio among the compared rows, and on Dream with the highest
-TPR under shared settings — whereas verification uses 144 masked evaluations
-and $10\%$ re-denoising reduces TPR from $0.35$ to $0.05$ at $R=1$ and from $0.88$ to $0.50$ at $R=16$
+of the trade: the strongest setting reaches $0.80$ and $0.90$ TPR at $1\%$ FPR — on
+LLaDA at the best perplexity ratio of any method compared, on Dream above every token-local
+baseline under shared settings — whereas verification spends 144 masked evaluations
+and $10\%$ re-denoising collapses TPR at $R=1$ and halves it at the strongest setting
 (Section~\ref{sec:experiments}).
 \end{itemize}
