@@ -18,9 +18,10 @@ $L$ & Verify calls $\downarrow$ & $5\%$ & $1\%$ & $0.1\%$ & Sync rate \\
 8 & 144 & 0.77 & 0.77 & 0.73 & 0.658 \\
 \bottomrule
 \end{tabular}
-\caption{\textbf{Probe-count ablation.} Detection under $L$ probe patterns at
-$R=16,\kappa=0.05$ on LLaDA (512 tokens, $n=30$, a fresh prompt cohort). Verification costs
-$16(L+1)$ model calls. $L=4$ keeps most of the detection at $56\%$ of the default cost;
-$L=2$ loses a further tenth at every operating point.}
+\caption{\textbf{Fewer probe patterns make verification cheaper.} Each row halves the
+number of probe patterns $L$; verification replays $16(L+1)$ model calls. Detection is
+measured at $R=16,\kappa=0.05$ on LLaDA, 512 tokens, $n=30$ fresh prompts. Going from
+$L=8$ to $L=4$ keeps most of the detection at a little over half the cost; going to
+$L=2$ saves little more and loses about a tenth of TPR at every operating point.}
 \label{tab:lsweep}
 \end{table}
