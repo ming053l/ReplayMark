@@ -61,7 +61,8 @@ setting with the lowest LLaDA PPL ratio does not retain that ratio on Dream.
 Table~\ref{tab:quality} shows each method's own unwatermarked and watermarked scores side by
 side; Appendix Table~\ref{tab:quality_full} gives the full grid. Shibboleth changes by at most
 $0.06$. On LLaDA HumanEval, dgMARK changes from $0.409$ to $0.341$ direct and $0.280$ with
-three beams; on Dream, MMLU changes from $0.740$ to $0.570$ and GSM8K from $0.840$ to $0.560$.
+three beams; on Dream, MMLU changes from $0.740$ to $0.570$, GSM8K from $0.840$ to $0.560$,
+and HumanEval from $0.567$ to $0.329$ with three beams.
 On 256-token LLaDA GSM8K answers, Shibboleth and direct dgMARK reach $0.12$ TPR at $1\%$ FPR,
 three-beam dgMARK $0.44$, and KGW zero; 512-token rates therefore do not transfer to short answers.
 
