@@ -1,0 +1,33 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{When is model-response watermarking useful?}
+Shibboleth is most appropriate when the production decoder should remain
+unchanged and the verifier can retain the checkpoint.  It does not replace a
+token-local detector: the latter is cheaper and easier to run at scale.  A
+practical deployment could use a token-local test for routine checks and
+reserve checkpoint replay for documents that require a model-specific
+provenance claim.
+
+\paragraph{Checkpoint binding is both the signal and the cost.}
+A successful Shibboleth test says that the text agrees with keyed responses of
+a particular checkpoint, not merely that its token identities follow a keyed
+pattern.  This is the method's distinguishing property, but it also makes the
+checkpoint identity, numerical precision, and replay implementation part of
+the verification record.  Transfer across numerically different copies is not
+established by our experiments.
+
+\paragraph{Editing reveals where synchronisation lives.}
+Dispersed edits alter many later prefixes and therefore many reconstructed
+probes; a contiguous span leaves all earlier carriers intact.  The measured
+asymmetry suggests that content-anchored probes, rather than absolute prefix
+positions, are the most direct route to editing tolerance.  The block-local
+and windowed variants tested here did not improve detection after random
+edits, so this remains future work rather than a demonstrated remedy.
+
+\paragraph{Interpreting quality.}
+A perplexity ratio below one does not by itself imply better text, and the task
+cohorts are too small to support claims about modest accuracy changes.  The
+relevant result is narrower: under the measured settings, Shibboleth's task
+score changes are small relative to the degradation observed for direct
+dgMARK on Dream, while its detector requires substantially more computation.
