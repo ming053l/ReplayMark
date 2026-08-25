@@ -7,15 +7,15 @@
 \centering
 \small
 \renewcommand{\arraystretch}{0.85}
-\begin{tabular}{rrrrrr}
+\begin{tabular}{rrrrrrr}
 \toprule
-& & \multicolumn{3}{c}{TPR at FPR $\uparrow$} & \\
+& & \multicolumn{3}{c}{TPR at FPR $\uparrow$} & & \\
 \cmidrule(lr){3-5}
-$L$ & Verify calls $\downarrow$ & $5\%$ & $1\%$ & $0.1\%$ & Sync rate \\
+$L$ & Verify calls $\downarrow$ & $5\%$ & $1\%$ & $0.1\%$ & Sync rate & PPL ratio \\
 \midrule
-2 & 48  & 0.73 & 0.57 & 0.50 & 0.629 \\
-4 & 80  & 0.77 & 0.70 & 0.67 & 0.650 \\
-8 & 144 & 0.77 & 0.77 & 0.73 & 0.658 \\
+2 & 48  & 0.73 & 0.57 & 0.50 & 0.629 & 1.01$\times$ \\
+4 & 80  & 0.77 & 0.70 & 0.67 & 0.650 & 0.86$\times$ \\
+8 & 144 & 0.77 & 0.77 & 0.73 & 0.658 & 0.99$\times$ \\
 \bottomrule
 \end{tabular}
 \setlength{\abovecaptionskip}{3pt}
@@ -23,6 +23,8 @@ $L$ & Verify calls $\downarrow$ & $5\%$ & $1\%$ & $0.1\%$ & Sync rate \\
 number of probe patterns $L$; verification replays $16(L+1)$ model calls. Detection is
 measured at $R=16,\kappa=0.05$ on LLaDA, 512 tokens, $n=30$ fresh prompts. Going from
 $L=8$ to $L=4$ keeps most of the detection at a little over half the cost; going to
-$L=2$ saves little more and loses about a tenth of TPR at every operating point.}
+$L=2$ saves little more and loses about a tenth of TPR at every operating point. PPL ratios
+rest on the 14--15 pairs surviving the decoded-length rule; the shared control's false
+positives stay at or below nominal for every $L$ ($0$ of $30$ at $0.1\%$).}
 \label{tab:lsweep}
 \end{table}
