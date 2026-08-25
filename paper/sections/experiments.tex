@@ -4,9 +4,8 @@
 \section{Experiments}
 \label{sec:experiments}
 
-The evaluation asks four questions: how strongly the watermark can be detected, whether one
-setting transfers across checkpoints, what it costs in computation and output quality, and how
-editing changes detection power.
+The evaluation asks four questions: detection strength, transfer across checkpoints,
+computational and quality cost, and behaviour under editing.
 
 \paragraph{Models and data.}
 We evaluate LLaDA-8B-Instruct~\citep{nie2025llada} and
@@ -41,7 +40,6 @@ Table~\ref{tab:baselines} shows the tradeoff: Shibboleth transfers strongly to D
 costly, while two cheaper baselines detect LLaDA output more often.
 
 \paragraph{Retries trade sampling distortion for detection.}
-Table~\ref{tab:baselines} gives the 512-token detection, PPL, and model-call comparison.
 On LLaDA, $R=1$ reaches $0.43$ TPR at $1\%$ FPR. On 30 held-out prompts, $R=2,4,8$ increase
 TPR to $0.73,0.83,0.87$, consistent with Eq.~\eqref{eq:hit}. Retries add no model evaluation,
 but without a floor the PPL ratio rises from $1.14\times$ at $R=2$ to $1.61\times$ at $R=8$.
@@ -71,10 +69,11 @@ On LLaDA, Shibboleth's $0.80/0.60$ TPR at $1\%/0.1\%$ FPR trails three-beam dgMA
 $0.93/0.93$ and KGW's $0.90/0.83$, while requiring 144 verification calls instead of zero.
 KGW's left-to-right decoder also repeats heavily: $37\%$ of unwatermarked documents cross the
 threshold before bigram deduplication, and two of thirty cross $0.1\%$ afterward. With 20--30
-documents, TPR differences near $0.1$ remain imprecise. Verification cost is a dial rather
-than a fixed price: halving the probe patterns to $L=4$ cuts the replay to $80$ calls and
-keeps $0.70$ TPR at $1\%$ FPR against $0.77$ at $L=8$, while $L=2$ saves only $32$ further
-calls and falls to $0.57$ (Appendix Table~\ref{tab:lsweep}).
+documents, TPR differences near $0.1$ remain imprecise. Wall-clock, verification takes
+$26.8$\,s per document on one TITAN RTX (KGW $0.17$\,s, dgMARK under a millisecond); the
+cost is a dial rather than a fixed price, since $L=4$ probe patterns cut the replay to $80$
+calls at $0.70$ TPR at $1\%$ FPR against $0.77$ at $L=8$, while $L=2$ saves only $32$
+further calls and falls to $0.57$ (Appendix Table~\ref{tab:lsweep}).
 
 \subsection{Calibration and Robustness}
 \label{sec:calibration}
@@ -90,4 +89,8 @@ At $R=1$, random $10\%$ re-denoising or deletion reduces TPR from $0.35$ to $0.0
 $R=16,\kappa=0.05$, random $5\%$ and $10\%$ edits leave $0.88$ and $0.50$ TPR, whereas a
 contiguous $10\%$ or $30\%$ span leaves $0.88$ because earlier carriers survive. Blockwise
 Bonferroni and 128-token windowing reach only $0.38$ and $0.44$ under random $10\%$ editing,
-below pooled counting at $0.50$ (Appendix Table~\ref{tab:robustness}).
+below pooled counting at $0.50$ (Appendix Table~\ref{tab:robustness}). Sparse survival crosses over only at extreme
+destruction: pooled counting holds $0.81$ with half the document re-denoised in place, and
+at $75\%$ pooled and Bonferroni tie at $0.50$. The same attack barely moves the token-local
+detectors (KGW $0.90$ to $0.85$, dgMARK $0.85$ to $0.80$ at $1\%$, $n{=}20$): it is hard
+for prefix-synchronised replay specifically, not for watermarks generally.

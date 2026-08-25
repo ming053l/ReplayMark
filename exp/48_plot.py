@@ -46,7 +46,7 @@ for x, (key, lab, col) in enumerate(groups):
 axa.set_xticks(range(len(groups)))
 axa.set_xticklabels([g[1] for g in groups], fontsize=7)
 axa.set_ylabel("carriers per document $|P|$")
-axa.set_title("(a) carrier counts (dot = document; mean $\\pm$ 95\\% CI)", loc="left")
+axa.set_title("(a) carrier counts (dot = document; mean $\\pm$ 95% CI)", loc="left")
 
 for off, (key, lab, col) in enumerate([("llada_R8k10", "LLaDA $R{=}8,\\kappa{=}0.1$", BLUE),
                                        ("dream_R16k05", "Dream $R{=}16,\\kappa{=}0.05$",
@@ -64,7 +64,7 @@ axb.set_ylim(0.3, 1.02)
 axb.set_xticks([])
 axb.set_xlabel("documents, sorted by match rate")
 axb.set_ylabel("keyed match rate")
-axb.set_title("(b) per-document 95\\% Wilson intervals", loc="left")
+axb.set_title("(b) per-document 95% Wilson intervals", loc="left")
 
 fig.savefig("/ssd2/ming/basinmark/paper/figures/fig_carrier_ci.pdf",
             bbox_inches="tight")

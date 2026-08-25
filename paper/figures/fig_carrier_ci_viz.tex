@@ -1,0 +1,13 @@
+% Per-document carrier counts and Wilson intervals (exp/48): data from
+% results/48_carrier_stats.json, rendered by exp/48_plot.py. Measured numbers only.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_carrier_ci.pdf}
+\caption{\textbf{Per-document carrier counts and detection intervals.} (a)~Carrier pool
+size $|P|$ per document for the control and watermarked arms of both models (dot =
+document; whisker = mean $\pm$ 95\% CI). Counts range from about $30$ to $500$: short,
+EOS-padded documents admit few carriers. (b)~Per-document $95\%$ Wilson intervals on the
+keyed match rate for the watermarked arms, sorted; documents whose interval clears the
+$0.5$ null carry individually decisive evidence, and the weakest documents overlap it.}
+\label{fig:carrierci}
+\end{figure}

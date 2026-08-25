@@ -99,8 +99,7 @@ on LLaDA.
 \paragraph{Limitations.}
 The false-positive guarantee does not imply editing tolerance: random $10\%$ re-denoising reduces
 TPR from $0.35$ to $0.05$ at $R=1$ and from $0.88$ to $0.50$ at $R=16$, while a contiguous span
-leaves earlier carriers intact; content-anchored probes may help, though the tested block-local
-and windowed variants did not. A PPL ratio below one does not imply better text, and the task
+leaves earlier carriers intact. A PPL ratio below one does not imply better text, and the task
 cohorts are too small to interpret modest changes. Replay requires the same checkpoint and
 precision; evaluation covers two masked DLMs, one corpus, 16--50 documents per cohort, and
 provenance only.
@@ -124,4 +123,16 @@ detection and verification cost trade off as the number of probe patterns varies
 \input{tables/robustness_table}
 \input{tables/quality_table_full}
 \input{tables/lsweep_table}
+
+\section{Per-Document Carrier Statistics}
+\label{app:carriers}
+
+Figure~\ref{fig:carrierci} reports per-document statistics from a verifier replay over the
+saved 512-token arms. Carrier counts average $271$ (LLaDA control), $192$ (LLaDA
+$R{=}8,\kappa{=}0.1$), $214$ (Dream control) and $208$ (Dream $R{=}16,\kappa{=}0.05$), with
+wide spread ($\approx 30$ to $500$) driven by early termination, since EOS padding admits
+few carriers. The per-document Wilson intervals separate documents whose evidence is
+individually decisive from the minority that overlap the null.
+
+\input{figures/fig_carrier_ci_viz}
 \end{document}

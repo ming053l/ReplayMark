@@ -7,11 +7,11 @@ checkpoint is consistent with a disputed document. Providers, centralised servic
 can retain the model without changing its production decoder. The method is a poor fit
 for browser-scale classification, unknown source models, short fragments, or heavily edited text.
 An inexpensive token-local detector can handle routine cases, with replay reserved for disputes
-that justify model-specific computation. We do not establish transfer across checkpoint copies.
+that justify model-specific computation.
 
 \paragraph{Reducing the verifier burden.}
-Clients need not execute the model themselves. A provider can replay a document on the registered
-checkpoint and return a signed report; an independent auditor can instead use escrowed weights.
+Clients need not execute the model: a provider can replay a document on the registered
+checkpoint and return a signed report, or an independent auditor can use escrowed weights.
 Batching improves hardware utilisation, but each document induces different masked contexts, so
 replay cannot become a fixed lookup; a surrogate checkpoint or cached responses may reconstruct
 different carriers and would need their own false-positive analysis.
