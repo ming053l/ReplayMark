@@ -25,7 +25,10 @@ def wilson(h, n, z=1.96):
     w = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
     return c - w, c + w
 
-plt.rcParams.update({"font.size": 8, "axes.titlesize": 9})
+plt.rcParams.update({"font.size": 8, "axes.titlesize": 9,
+                     "font.family": "serif",
+                     "font.serif": ["Times New Roman", "Nimbus Roman", "DejaVu Serif"],
+                     "mathtext.fontset": "stix"})
 fig, (axa, axb) = plt.subplots(1, 2, figsize=(9.0, 2.9),
                                gridspec_kw=dict(width_ratios=[1, 1.35],
                                                 wspace=0.28))
@@ -57,14 +60,16 @@ for off, (key, lab, col) in enumerate([("llada_R8k10", "LLaDA $R{=}8,\\kappa{=}0
         lo, hi = wilson(r["hits"], r["n"])
         axb.plot([x, x], [lo, hi], color=col, lw=1.1, alpha=0.8)
         axb.plot([x], [r["rate"]], marker="o", ms=2.4, color=col)
-    axb.text(xs.mean(), 1.01, lab, ha="center", fontsize=7, color=col)
+    axb.plot([], [], color=col, lw=1.4, label=lab)
 axb.axhline(0.5, ls="--", lw=0.9, c="#555555")
-axb.text(0.5, 0.505, "null", fontsize=6.5, color="#555555")
+axb.text(len(D["llada_R8k10"]) + 1.2, 0.512, "null", fontsize=6.5,
+         color="#555555", ha="center")
 axb.set_ylim(0.3, 1.02)
 axb.set_xticks([])
 axb.set_xlabel("documents, sorted by match rate")
 axb.set_ylabel("keyed match rate")
 axb.set_title("(b) per-document 95% Wilson intervals", loc="left")
+axb.legend(frameon=False, loc="lower right", fontsize=7, handlelength=1.2)
 
 fig.savefig("/ssd2/ming/basinmark/paper/figures/fig_carrier_ci.pdf",
             bbox_inches="tight")
