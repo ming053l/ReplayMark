@@ -34,7 +34,7 @@ Repository = "https://github.com/ming053l/ReplayMark"
 replaymark-demo = "examples.quickstart:main"
 
 [tool.setuptools]
-packages = ["basinmark", "examples"]
+packages = ["replaymark", "examples"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -7,8 +7,7 @@ from pathlib import Path
 # Also support direct execution from a source checkout before an editable install.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from basinmark.model import BasinModel
-from basinmark.resample import ReplayMark
+from replaymark import LLaDAModel, ReplayMark
 
 
 def parse_args():
@@ -28,7 +27,7 @@ def main():
     if args.generation_length % args.block_length:
         raise ValueError("generation length must be divisible by block length")
 
-    model = BasinModel(path=args.model)
+    model = LLaDAModel(path=args.model)
     prompt_ids = model.build_prompt(args.prompt)
     config = dict(
         block_len=args.block_length,

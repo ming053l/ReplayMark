@@ -67,8 +67,7 @@ python examples/quickstart.py \
   --generation-length 64
 ```
 
-The public API is `basinmark.ReplayMark`. The historical name `ResampleMark` remains an alias so
-the paper experiment scripts and saved result provenance continue to work.
+The public API is `replaymark.ReplayMark`.
 
 ## Reproducing the paper
 
@@ -84,8 +83,8 @@ The measured outputs are committed under `results/`. The main paper entries are:
 | Human-text calibration | `results/48_fpr*.json` |
 | Per-document carrier statistics | `results/48_carrier_stats.json` |
 
-The numbered Python files in `exp/` preserve the run configurations behind the retained results.
-Use the portable core package and `examples/quickstart.py` for new documents.
+The measured outputs are retained for auditability. Figure scripts under `exp/` rebuild the
+result-driven plots used by the manuscript.
 
 Run the lightweight primitive tests with:
 
@@ -117,21 +116,19 @@ style, author block, notice, and PDF metadata.
 ## Repository layout
 
 ```text
-basinmark/resample.py       ReplayMark generation and exact replay detector
-basinmark/challenges.py     keyed probes, directions, carrier selection primitives
-basinmark/model.py          LLaDA wrapper and reference decoder
-basinmark/dream_model.py    Dream wrapper with shifted prediction positions
-basinmark/data.py           shared C4 prompt construction
+replaymark/resample.py       ReplayMark generation and exact replay detector
+replaymark/challenges.py     keyed probes, directions, carrier selection primitives
+replaymark/model.py          LLaDA wrapper and reference decoder
+replaymark/dream_model.py    Dream wrapper with shifted prediction positions
+replaymark/data.py           shared C4 prompt construction
 examples/quickstart.py      minimal generation and replay example
 tests/                      CPU-only primitive tests
-exp/                        paper experiment and figure scripts
+exp/                        result-driven paper figure scripts
 results/                    measured outputs used by the paper
 paper/                      anonymous and public manuscript builds
 ```
 
-The repository is available at <https://github.com/ming053l/ReplayMark>. The Python import retains
-the historical `basinmark` name so existing result paths remain stable. The method reported in the
-paper and exposed for new code is ReplayMark.
+The repository is available at <https://github.com/ming053l/ReplayMark>.
 
 ## License
 

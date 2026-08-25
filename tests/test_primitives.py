@@ -2,8 +2,8 @@ import unittest
 
 import numpy as np
 
-from basinmark.challenges import orientation_bits, score, tie_bits
-from basinmark.prng import stream
+from replaymark.challenges import orientation_bits, score, tie_bits
+from replaymark.prng import stream
 
 
 class PrimitiveTests(unittest.TestCase):

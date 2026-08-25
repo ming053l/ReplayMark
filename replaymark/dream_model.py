@@ -10,7 +10,7 @@ import os
 
 import torch
 
-from .model import BasinModel
+from .model import LLaDAModel
 
 DREAM_MASK_ID = 151666      # config.json mask_token_id; vocab_size 152064 (Qwen tokenizer)
 DEFAULT_DREAM_MODEL = os.environ.get(
@@ -33,7 +33,7 @@ class _Shifted:
         return out
 
 
-class DreamModel(BasinModel):
+class DreamModel(LLaDAModel):
     mask_id = DREAM_MASK_ID
 
     def __init__(self, path=None, dtype=torch.float16, device="cuda"):
@@ -42,7 +42,7 @@ class DreamModel(BasinModel):
         self.tok = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
         inner = AutoModel.from_pretrained(
             path, trust_remote_code=True, torch_dtype=dtype).to(device).eval()
-        # same sm75 SDPA fallback note as BasinModel
+        # same sm75 SDPA fallback note as LLaDAModel
         torch.backends.cuda.enable_mem_efficient_sdp(True)
         torch.backends.cuda.enable_math_sdp(True)
         self.model = _Shifted(inner)

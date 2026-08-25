@@ -1,6 +1,7 @@
 """Render the carrier-availability heat map from saved measurements."""
 
 import json
+from pathlib import Path
 
 import matplotlib
 
@@ -13,8 +14,9 @@ from matplotlib.patches import Patch, Rectangle
 
 BLUE = "#18548C"
 ORANGE = "#C4622D"
-DATA_PATH = "/ssd2/ming/basinmark/results/43_viz.json"
-OUT_PATH = "/ssd2/ming/basinmark/paper/figures/fig_carrier_map.pdf"
+ROOT = Path(__file__).resolve().parents[1]
+DATA_PATH = ROOT / "results" / "43_viz.json"
+OUT_PATH = ROOT / "paper" / "figures" / "fig_carrier_map.pdf"
 
 with open(DATA_PATH, encoding="utf-8") as handle:
     data = json.load(handle)

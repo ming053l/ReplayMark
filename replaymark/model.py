@@ -8,7 +8,7 @@ SNAP = os.environ.get("REPLAYMARK_LLADA_MODEL", "GSAI-ML/LLaDA-8B-Instruct")
 MASK_ID = 126336
 
 
-class BasinModel:
+class LLaDAModel:
     mask_id = MASK_ID
 
     def __init__(self, path=None, dtype=torch.float16, device="cuda"):

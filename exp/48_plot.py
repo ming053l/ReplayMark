@@ -8,13 +8,16 @@
     0.5 carry individually decisive evidence.
 """
 import json
+from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
 BLUE, ORANGE, GRAY = "#18548C", "#C4622D", "#9A9A9A"
-D = json.load(open("/ssd2/ming/basinmark/results/48_carrier_stats.json"))["rows"]
+ROOT = Path(__file__).resolve().parents[1]
+with open(ROOT / "results" / "48_carrier_stats.json", encoding="utf-8") as handle:
+    D = json.load(handle)["rows"]
 
 def wilson(h, n, z=1.96):
     if n == 0:
@@ -71,6 +74,5 @@ axb.set_ylabel("keyed match rate")
 axb.set_title("(b) per-document 95% Wilson intervals", loc="left")
 axb.legend(frameon=False, loc="lower right", fontsize=8.5, handlelength=1.2)
 
-fig.savefig("/ssd2/ming/basinmark/paper/figures/fig_carrier_ci.pdf",
-            bbox_inches="tight")
+fig.savefig(ROOT / "paper" / "figures" / "fig_carrier_ci.pdf", bbox_inches="tight")
 print("wrote paper/figures/fig_carrier_ci.pdf")

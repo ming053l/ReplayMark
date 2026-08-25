@@ -1,13 +1,16 @@
 """Redraw the human-text FPR calibration figure (Figure 5) from results/48_fpr.json in the
 paper's style: Times serif, sized for 0.62\textwidth inclusion."""
 import json
+from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
 BLUE, ORANGE, GREEN, BLACK = "#18548C", "#C4622D", "#3E7C4F", "#111111"
-D = json.load(open("/ssd2/ming/basinmark/results/48_fpr.json"))
+ROOT = Path(__file__).resolve().parents[1]
+with open(ROOT / "results" / "48_fpr.json", encoding="utf-8") as handle:
+    D = json.load(handle)
 pv = {k: np.sort(np.array(v)) for k, v in D["p_values"].items()}
 plt.rcParams.update({"font.size": 9.5, "axes.titlesize": 10,
                      "font.family": "serif",
@@ -29,6 +32,5 @@ ax.set_xlim(4e-4, 1); ax.set_ylim(4e-4, 1)
 ax.set_xlabel(r"nominal FPR $\alpha$")
 ax.set_ylabel("empirical FPR")
 ax.legend(frameon=False, fontsize=8, loc="upper left", handlelength=1.6)
-fig.savefig("/ssd2/ming/basinmark/paper/figures/fig_fpr_calibration.pdf",
-            bbox_inches="tight")
+fig.savefig(ROOT / "paper" / "figures" / "fig_fpr_calibration.pdf", bbox_inches="tight")
 print("wrote fig_fpr_calibration.pdf")

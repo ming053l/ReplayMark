@@ -299,8 +299,3 @@ class ReplayMark:
                     x[0, i] = tok
                     self.stats["committed"] += 1
         return x.cpu()
-
-
-# Historical experiment scripts import ResampleMark.  Keep the alias so result
-# reproduction does not depend on rewriting those archived entry points.
-ResampleMark = ReplayMark
