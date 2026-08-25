@@ -1,20 +1,19 @@
-"""LLaDA-8B wrapper: masked-denoiser log-probs + plain generation."""
+"""LLaDA wrapper used by ReplayMark generation and replay."""
 import os
 import numpy as np
 import torch
 import torch.nn.functional as F
 
-SNAP = ("/ssd2/ming/hf_cache/hub/models--GSAI-ML--LLaDA-8B-Instruct/"
-        "snapshots/08b83a6feb34df1a6011b80c3c00c7563e963b07")
+SNAP = os.environ.get("REPLAYMARK_LLADA_MODEL", "GSAI-ML/LLaDA-8B-Instruct")
 MASK_ID = 126336
 
 
 class BasinModel:
     mask_id = MASK_ID
 
-    def __init__(self, path=SNAP, dtype=torch.float16, device="cuda"):
-        os.environ.setdefault("HF_HOME", "/ssd2/ming/hf_cache")
+    def __init__(self, path=None, dtype=torch.float16, device="cuda"):
         from transformers import AutoModel, AutoTokenizer
+        path = path or SNAP
         self.tok = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
         self.model = AutoModel.from_pretrained(
             path, trust_remote_code=True, torch_dtype=dtype).to(device).eval()

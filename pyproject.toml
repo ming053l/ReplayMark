@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "replaymark"
+version = "0.1.0"
+description = "Probe-and-replay model-response watermarking for diffusion language models"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+  {name = "Chia-Ming Lee"},
+  {name = "Wen-Hsin Tsai"},
+  {name = "Tung Yuk Ying"},
+  {name = "Chih-Chung Hsu"},
+]
+dependencies = [
+  "accelerate>=0.30",
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "torch>=2.1",
+  "transformers==4.46.2",
+]
+
+[project.optional-dependencies]
+evaluation = ["datasets>=2.19", "matplotlib>=3.7", "pandas>=2.0", "pyarrow>=14", "tqdm>=4.66"]
+dev = ["pytest>=8"]
+
+[project.urls]
+Repository = "https://github.com/ming053l/ReplayMark"
+
+[tool.setuptools]
+packages = ["basinmark"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

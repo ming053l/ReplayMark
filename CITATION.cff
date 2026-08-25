@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use ReplayMark, please cite the accompanying paper."
+title: "ReplayMark: Probe-and-Replay Model-Response Watermarking for Diffusion Language Models"
+type: software
+authors:
+  - family-names: Lee
+    given-names: Chia-Ming
+  - family-names: Tsai
+    given-names: Wen-Hsin
+  - family-names: Tung
+    given-names: Yuk Ying
+  - family-names: Hsu
+    given-names: Chih-Chung
+repository-code: "https://github.com/ming053l/ReplayMark"
+version: 0.1.0
+date-released: 2026-08-26

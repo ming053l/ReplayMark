@@ -1,13 +1,13 @@
 """KGW baseline on LLaDA, in the same harness as everything else.
 
 The eth-sri repo's C4 config is an *infilling* task with <|mask|> placeholders, not the
-prompt-continuation setting dgMARK and BasinMark are run in, so driving it would swap one
+prompt-continuation setting dgMARK and ReplayMark are run in, so driving it would swap one
 mismatch for another. The dgMARK paper defines its own KGW baseline instead: "results are
 derived from dLLMs configured to generate tokens sequentially from left to right", because
 KGW's green list is seeded by the preceding token and that prefix does not exist under
 order-agnostic decoding. That definition is what is implemented here, inside our own
 generation loop, so model, prompts, length, sampler, perplexity evaluator and reporting
-are identical to the BasinMark runs.
+are identical to the ReplayMark runs.
 
 Green list: h = HMAC(key, previous token id) seeds a permutation; the first gamma*|V|
 tokens are green and receive +delta on their logits before sampling.

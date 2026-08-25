@@ -1,21 +1,26 @@
-# Tables
+# Paper tables
 
-`baseline_table.tex`: the quality vs detectability comparison. Style copied from the C4
-paper (`/ssd1/ming/C4 copy/C4_paper`): booktabs rules, `\resizebox{\textwidth}`,
-`\renewcommand{\arraystretch}`, `\textcolor{oursemph}` for our method, `\textcolor{failred}`
-for numbers that fail the operating requirement, `\rowcolor{finalres}` for the strongest
-baseline row, `\textcolor{notmeasured}` for anything not yet measured.
+The manuscript contains five tables:
 
-Two deliberate choices worth keeping:
+| File | Contents |
+|:--|:--|
+| `baseline_table.tex` | detectability, quality ratio, and model-call cost |
+| `quality_table_full.tex` | greedy and multinomial task accuracy |
+| `validity_table.tex` | observed false-positive rates across keys |
+| `lsweep_table.tex` | probe-count and verification-cost ablation |
+| `robustness_table.tex` | detection after editing |
 
-1. **Each block has its own no-watermark control.** The three methods cannot share one,
-   because they need different decoding regimes (block + top-k 3, strict left-to-right,
-   full-vocabulary temperature sampling). Reporting one shared baseline would silently
-   attribute the decoding regime's cost to whichever watermark used it.
-2. **A detection-cost column.** dgMARK and KGW detect with zero model forwards; ReTrace
-   needs `L+1 = 9`. Collapsing the comparison to TPR alone hides the method's main
-   structural disadvantage.
+`quality_table.tex` is a stable wrapper around `quality_table_full.tex`. The wrapper keeps the
+section source unchanged when the full grid is regenerated.
 
-Pending: KGW rows (re-running with bigram deduplication), and a shared-sampler variant so
-the ReTrace block can be compared to the generation-time block directly rather than only
-through per-block ratios.
+Formatting conventions:
+
+- method and setting columns are left-aligned;
+- numerical columns are centered;
+- booktabs rules separate headers and model groups;
+- `oursemph` identifies ReplayMark;
+- `finalres` highlights the primary ReplayMark configuration;
+- caption spacing is controlled by `\abovecaptionskip`, without manual vertical offsets.
+
+Every displayed value maps to a committed file under `results/`; comments in each table record the
+corresponding experiment and cohort details.

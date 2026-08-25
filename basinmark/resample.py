@@ -1,4 +1,4 @@
-"""ReTrace V3: model-response-guided resampling.
+"""ReplayMark: probe-and-replay model-response watermarking.
 
 The commit-order story is retired, by measurement. `exp/07` separated the two mechanisms
 that the waiting scheduler had conflated:
@@ -45,7 +45,7 @@ from .prng import stream
 from .challenges import orientation_bits, tie_bits, score, block_challenges, roles
 
 
-class ResampleMark:
+class ReplayMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=8, ctx_frac=0.20,
                  n_payload_bits=7, sync_frac=0.5, challenge="contrast", s_min=0.5,
                  retries=4, temperature=0.8, fallback="fresh", max_carriers=None, p_floor=0.0,
@@ -299,3 +299,8 @@ class ResampleMark:
                     x[0, i] = tok
                     self.stats["committed"] += 1
         return x.cpu()
+
+
+# Historical experiment scripts import ResampleMark.  Keep the alias so result
+# reproduction does not depend on rewriting those archived entry points.
+ResampleMark = ReplayMark

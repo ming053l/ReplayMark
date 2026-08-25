@@ -1,7 +1,7 @@
 # Porting basinmark to another server
 
 ## What's in the bundle
-- `basinmark/` — the method package (model wrappers, ResampleMark, KGW, challenges, data).
+- `basinmark/` - the method package (model wrappers, ReplayMark, KGW, challenges, data).
 - `exp/` — every experiment script (index below).
 - `baselines/dgmark-watermarking/` — dgMARK reproduction, LOCALLY PATCHED:
   `scripts/generate.py` gained `--mask_id / --shift_logits / --eot_id` (Dream support).
@@ -11,16 +11,17 @@
   (23_floor.json, 29_clean.json) so keep them.
 - `DESIGN.md`, `RESUME.md`, `DETECTOR_SURVEY.md` — context.
 
-## 1. Fix the hardcoded paths (required)
-Everything hardcodes `/ssd2/ming/basinmark` and `/ssd2/ming/hf_cache`. After unpacking to
-`$NEW` with an HF cache at `$CACHE`:
+## 1. Configure paths
+The core package accepts model paths directly and reads the following optional variables:
 ```bash
-cd $NEW
-grep -rl '/ssd2/ming' basinmark exp baselines/dgmark-watermarking/scripts | \
-  xargs sed -i "s|/ssd2/ming/basinmark|$NEW|g; s|/ssd2/ming/hf_cache|$CACHE|g"
+export HF_HOME=$CACHE
+export REPLAYMARK_LLADA_MODEL=GSAI-ML/LLaDA-8B-Instruct
+export REPLAYMARK_DREAM_MODEL=Dream-org/Dream-v0-Instruct-7B
+export REPLAYMARK_C4=$NEW/data/c4-validation.json.gz
 ```
-Also the conda python path `/home/ming0531/miniconda3/envs/mmada/bin/python` appears in the
-`exp/run*.sh` launchers — sed it to your interpreter.
+The numbered experiment files preserve their original machine paths as run provenance. For a fresh
+run, invoke the Python file from the repository root and redirect its output locally, or adapt the
+corresponding launcher to your interpreter.
 
 ## 2. Environment
 python 3.10, torch 2.7.1+cu126, transformers 4.46.2 (Dream's remote code was written
@@ -34,8 +35,7 @@ HF_HOME=$CACHE hf download Dream-org/Dream-v0-Instruct-7B
 HF_HOME=$CACHE hf download openai-community/gpt2-large    # PPL scorer
 HF_HOME=$CACHE hf download cais/mmlu --repo-type dataset --include "all/test-*"
 ```
-`basinmark/model.py` pins the LLaDA snapshot dir — update `SNAP` if the hash differs.
-`basinmark/dream_model.py` globs the Dream snapshot; nothing to pin.
+The wrappers use Hugging Face IDs by default and also accept explicit local snapshot paths.
 GPU note: the wrappers re-enable mem-efficient SDPA (a TITAN RTX / sm75 workaround);
 harmless on newer GPUs. fp16 needs ~17GB for LLaDA-8B at 512+ tokens.
 
@@ -53,7 +53,7 @@ EOF
 exp/36 also runs a 64-token generate+detect preflight and asserts before its main arms.
 
 ## 5. Experiment index (the reusable ones)
-- 23/28/29: Shibboleth detectability arms (LLaDA, 512/1024 tok)
+- 23/28/29: ReplayMark detectability arms (LLaDA, 512/1024 tok)
 - 30–31: dgMARK@512 arms + eval; 35/37: KGW@512 (LLaDA/Dream)
 - 32/39: GSM8K control-vs-watermark (LLaDA/Dream)
 - 33/33b/44: block-local detection & editing attacks — DETECTION-ONLY on saved

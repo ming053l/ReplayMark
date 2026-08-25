@@ -1,4 +1,4 @@
-"""BasinMark V2: order is the embedding channel, behaviour is the verification channel.
+"""Archived V2: order steering as the embedding channel.
 
 V1 embedded by *substituting* tokens, and that is what priced it out: the median position
 admits one token inside any usable fluency budget, so buying signal meant paying several

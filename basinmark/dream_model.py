@@ -1,12 +1,11 @@
-"""Dream-7B-Instruct wrapper: BasinModel's interface over Dream's shifted denoiser.
+"""Dream-7B-Instruct wrapper for ReplayMark's shifted denoiser.
 
 Dream reads position i's prediction from the RAW logits at i-1 -- its own
 generation_utils.py does `logits = cat([logits[:, :1], logits[:, :-1]], dim=1)` right
 after every forward. `_Shifted` reproduces that once, here, so every caller keeps the
 LLaDA convention that `.logits[:, i]` predicts position i and the rest of the pipeline
-(ResampleMark, kgw_generate, BasinModel.generate) runs unchanged.
+runs unchanged.
 """
-import glob
 import os
 
 import torch
@@ -14,14 +13,14 @@ import torch
 from .model import BasinModel
 
 DREAM_MASK_ID = 151666      # config.json mask_token_id; vocab_size 152064 (Qwen tokenizer)
+DEFAULT_DREAM_MODEL = os.environ.get(
+    "REPLAYMARK_DREAM_MODEL", "Dream-org/Dream-v0-Instruct-7B"
+)
 
 
 def _snapshot():
-    hits = glob.glob("/ssd2/ming/hf_cache/hub/models--Dream-org--Dream-v0-Instruct-7B/"
-                     "snapshots/*/")
-    if not hits:
-        raise FileNotFoundError("Dream-v0-Instruct-7B snapshot not found in hf_cache")
-    return hits[0]
+    """Backward-compatible model resolver for older experiment scripts."""
+    return DEFAULT_DREAM_MODEL
 
 
 class _Shifted:
@@ -38,7 +37,6 @@ class DreamModel(BasinModel):
     mask_id = DREAM_MASK_ID
 
     def __init__(self, path=None, dtype=torch.float16, device="cuda"):
-        os.environ.setdefault("HF_HOME", "/ssd2/ming/hf_cache")
         from transformers import AutoModel, AutoTokenizer
         path = path or _snapshot()
         self.tok = AutoTokenizer.from_pretrained(path, trust_remote_code=True)

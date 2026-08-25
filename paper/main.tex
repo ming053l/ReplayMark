@@ -1,17 +1,34 @@
 \documentclass{article}
 
+% main.tex is the anonymous workshop submission.  main_public.tex defines
+% \ReplayMarkPublicVersion before loading this file to build the author version.
+\newif\ifpublicversion
+\ifdefined\ReplayMarkPublicVersion
+  \publicversiontrue
+\else
+  \publicversionfalse
+\fi
+
 \PassOptionsToPackage{numbers,sort&compress}{natbib}
 \PassOptionsToPackage{dvipsnames,table}{xcolor}
-\usepackage[dblblindworkshop]{neurips_2026}
+\ifpublicversion
+  \usepackage[sglblindworkshop]{neurips_2026}
+\else
+  \usepackage[dblblindworkshop]{neurips_2026}
+\fi
 \hyphenation{GaussMark dgMARK ReplayMark LLaDA}
 \workshoptitle{Foundations of Language Model Security}
 % The style file uses \@trackname only for camera-ready, so the submission notice
 % would otherwise still read "Submitted to 40th Conference ... (NeurIPS 2026)".
 \makeatletter
-\renewcommand{\@noticestring}{%
-  Submitted to the NeurIPS \@neuripsyear\ Workshop on Foundations of Language Model Security.
-  Do not distribute.%
-}
+\ifpublicversion
+  \renewcommand{\@noticestring}{Preprint.}
+\else
+  \renewcommand{\@noticestring}{%
+    Submitted to the NeurIPS \@neuripsyear\ Workshop on Foundations of Language Model Security.
+    Do not distribute.%
+  }
+\fi
 \makeatother
 \usepackage{xcolor}
 
@@ -52,7 +69,24 @@
 \newcommand{\needcite}{\textcolor{BrickRed}{\textbf{[cite?]}}}
 
 \title{ReplayMark: Probe-and-Replay Model-Response\\Watermarking for Diffusion Language Models}
+\ifpublicversion
+\author{%
+Chia-Ming Lee$^{1}$ \quad Wen-Hsin Tsai$^{2}$ \quad
+Tung Yuk Ying$^{2}$ \quad Chih-Chung Hsu$^{1}$\\[0.4em]
+{\normalfont\small $^{1}$National Yang Ming Chiao Tung University \quad
+$^{2}$National Cheng Kung University}%
+}
+\hypersetup{%
+  pdftitle={ReplayMark: Probe-and-Replay Model-Response Watermarking for Diffusion Language Models},
+  pdfauthor={Chia-Ming Lee, Wen-Hsin Tsai, Tung Yuk Ying, Chih-Chung Hsu}%
+}
+\else
 \author{Anonymous}
+\hypersetup{%
+  pdftitle={ReplayMark: Probe-and-Replay Model-Response Watermarking for Diffusion Language Models},
+  pdfauthor={Anonymous}%
+}
+\fi
 
 \begin{document}
 \maketitle
@@ -63,14 +97,12 @@ rerunning the generator. We ask whether a masked diffusion language model (DLM) 
 verify its own output. Hiding selected parts of the context changes the probability of an emitted
 token in a reproducible, checkpoint-specific direction. ReplayMark uses that model response as the
 watermark carrier.
-
 The method first finds positions where plausible candidates exhibit both response directions.
 Only after a position is fixed does the key choose which direction to favour. The generator then
 resamples from its current distribution without changing the decoding schedule. To verify a
 finished document, ReplayMark reconstructs the same masked contexts and counts how often the
 responses agree with the key. Position selection cannot observe the requested direction, so text
 produced independently of the key gives an exact binomial count.
-
 At $1\%$ FPR, ReplayMark reaches $0.80$ TPR on LLaDA-8B-Instruct and $0.90$ on
 Dream-7B-Instruct. The strongest token-local baseline reaches $0.93$ on LLaDA but $0.57$ or less
 on Dream when its LLaDA setting is transferred unchanged. At ReplayMark's main setting, the PPL
@@ -78,6 +110,9 @@ ratio is $0.74\times$ on LLaDA and $1.09\times$ on Dream; across greedy and mult
 runs, its largest absolute change from a paired control is $0.10$. This checkpoint binding has a
 cost: verification needs the same model and 144 full-sequence calls per 512-token document, and
 dispersed edits reduce detection power.
+\ifpublicversion
+Code is available at \url{https://github.com/ming053l/ReplayMark}.
+\fi
 \end{abstract}
 
 \input{sections/introduction}
