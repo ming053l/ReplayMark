@@ -118,8 +118,11 @@ decision rule. Table~\ref{tab:robustness} summarises the post-editing evaluation
 deployed pooled detector. Table~\ref{tab:quality_full} expands Table~\ref{tab:quality} into the
 full task-accuracy grid, including the greedy-decoding cells. Table~\ref{tab:lsweep} shows how
 detection and verification cost trade off as the number of probe patterns varies.
+Figure~\ref{fig:fprcal} plots calibration on human-written text: empirical against nominal
+FPR over 1800 C4 documents under three keys.
 
 \input{tables/validity_table}
+\input{figures/fig_fpr_viz}
 \input{tables/robustness_table}
 \input{tables/quality_table_full}
 \input{tables/lsweep_table}
