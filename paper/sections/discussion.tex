@@ -1,33 +1,37 @@
 \section{Discussion}
 \label{sec:discussion}
 
-\paragraph{Deployment role.}
-Shibboleth is most useful when the question concerns a registered model release — whether that
-checkpoint is consistent with a disputed document. Providers, centralised services, or auditors
-can retain the model without changing its production decoder. The method is a poor fit
-for browser-scale classification, unknown source models, short fragments, or heavily edited text.
-An inexpensive token-local detector can handle routine cases, with replay reserved for disputes
-that justify model-specific computation.
+\paragraph{Operational fit.}
+\begin{itemize}[leftmargin=1.2em,itemsep=0pt,topsep=1pt]
+\item \textbf{Suitable:} disputes about a registered checkpoint, where a provider or auditor retains
+the model and the decision justifies replay.
+\item \textbf{Poor fit:} browser-scale classification, unknown models, short fragments, or heavily
+edited text; token-local detection is better suited to routine cases.
+\end{itemize}
 
-\paragraph{Reducing the verifier burden.}
-Clients need not execute the model: a provider can replay a document on the registered
-checkpoint and return a signed report, or an independent auditor can use escrowed weights.
-Batching improves hardware utilisation, but each document induces different masked contexts, so
-replay cannot become a fixed lookup; a surrogate checkpoint or cached responses may reconstruct
-different carriers and would need their own false-positive analysis.
+\paragraph{Who runs replay?}
+\begin{itemize}[leftmargin=1.2em,itemsep=0pt,topsep=1pt]
+\item \textbf{Provider service:} retain the registered checkpoint and return a signed replay report.
+\item \textbf{Independent auditor:} run the same procedure with escrowed weights.
+\end{itemize}
+Both avoid model deployment on the client. Batching helps, but document-specific contexts prevent
+a fixed lookup; surrogate checkpoints or cached responses require separate analysis.
+
+\paragraph{Conditions for extension.}
+Beyond the evaluated checkpoints, the method requires reproducible arbitrary-mask conditionals,
+a state recoverable by re-masking positions unavailable during generation, and enough usable
+positions with plausible tokens in both response directions. These are architectural conditions,
+not an evaluated universality claim; autoregressive-only or black-box systems need a different
+replayable perturbation.
 
 \paragraph{Trust boundary.}
-A hosted verifier assumes that the service runs the registered checkpoint and receives the
-submitted document. A signed report records the service's claim; it does not prove correct execution
-or protect document privacy. Checkpoint and container hashes, append-only audit records, and
-independent execution can strengthen this arrangement; public proof of correct replay,
-attestation, service compromise, and adversarial requests are not evaluated here.
+A hosted verifier assumes that the service runs the registered checkpoint and receives the document;
+a signed report neither proves execution nor protects privacy. Checkpoint and container hashes,
+append-only records, and independent execution can strengthen this arrangement. Public proof,
+attestation, service compromise, and adversarial requests are not evaluated.
 
 \paragraph{Interpreting a detection result.}
-A low $p$-value has a narrow interpretation: under the registered key and replay
-procedure, the document contains more checkpoint-consistent carrier responses
-than expected by chance. It does not identify the person who requested the text,
-establish that every passage came from the model, or rule out editing; those questions
-require separate records. A report should therefore include the $p$-value, carrier count, key
-identifier, checkpoint hash, precision, probe construction, and threshold; the count separates a
-short, inconclusive document from checkpoint disagreement.
+A low $p$-value means only that the registered key and replay procedure find more
+checkpoint-consistent responses than expected by chance. It neither identifies the requester,
+attributes every passage, nor rules out editing. Reports should include the $p$-value, carrier count,
+key and checkpoint identifiers, precision, probe construction, and threshold.

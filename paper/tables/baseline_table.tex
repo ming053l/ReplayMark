@@ -3,19 +3,19 @@
 % earlier GPT draft was DELETED (its cells had been filled without any run); the REAL Dream
 % runs are now queued (user request 2026-08-22) and the commented block at the bottom is the
 % skeleton to fill from them:
-%   Shibboleth control/R1/R8k10/R16k05  <- exp/36, results/36_dream.json
+%   ReplayMark control/R1/R8k10/R16k05  <- exp/36, results/36_dream.json
 %   KGW delta=1 @512                    <- exp/37, results/kgw512_dream.json
 %   dgMARK k=1 / +3-beam @512           <- exp/38, results/baselines/dgdream_*.csv + eval log
 % When those land, un-comment the block, add a "\multicolumn{8}{@{}l}{\emph{...}}" header per
 % model, and restate the Dream sample sizes in the caption.
 %
-% POLICY (user, 2026-08-22): the comparison is LOCKED TO 512 TOKENS — the LLaDA block is
+% POLICY (user, 2026-08-22): the comparison is LOCKED TO 512 TOKENS; the LLaDA block is
 % now evaluated at the same 512-token length. Provenance:
 %   dgMARK@512 <- exp/30-31 (logs/31_dg512eval.log): watermark n=30 ppl x1.445 TPR
 %     .90/.83/.80; beam3 n=30 ppl x1.208 TPR .93/.93/.93; control ppl 6.55, z +0.10.
 %   KGW@512    <- exp/35 (results/kgw512.json): delta=1 n=30 ppl x1.22 TPR .93/.90/.83
 %     (dedup); control z +0.21 BUT 2/30 unwatermarked samples cross even the 0.1% threshold (dup bigrams
-%     0.45 at 512 LTR) — quoted in the analysis text as the z-test calibration caveat.
+%     0.45 at 512 LTR), quoted in the analysis text as the z-test calibration caveat.
 %
 % Cost accounting: detection replays L+1=9 masked evaluations per 32-token block, so 512
 % tokens cost 16*9=144 and generation costs 512+144=656. dgMARK 3-beam decodes ~4 sequence
@@ -25,7 +25,7 @@
 \small
 \renewcommand{\arraystretch}{0.84}
 \setlength{\tabcolsep}{5.6pt}
-\begin{tabular}{llrrrrr}
+\begin{tabular}{llccccc}
 \toprule
 & & & \multicolumn{2}{c}{TPR at FPR $\uparrow$}
     & \multicolumn{2}{c}{\shortstack{Full-sequence\\model calls $\downarrow$}} \\
@@ -37,17 +37,17 @@ KGW \citep{kirchenbauer2023watermark} & $\delta=1$ & 1.22$\times$ & 0.90 & 0.83 
 dgMARK \citep{hong2026dgmark} & $k=1$ & 1.45$\times$ & 0.83 & 0.80 & 512 & \textbf{0} \\
 dgMARK \citep{hong2026dgmark} & $+3$-beam & 1.21$\times$ & \textbf{0.93} & \textbf{0.93} & $\sim$2048 & \textbf{0} \\
 \addlinespace[1.5pt]
-\textcolor{oursemph}{Shibboleth} & $R=1$ & 0.97$\times$ & 0.43 & 0.20 & 656 & 144 \\
-\textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$ & 0.87$\times$ & 0.70 & 0.60 & 656 & 144 \\
+\textcolor{oursemph}{ReplayMark} & $R=1$ & 0.97$\times$ & 0.43 & 0.20 & 656 & 144 \\
+\textcolor{oursemph}{ReplayMark} & $R=8,\kappa=0.1$ & 0.87$\times$ & 0.70 & 0.60 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$ & \textbf{0.74}$\times$ & 0.80 & 0.60 & 656 & 144 \\
+\textcolor{oursemph}{ReplayMark} & $R=16,\kappa=0.05$ & \textbf{0.74}$\times$ & 0.80 & 0.60 & 656 & 144 \\
 % ---- Dream-7B-Instruct block ----
-% Shibboleth rows <- exp/36 (results/36_dream.json, landed 2026-08-23): control sync 0.503
+% ReplayMark rows <- exp/36 (results/36_dream.json, landed 2026-08-23): control sync 0.503
 %   TPR 0/0/0; R1 sync .596; R8k10 sync .648 ppl x0.788 (13 valid pairs); R16k05 sync .725
-%   ppl x1.087 (10 valid pairs). PPL pairs surviving the decoded-length rule are few —
+%   ppl x1.087 (10 valid pairs). PPL pairs surviving the decoded-length rule are few;
 %   caption says so. NOTE: the floor's sub-control ppl did NOT replicate at R16 on Dream.
 % KGW/dgMARK rows <- exp/37 / exp/38 (landed 2026-08-23). Baseline settings were carried
-% over from LLaDA unchanged (delta=1; top-k 3 confidence decode) — both token-local
+% over from LLaDA unchanged (delta=1; top-k 3 confidence decode); both token-local
 % channels have lower Dream TPR (KGW duplicate bigrams 0.84 under forced LTR; dgMARK parity
 % is lower under Dream's schedule), while the model-response channel has higher TPR. The
 % caption carries the same-settings caveat; do not tune baselines per-model without also
@@ -58,15 +58,15 @@ KGW \citep{kirchenbauer2023watermark} & $\delta=1$ & 1.84$\times$ & 0.57 & 0.37 
 dgMARK \citep{hong2026dgmark} & $k=1$ & 1.75$\times$ & 0.37 & 0.27 & 512 & \textbf{0} \\  % exp/38: control z +0.10
 dgMARK \citep{hong2026dgmark} & $+3$-beam & \textbf{0.71}$\times$ & 0.30 & 0.30 & $\sim$2048 & \textbf{0} \\  % exp/38
 \addlinespace[1.5pt]
-\textcolor{oursemph}{Shibboleth} & $R=1$ & 1.34$\times$ & 0.40 & 0.27 & 656 & 144 \\
-\textcolor{oursemph}{Shibboleth} & $R=8,\kappa=0.1$ & 0.79$\times$ & 0.70 & 0.67 & 656 & 144 \\
+\textcolor{oursemph}{ReplayMark} & $R=1$ & 1.34$\times$ & 0.40 & 0.27 & 656 & 144 \\
+\textcolor{oursemph}{ReplayMark} & $R=8,\kappa=0.1$ & 0.79$\times$ & 0.70 & 0.67 & 656 & 144 \\
 \rowcolor{finalres}
-\textcolor{oursemph}{Shibboleth} & $R=16,\kappa=0.05$ & 1.09$\times$ & \textbf{0.90} & \textbf{0.90} & 656 & 144 \\
+\textcolor{oursemph}{ReplayMark} & $R=16,\kappa=0.05$ & 1.09$\times$ & \textbf{0.90} & \textbf{0.90} & 656 & 144 \\
 \bottomrule
 \end{tabular}
 \setlength{\abovecaptionskip}{3pt}
 \caption{\textbf{Detectability and cost at 512 tokens.} PPL ratio is measured against each
-method's own unwatermarked run and should be interpreted within that method. Shibboleth uses
+method's own unwatermarked run and should be interpreted within that method. ReplayMark uses
 $n=30$ documents ($n=20$ for $R=16$); Dream PPL uses 8--13 successfully scored document pairs
 per setting. Settings chosen on LLaDA are transferred to Dream without retuning. One model call
 is one forward pass over the current full sequence; these counts measure algorithmic work, not

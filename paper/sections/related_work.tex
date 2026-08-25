@@ -9,7 +9,7 @@ models including LLaDA and Dream~\citep{nie2025llada,zhu2025llada15,ye2025dream,
 labs2025mercury}. Which positions commit, and in what order, affects both quality and speed
 ~\citep{arriola2025blockdiffusion,kim2025ordering,wu2026fastdllm,wei2026slowfast,
 benhamu2025entropy,lee2026commitlocallyexitglobally}. We therefore treat the deployed schedule as
-a constraint: Shibboleth observes the model's masked-token predictions but does not choose a new
+a constraint: ReplayMark observes the model's masked-token predictions but does not choose a new
 commit order.
 
 \paragraph{Watermarks encoded in tokens.}
@@ -22,7 +22,7 @@ christ2024undetectable}. DLM methods adapt this idea by removing prefix dependen
 red--green bias over unresolved context, sampling with keyed randomness, or encoding information
 in the denoising order~\citep{chen2025orderagnostic,gloaguen2026watermarking,
 bagchi2025discrete,wu2025dmark,raban2026lrdwm,hong2026dgmark}. Our closest baseline, dgMARK,
-changes which mask resolves next and later reads that order from the text. Shibboleth instead
+changes which mask resolves next and later reads that order from the text. ReplayMark instead
 keeps the order fixed and asks the checkpoint to reproduce its response.
 
 \paragraph{Detectors that use a model.}
@@ -34,7 +34,7 @@ and model-theft watermarks query a suspect system~\citep{zhao2023invisible}. Out
 DetectGPT scores text using log probabilities from the model of interest and perturbed versions of
 the passage; replacing the source model with a surrogate weakens detection
 ~\citep{mitchell2023detectgpt}. These model-assisted detectors are most natural when a provider or
-central verifier can afford model access. Shibboleth shares that operational setting but adds a
+central verifier can afford model access. ReplayMark shares that operational setting but adds a
 keyed generation channel and a document-level test. It leaves the checkpoint unchanged and keys
 the contexts presented to it, so one deployed model can serve many keys.
 
@@ -42,6 +42,6 @@ the contexts presented to it, so one deployed model can serve many keys.
 Watermark tests increasingly replace asymptotic $z$-scores with exact tails, permutation tests,
 or corrected maxima over windows~\citep{fernandez2023bricks,kuditipudi2024distortionfree,
 kirchenbauer2024reliability}. After editing, a statistic that concentrates on surviving regions
-can outperform a document-wide sum~\citep{li2025editrobust}. Shibboleth uses an exact binomial
+can outperform a document-wide sum~\citep{li2025editrobust}. ReplayMark uses an exact binomial
 tail for the unedited detector and compares document-wide, block-local, and windowed aggregation
 under editing in Section~\ref{sec:calibration}.

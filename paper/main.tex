@@ -3,7 +3,7 @@
 \PassOptionsToPackage{numbers,sort&compress}{natbib}
 \PassOptionsToPackage{dvipsnames,table}{xcolor}
 \usepackage[dblblindworkshop]{neurips_2026}
-\hyphenation{GaussMark dgMARK Shibboleth LLaDA}
+\hyphenation{GaussMark dgMARK ReplayMark LLaDA}
 \workshoptitle{Foundations of Language Model Security}
 % The style file uses \@trackname only for camera-ready, so the submission notice
 % would otherwise still read "Submitted to 40th Conference ... (NeurIPS 2026)".
@@ -48,10 +48,10 @@
 \usepackage{url}
 
 % Draft placeholder for a cell that has no measurement yet.
-\newcommand{\tbd}{\textemdash}
+\newcommand{\tbd}{\textnormal{n/a}}
 \newcommand{\needcite}{\textcolor{BrickRed}{\textbf{[cite?]}}}
 
-\title{Shibboleth: Probe-and-Replay Model-Response\\Watermarking for Diffusion Language Models}
+\title{ReplayMark: Probe-and-Replay Model-Response\\Watermarking for Diffusion Language Models}
 \author{Anonymous}
 
 \begin{document}
@@ -61,22 +61,23 @@
 Text watermarks usually hide a secret in token choices and later test those tokens without
 rerunning the generator. We ask whether a masked diffusion language model (DLM) can instead help
 verify its own output. Hiding selected parts of the context changes the probability of an emitted
-token in a reproducible, checkpoint-specific direction. Shibboleth uses that model response as the
+token in a reproducible, checkpoint-specific direction. ReplayMark uses that model response as the
 watermark carrier.
 
 The method first finds positions where plausible candidates exhibit both response directions.
 Only after a position is fixed does the key choose which direction to favour. The generator then
 resamples from its current distribution without changing the decoding schedule. To verify a
-finished document, Shibboleth reconstructs the same masked contexts and counts how often the
+finished document, ReplayMark reconstructs the same masked contexts and counts how often the
 responses agree with the key. Position selection cannot observe the requested direction, so text
 produced independently of the key gives an exact binomial count.
 
-At $1\%$ FPR, Shibboleth reaches $0.80$ TPR on LLaDA-8B-Instruct and $0.90$ on
+At $1\%$ FPR, ReplayMark reaches $0.80$ TPR on LLaDA-8B-Instruct and $0.90$ on
 Dream-7B-Instruct. The strongest token-local baseline reaches $0.93$ on LLaDA but $0.57$ or less
-on Dream when its LLaDA setting is transferred unchanged. At Shibboleth's main setting, the PPL
-ratio is $0.74\times$ on LLaDA and $1.09\times$ on Dream, and changes across the measured task
-scores are at most $0.06$. This checkpoint binding has a cost: verification needs the same model
-and 144 full-sequence calls per 512-token document, and dispersed edits reduce detection power.
+on Dream when its LLaDA setting is transferred unchanged. At ReplayMark's main setting, the PPL
+ratio is $0.74\times$ on LLaDA and $1.09\times$ on Dream; across greedy and multinomial task
+runs, its largest absolute change from a paired control is $0.10$. This checkpoint binding has a
+cost: verification needs the same model and 144 full-sequence calls per 512-token document, and
+dispersed edits reduce detection power.
 \end{abstract}
 
 \input{sections/introduction}
@@ -89,12 +90,11 @@ and 144 full-sequence calls per 512-token document, and dispersed edits reduce d
 \section{Conclusion}
 \label{sec:conclusion}
 
-Shibboleth encodes a keyed signal in reproducible model responses to hidden context. Selecting a
+ReplayMark encodes a keyed signal in reproducible model responses to hidden context. Selecting a
 carrier with a symmetric score before revealing the keyed direction yields an exact binomial test
-even with a data-dependent carrier count. The method preserves the deployed schedule and reaches
-$0.80$ TPR on LLaDA and $0.90$ on Dream without retuning, but needs 144 same-checkpoint calls
-per 512-token document, so it complements cheaper token-local detectors, which perform better
-on LLaDA.
+with a data-dependent carrier count. It preserves the deployed schedule and reaches $0.80$ TPR on
+LLaDA and $0.90$ on Dream without retuning, but needs 144 same-checkpoint calls per 512-token
+document; it therefore complements cheaper token-local detectors.
 
 \paragraph{Limitations.}
 The false-positive guarantee does not imply editing tolerance: random $10\%$ re-denoising reduces
@@ -117,26 +117,22 @@ Table~\ref{tab:validity} reports the measured per-key false-positive rate of the
 decision rule, and Figure~\ref{fig:fprcal} plots the same calibration on human-written text:
 empirical against nominal FPR over 1800 C4 documents under three keys.
 Table~\ref{tab:lsweep} shows how detection and verification cost trade off as the number of
-probe patterns varies. Table~\ref{tab:robustness} summarises the post-editing evaluation
-under the deployed pooled detector, and Table~\ref{tab:quality_full} expands
-Table~\ref{tab:quality} into the full task-accuracy grid, including the greedy-decoding
-cells.
+probe patterns varies, and Table~\ref{tab:robustness} summarises the post-editing evaluation
+under the deployed pooled detector.
 
 \input{tables/validity_table}
 \input{figures/fig_fpr_viz}
 \input{tables/lsweep_table}
 \input{tables/robustness_table}
-\input{tables/quality_table_full}
 
 \section{Per-Document Carrier Statistics}
 \label{app:carriers}
 
-Figure~\ref{fig:carrierci} reports per-document statistics from a verifier replay over the
-saved 512-token arms. Carrier counts average $271$ (LLaDA control), $192$ (LLaDA
+Figure~\ref{fig:carrierci} reports per-document statistics from verifier replay over the saved
+512-token outputs. Carrier counts average $271$ (LLaDA control), $192$ (LLaDA
 $R{=}8,\kappa{=}0.1$), $214$ (Dream control) and $208$ (Dream $R{=}16,\kappa{=}0.05$), with
 wide spread ($\approx 30$ to $500$) driven by early termination, since EOS padding admits
-few carriers. The per-document Wilson intervals separate documents whose evidence is
-individually decisive from the minority that overlap the null.
+few carriers. Most per-document Wilson intervals lie above $0.5$; the weakest overlap it.
 
 \input{figures/fig_carrier_ci_viz}
 \end{document}

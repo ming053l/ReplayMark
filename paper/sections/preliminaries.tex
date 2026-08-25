@@ -1,60 +1,69 @@
-\section{Shibboleth: Watermarking by Model Response}
+\section{ReplayMark: Watermarking by Model Response}
 \label{sec:method}
 
 \subsection{Masked Decoding}
 \label{sec:prelim}
 
-A masked DLM predicts many unresolved positions at once rather than exposing a unique ``next
-token.'' Given a sequence containing masks, it returns a distribution at every unresolved
-position. Let $x$ be the prompt,
-$y=(y_1,\ldots,y_N)$ the continuation, and $I$ the positions already revealed. At any masked
-position $i\notin I$, the model provides $p_\theta(y_i\mid y_I,x)$. One forward pass over the
-full sequence provides these distributions for every unresolved position; we count this as one
-full-sequence model call.
+A masked DLM predicts unresolved positions in parallel rather than exposing a unique ``next
+token.'' Let $x$ be the prompt, $y=(y_1,\ldots,y_N)$ the continuation, and $I$ the revealed
+positions. At each $i\notin I$, one full-sequence pass returns $p_\theta(y_i\mid y_I,x)$; we
+count that pass as one full-sequence model call.
 
-We study the blockwise schedule used by LLaDA~\citep{arriola2025blockdiffusion,
-nie2025llada}. Blocks finish from left to right, while a confidence rule decides which masks
-inside the active block commit at each step. We write $B_b$ for the active block and $F_b$ for
-the completed prefix before it. Shibboleth keeps both the block order and this confidence rule.
+We study LLaDA's blockwise schedule~\citep{arriola2025blockdiffusion,nie2025llada}: blocks
+finish left to right, while confidence determines the within-block commits. We write $B_b$ for
+the active block and $F_b$ for its completed prefix. ReplayMark preserves both ordering rules and
+changes only the auxiliary mask patterns used to query checkpoint probabilities.
 
 \subsection{Problem Setup}
 \label{sec:setup}
 
-We target keyed provenance detection: distinguish text generated with a secret document key from
-text produced independently of that key, at a false-positive rate fixed in advance. The watermark
-may change which token is sampled, but should not replace the model's decoder or its schedule.
+We frame the task as key-specific provenance: given a completed prompt--continuation sequence,
+decide whether it was produced through the keyed procedure, rather than merely whether it resembles
+output from the model. The false-positive level is fixed before inspecting the text. The watermark
+may change a sampled token, but not the model's decoder or schedule.
 
 \paragraph{What the two parties retain.}
-The embedder has the model, prompt, secret key $K$, and target bits. The verifier later has the
-completed sequence, the same checkpoint, $K$, and public parameters---but no generation trace,
-stored logits, random seed, or record of rejected samples. A nonce derives a fresh document key
-$K_d=\mathrm{HMAC}(K,\mathrm{nonce}_d)$~\citep{bellare1996hmac}. Separate hash domains use
-$K_d$ for probe construction, carrier assignment, and the requested response directions.
+The embedder has the model, prompt, secret key $K$, and target bits. The verifier later receives
+the completed sequence, same checkpoint, $K$, and public parameters, but no trace, logits, seed,
+or rejected samples. It must therefore recreate each query from the submitted text rather than
+consult a stored sampling record. A nonce gives each document a fresh derived key,
+$K_d=\mathrm{HMAC}(K,\mathrm{nonce}_d)$~\citep{bellare1996hmac}; separate hash domains cover
+probes, carriers, and response directions.
 
 \paragraph{Guarantee and scope.}
-For any text produced independently of $K_d$, including output from another sampler, a detector
-run at level $\alpha$ fires with probability at most $\alpha$. This guarantee is finite-sample
-and permits the method to choose a data-dependent number of carriers. It does not promise
-detection after editing, key disclosure, adaptive detector queries
-~\citep{jovanovic2024stealing}, or replay with a numerically different checkpoint.
+For text chosen without knowledge of $K_d$ (including human text and generations from another
+sampler or an independent document key), a detector run at level $\alpha$ fires with probability
+at most $\alpha$; no source distribution is needed. The probability is over the secret keyed response
+directions. Because carrier selection does not consult them, the exact test remains valid with a
+data-dependent carrier count. This finite-sample statement controls false attribution, not robustness.
+It does not promise detection after editing, key disclosure, adaptive detector
+queries~\citep{jovanovic2024stealing}, or replay with a numerically different checkpoint.
 
 \paragraph{Why write during generation?}
 Editing only after completion offers too little freedom at most positions. Across 36 post-hoc
 substitution settings, the median selected position has only one candidate within a 3-nat
 likelihood budget; the best setting below a $1.35\times$ PPL budget reaches $0.10$ TPR at $1\%$
-FPR. Shibboleth therefore writes while the model's live distribution is still available.
+FPR. ReplayMark therefore writes while the model's live distribution is still available.
 \label{sec:posthoc}
 
 The design follows three requirements:
-\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt,label=\arabic*.]
-\item \textbf{Replayability.} From the completed sequence, the verifier must reconstruct the
-same masked context that the embedder used.
-\item \textbf{Blind selection.} Carrier positions must be fixed before the key reveals which
-response direction counts as a match.
-\item \textbf{Schedule preservation.} Blocks and within-block commit order must remain those of
-the reference decoder.
+\begin{enumerate}[leftmargin=1.6em,itemsep=0pt,topsep=1pt,label=\arabic*.]
+\item \textbf{Replayability.} Reconstruct the generation-time masked context from finished text.
+\item \textbf{Blind selection.} Fix carriers before the key reveals the matching response direction.
+\item \textbf{Schedule preservation.} Keep the reference block and within-block commit order.
 \end{enumerate}
 
-Replayability makes a generation-time response measurable later. Blind selection keeps adaptive
-carrier discovery from biasing the detector, while schedule preservation limits changes to the
-deployed generator. The next three subsections implement these requirements.
+\begin{samepage}
+\paragraph{End-to-end procedure.}
+These requirements lead to five operational steps:
+\begin{enumerate}[leftmargin=1.6em,itemsep=0pt,topsep=1pt,label=\arabic*.]
+\item \textbf{Initialise.} Register the checkpoint and schedule; derive the document key; fix
+$L,R,\kappa,$ and $\alpha$.
+\item \textbf{Probe.} Use the DLM's arbitrary-mask conditionals to compare keyed prefix subsets.
+\item \textbf{Write.} Select the carrier before its keyed direction; commit the first plausible
+match within $R$ draws, otherwise take a fresh draw.
+\item \textbf{Replay.} From the finished text, key, and same checkpoint, reconstruct contexts and carriers.
+\item \textbf{Decide.} Count matches and detect when the exact binomial $p$-value is at most $\alpha$.
+\end{enumerate}
+Figure~\ref{fig:pipeline} illustrates Steps 2--4; the following subsections define the three rules.
+\end{samepage}

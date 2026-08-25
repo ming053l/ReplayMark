@@ -1,49 +1,35 @@
-% Post-editing attacks, two panels:
-%   Panel A: R=1, 512 tok, n=20 — the original edit measurement.
-%   Panel B: R=16, kappa=0.05, 1024 tok, n=16 — exp/33 (2026-08-22),
+% Post-editing attacks at R=16, kappa=0.05, 1024 tok, n=16: exp/33 (2026-08-22),
 %            results/33_robust.json, POOLED detector. Same-model argmax re-denoising of a
 %            random 5%/10% of generated positions; FPR held on attacked controls for all
 %            aggregations (worst cell 1/16 at nominal 5%).
 % Detector-pooling comparison (in text, not this table): Bonferroni-min NEVER beats pooled
-% under random re-denoising (rd10 @1%: 0.38 vs 0.50; clean @1%: 0.69 vs 0.88) — random
+% under random re-denoising (rd10 @1%: 0.38 vs 0.50; clean @1%: 0.69 vs 0.88); random
 % edits damage every block, so the sparse-signal regime never arises. The localized-edit /
 % copy-paste test where block-local should win is exp/33b (queued behind the Dream block).
-% Remaining \tbd rows: insertion/substitution/copy-paste/paraphrase not yet run; delete any
-% row that will not be run before submission.
 \begin{table}[H]
 \centering
 \small
 \renewcommand{\arraystretch}{0.86}
-\begin{tabular}{llrr}
+\begin{tabular}{llcc}
 \toprule
 & & \multicolumn{2}{c}{TPR at FPR $\uparrow$} \\
 \cmidrule(lr){3-4}
-Attack & Strength & $1\%$ & $0.1\%$ \\
+Edit & Strength & $1\%$ & $0.1\%$ \\
 \midrule
-\multicolumn{4}{@{}l}{\emph{Configuration A: $R=1$, 512 tokens ($n=20$)}}\\
-None & --- & 0.35 & \tbd \\
-Re-denoising (same model, argmax) & $10\%$ of positions & 0.05 & \tbd \\
-Deletion & $10\%$ of positions & 0.05 & \tbd \\
-Insertion & $10\%$ of positions & \tbd & \tbd \\
-Substitution (random) & $10\%$ of positions & \tbd & \tbd \\
-Copy--paste & $25\%$ kept, 1 segment & \tbd & \tbd \\
-Paraphrase (DIPPER)~\citep{krishna2023paraphrasing} & lex $20$, order $0$ & \tbd & \tbd \\
-\midrule
-\multicolumn{4}{@{}l}{\emph{Configuration B: $R=16,\kappa=0.05$, 1024 tokens ($n=16$)}}\\
-None & --- & 0.88 & 0.88 \\
+None & n/a & 0.88 & 0.88 \\
 Re-denoising (random positions) & $5\%$ of positions & 0.88 & 0.75 \\
                                 & $10\%$ of positions & 0.50 & 0.38 \\
 Re-denoising (contiguous span)  & $10\%$ of positions & 0.88 & 0.88 \\
                                 & $30\%$ of positions & 0.88 & 0.88 \\
                                 & $50\%$ of positions & 0.81 & 0.69 \\
                                 & $75\%$ of positions & 0.50 & 0.31 \\
-Paraphrase (Qwen2.5-7B, full document) & --- & 0.00 & 0.00 \\
+Paraphrase (Qwen2.5-7B, full document) & n/a & 0.00 & 0.00 \\
 \bottomrule
 \end{tabular}
 \setlength{\abovecaptionskip}{3pt}
-\caption{\textbf{Detection after editing.} The pooled detector uses the same analytic thresholds
-as Table~\ref{tab:baselines}. Random edits disrupt later prefixes; a contiguous span preserves
-all earlier carriers. Because the cohorts are small, one document changes TPR by $0.05$ when
-$n=20$ and about $0.06$ when $n=16$. An em dash denotes an unmeasured setting.}
+\caption{\textbf{Detection after editing.} ReplayMark uses $R=16,\kappa=0.05$ on 1024-token
+documents ($n=16$). The pooled detector uses the same analytic thresholds as
+Table~\ref{tab:baselines}. Random-position edits disrupt later prefixes, whereas a contiguous span
+preserves earlier carriers. One document changes TPR by about $0.06$.}
 \label{tab:robustness}
 \end{table}

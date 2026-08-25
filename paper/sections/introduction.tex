@@ -15,21 +15,19 @@ jovanovic2024stealing,zhao2024provable,christ2024undetectable}.
 \suppressfloats[t]
 \input{figures/fig_paradigm}
 
-Nearly all language-model watermarks place the secret in token identities: the key biases a
-vocabulary subset or couples randomness to each draw. Their detector therefore needs only the
-text and key (Figure~\ref{fig:paradigm}a)~\citep{kirchenbauer2023watermark,
-kuditipudi2024distortionfree}. This design is inexpensive, but it must coexist with the decoder.
-For masked DLMs, that decoder may resolve many positions in parallel and choose their order from
-confidence, so forcing a resolved prefix or steering the order can change the system being
+Most language-model watermarks encode the secret in token identities by biasing a vocabulary
+subset or coupling randomness to each draw. Their detector needs only the text and key
+(Figure~\ref{fig:paradigm}a)~\citep{kirchenbauer2023watermark,kuditipudi2024distortionfree}.
+This inexpensive design must coexist with the decoder. Masked DLMs resolve positions in parallel
+and order commits by confidence, so a forced prefix or altered order changes the system being
 watermarked~\citep{hong2026dgmark}.
 
-This tension suggests a different question: can the originating model, rather than the token alone,
-carry the signal? A masked DLM can answer a reproducible question about its own output. Take a
-completed sentence, hide one subset of its earlier context, and record the
-probability of an emitted token; then hide a second subset and record it again. Some candidates
-become more likely and others less likely. The sign of that change is a \emph{model response}.
-Because the verifier can recreate both hidings from the finished text, this response can carry a
-keyed signal even when the token identity alone does not (Figure~\ref{fig:paradigm}b).
+\textbf{DLM properties used.} Re-masking, rather than the diffusion trajectory, provides:
+\begin{itemize}[leftmargin=1.2em,itemsep=0pt,topsep=1pt]
+\item \textbf{Arbitrary-mask prediction:} one pass returns conditionals at every masked position.
+\item \textbf{Context response:} different hidden prefix subsets yield checkpoint-specific probability shifts.
+\item \textbf{Replayability:} the same checkpoint reproduces those shifts from re-masked finished text.
+\end{itemize}
 
 Two obstacles separate this observation from a valid detector. First, verification must recreate
 the generation-time state even though the full continuation is now visible. Second, the method may
@@ -37,10 +35,10 @@ seek positions where both response directions are plausible, but it must finish 
 the key reveals which direction counts as a match. Reversing this order would bias the selected
 positions toward the requested answer.
 
-Shibboleth addresses both obstacles. For each active block, it re-masks that block and its suffix,
+ReplayMark addresses both obstacles. For each active block, it re-masks that block and its suffix,
 compares pairs of hidden-prefix probes, and selects positions whose smaller directional probability
 total exceeds a fixed cutoff. The key then supplies the requested direction. At a selected position,
-Shibboleth draws up to $R$ candidates from the decoder's current distribution and commits the first
+ReplayMark draws up to $R$ candidates from the decoder's current distribution and commits the first
 match; all other positions follow the reference decoder. Verification reconstructs the probes,
 repeats the selection rule, and evaluates an exact binomial tail. The block partition, confidence
 order, and checkpoint probabilities remain those of the reference decoder.
@@ -52,7 +50,7 @@ to hidden context rather than a keyed pattern in token identities.
 \item We give a replayable construction whose carrier positions are selected before the keyed
 orientation is consulted, yielding finite-sample false-positive control while preserving the
 reference decoding schedule (Sections~\ref{sec:setup}--\ref{sec:theory}).
-\item We evaluate two masked DLMs. At $1\%$ FPR, Shibboleth reaches $0.80$ TPR on LLaDA and
+\item We evaluate two masked DLMs. At $1\%$ FPR, ReplayMark reaches $0.80$ TPR on LLaDA and
 $0.90$ on Dream. Verification requires 144 full-sequence model calls, and detection power
 decreases under dispersed edits (Section~\ref{sec:experiments}).
 \end{itemize}

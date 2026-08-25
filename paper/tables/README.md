@@ -1,6 +1,6 @@
 # Tables
 
-`baseline_table.tex` — the quality vs detectability comparison. Style copied from the C4
+`baseline_table.tex`: the quality vs detectability comparison. Style copied from the C4
 paper (`/ssd1/ming/C4 copy/C4_paper`): booktabs rules, `\resizebox{\textwidth}`,
 `\renewcommand{\arraystretch}`, `\textcolor{oursemph}` for our method, `\textcolor{failred}`
 for numbers that fail the operating requirement, `\rowcolor{finalres}` for the strongest

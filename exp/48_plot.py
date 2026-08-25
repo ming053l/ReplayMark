@@ -62,7 +62,7 @@ for off, (key, lab, col) in enumerate([("llada_R8k10", "LLaDA $R{=}8,\\kappa{=}0
         axb.plot([x], [r["rate"]], marker="o", ms=2.4, color=col)
     axb.plot([], [], color=col, lw=1.4, label=lab)
 axb.axhline(0.5, ls="--", lw=0.9, c="#555555")
-axb.text(len(D["llada_R8k10"]) + 1.2, 0.512, "null", fontsize=8,
+axb.text(len(D["llada_R8k10"]) + 1.2, 0.512, "reference", fontsize=8,
          color="#555555", ha="center")
 axb.set_ylim(0.3, 1.02)
 axb.set_xticks([])

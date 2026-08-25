@@ -3,14 +3,11 @@
 \subsection{Probing the Model and Selecting Carriers}
 \label{sec:observable}
 
-Figure~\ref{fig:pipeline} first locates the main operations within one generation-and-verification
-block. For each unfinished block, Shibboleth asks the model the same question under several
-masked-prefix probes: how likely is each candidate token when this part of the earlier context is
-missing? Comparing two probes splits candidate tokens by which probe assigns them more probability.
-The position can carry a bit only when the live decoder assigns sufficient probability to both
-groups; only then does the key choose which group the emitted token should favour.
+Steps 2--3 split candidates by which masked-prefix probe assigns more probability. A position is
+usable only when both groups have sufficient live probability; the key then chooses which group
+the emitted token should favour.
 
-Formally, Shibboleth constructs $L$ pseudorandom probe patterns
+Formally, ReplayMark constructs $L$ pseudorandom probe patterns
 $D_{b,\ell}\subset F_b$, where each pattern specifies prefix positions to hide. It also masks the
 current block $B_b$ and every later position. Let $\lambda_{i,\ell}(v)$ denote the resulting
 log-probability of vocabulary item $v$ at position $i$ under pattern $\ell$.
@@ -31,7 +28,7 @@ S_i^{\ell,\ell'}=2\min(q_{i,+}^{\ell,\ell'},q_{i,-}^{\ell,\ell'}).
 \end{equation}
 The score is twice the smaller total. It approaches one when the live distribution is divided
 evenly between the two response groups and approaches zero when one group has little probability.
-At each position, Shibboleth keeps the pair with the largest $S_i$ and selects the position when
+At each position, ReplayMark keeps the pair with the largest $S_i$ and selects the position when
 $S_i>s_{\min}$, subject to an optional per-block cap. Choosing the best pair raises the measured
 mean score from $0.28$ for a fixed near/far pair to $0.45$. Figure~\ref{fig:carriermap} shows where
 this criterion retains or skips positions in one saved LLaDA output.
@@ -54,7 +51,7 @@ but it remains an independent fair outcome for detection.
 \label{sec:embedding}
 
 The reference decoder still chooses the next position and supplies its live distribution $p_i$.
-Unselected positions are sampled once as usual. At a selected carrier, Shibboleth accepts a
+Unselected positions are sampled once as usual. At a selected carrier, ReplayMark accepts a
 candidate only if it has the requested response and is not too far below the most likely token:
 \begin{equation}
 A_i=\left\{z:
