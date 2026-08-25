@@ -1,4 +1,4 @@
-"""Length-matched dgMARK evaluation at 512 tokens, same axes as ReTrace's rows."""
+"""Length-matched dgMARK evaluation at 512 tokens, using ReplayMark's reporting axes."""
 import sys, csv, glob, json
 sys.path.insert(0, "/ssd2/ming/basinmark")
 import numpy as np, torch

@@ -6,7 +6,7 @@ positions and unfairly break the peers' position-keyed statistics):
   kgw   : kgw_generate delta=1, n=20, seeds 46000+i
   dgmark: WatermarkGenerator.generate_watermark_multinomial top-k 3, n=20
 Attack: same-model argmax re-denoising of a random 10% of generated positions (identical
-to the attack run against Shibboleth in exp/33). Report each detector's TPR@5%/1% clean
+to the attack run against ReplayMark in exp/33). Report each detector's TPR@5%/1% clean
 vs attacked, using each method's own statistic (dedup bigram z; parity match z).
 """
 import sys, json, os, subprocess

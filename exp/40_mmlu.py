@@ -2,9 +2,9 @@
 
 200 questions drawn with a fixed shuffle from the full MMLU test split (cais/mmlu),
 32 generated tokens (one block), answer = first standalone A-D letter in the decode.
-Arms mirror exp/42's per-method-control design plus the Shibboleth pair:
-  control  : matched multinomial sampler (ResampleMark s_min=2 -> zero carriers)
-  shib     : Shibboleth R=16, kappa=0.05
+Arms mirror exp/42's per-method-control design plus the ReplayMark pair:
+  control  : matched multinomial sampler (ReplayMark s_min=2 -> zero carriers)
+  shib     : ReplayMark R=16, kappa=0.05
   kgw_d0 / kgw_d1 : left-to-right, delta 0 / 1
   dg_orig / dg_wm / dg_beam3 : dgMARK repo argmax / multinomial top-3 / 3-beam
 Accuracy only; 32-token outputs are too short for meaningful detection columns.
@@ -16,7 +16,7 @@ sys.path.insert(0, "/ssd2/ming/basinmark/baselines/dgmark-watermarking/src")
 os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch, pandas as pd
 from basinmark.kgw import kgw_generate
-from basinmark.resample import ResampleMark
+from basinmark.resample import ReplayMark
 from generation import WatermarkGenerator
 
 WHICH = sys.argv[1] if len(sys.argv) > 1 else "llada"
@@ -56,10 +56,10 @@ DG = WatermarkGenerator(M.model, M.tok, "cuda", mask_id=M.mask_id, private_key=N
 BASE = dict(block_len=32, sync_frac=1.0, n_payload_bits=1)
 
 ARMS = [
-    ("control", lambda i, p: ResampleMark(M, KEY, nonce=f"mm-{i}", **BASE, s_min=2.0,
+    ("control", lambda i, p: ReplayMark(M, KEY, nonce=f"mm-{i}", **BASE, s_min=2.0,
                                           retries=1).generate(p, gen_len=GEN, steps=GEN,
                                                               message=0, seed=40000 + i)),
-    ("shib", lambda i, p: ResampleMark(M, KEY, nonce=f"mm-{i}", **BASE, s_min=0.5,
+    ("shib", lambda i, p: ReplayMark(M, KEY, nonce=f"mm-{i}", **BASE, s_min=0.5,
                                        retries=16, p_floor=0.05).generate(
                                            p, gen_len=GEN, steps=GEN, message=0,
                                            seed=40000 + i)),

@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Probe-and-replay model-response watermarking for diffusion language models"
 readme = "README.md"
 requires-python = ">=3.10"
+license = {file = "LICENSE"}
 authors = [
   {name = "Chia-Ming Lee"},
   {name = "Wen-Hsin Tsai"},
@@ -29,8 +30,11 @@ dev = ["pytest>=8"]
 [project.urls]
 Repository = "https://github.com/ming053l/ReplayMark"
 
+[project.scripts]
+replaymark-demo = "examples.quickstart:main"
+
 [tool.setuptools]
-packages = ["basinmark"]
+packages = ["basinmark", "examples"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

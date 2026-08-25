@@ -17,7 +17,7 @@ os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
 from scipy.stats import binom, norm
 from basinmark.model import BasinModel
-from basinmark.resample import ResampleMark, MASK_ID
+from basinmark.resample import ReplayMark, MASK_ID
 
 KEY, GEN, BLK = b"retrace-key-A", 1024, 32
 D = json.load(open("/ssd2/ming/basinmark/results/29_clean.json"))
@@ -51,7 +51,7 @@ for arm in ("control", "R16k05"):
     rows = []
     for i, raw in enumerate(D["ids"][arm]):
         ids = torch.tensor([raw])
-        det = ResampleMark(M, KEY, nonce=f"g2-{i}", block_len=BLK, sync_frac=1.0,
+        det = ReplayMark(M, KEY, nonce=f"g2-{i}", block_len=BLK, sync_frac=1.0,
                            n_payload_bits=1, s_min=0.5, retries=1)
         rec = {}
         for tag, t in (("clean", ids), ("rd05", redenoise(ids, pls[i], 0.05)),

@@ -11,7 +11,7 @@ sys.path.insert(0, "/ssd2/ming/basinmark/baselines/dgmark-watermarking/src")
 os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
 from basinmark.kgw import kgw_generate
-from basinmark.resample import ResampleMark
+from basinmark.resample import ReplayMark
 from generation import WatermarkGenerator
 
 WHICH = sys.argv[1] if len(sys.argv) > 1 else "llada"
@@ -65,10 +65,10 @@ DG = WatermarkGenerator(M.model, M.tok, "cuda", mask_id=M.mask_id, private_key=N
 BASE = dict(block_len=32, sync_frac=1.0, n_payload_bits=1)
 
 ARMS = [
-    ("control", lambda i, p: ResampleMark(M, KEY, nonce=f"he-{i}", **BASE, s_min=2.0,
+    ("control", lambda i, p: ReplayMark(M, KEY, nonce=f"he-{i}", **BASE, s_min=2.0,
                                           retries=1).generate(p, gen_len=GEN, steps=GEN,
                                                               message=0, seed=41000 + i)),
-    ("shib", lambda i, p: ResampleMark(M, KEY, nonce=f"he-{i}", **BASE, s_min=0.5,
+    ("shib", lambda i, p: ReplayMark(M, KEY, nonce=f"he-{i}", **BASE, s_min=0.5,
                                        retries=16, p_floor=0.05).generate(
                                            p, gen_len=GEN, steps=GEN, message=0,
                                            seed=41000 + i)),

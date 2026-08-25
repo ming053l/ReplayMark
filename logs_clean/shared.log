@@ -1,5 +1,0 @@
-[drafts ready] M=16 GEN=256 samples=8
-gate=off   lam=8.0   | z wm +3.10 (min +1.41) no-wm +0.38 wrong-key +0.52 | bit acc 0.820 | median p 1.9e-04 | changed 0.081 cost 0.84 | 4s/sample
-gate=off   lam=20.0  | z wm +3.18 (min +1.41) no-wm +0.38 wrong-key +0.58 | bit acc 0.836 | median p 7.6e-05 | changed 0.088 cost 1.16 | 4s/sample
-gate=0.6   lam=8.0   | z wm +3.99 (min +1.21) no-wm -0.25 wrong-key +0.31 | bit acc 0.891 | median p 7.8e-06 | changed 0.171 cost 1.92 | 4s/sample
-gate=0.6   lam=20.0  | z wm +4.06 (min +1.27) no-wm -0.25 wrong-key -0.43 | bit acc 0.906 | median p 2.0e-06 | changed 0.182 cost 2.43 | 4s/sample

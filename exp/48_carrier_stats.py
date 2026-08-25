@@ -14,7 +14,7 @@ import sys, json, os, subprocess
 sys.path.insert(0, "/ssd2/ming/basinmark")
 os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
-from basinmark.resample import ResampleMark
+from basinmark.resample import ReplayMark
 
 KEY, GEN, BLK = b"retrace-key-A", 512, 32
 out = {}
@@ -26,7 +26,7 @@ def replay(M, src, arms, nonce_fmt, tag):
         rows = []
         for i, raw in enumerate(D["ids"][arm]):
             ids = torch.tensor([raw])
-            det = ResampleMark(M, KEY, nonce=nonce_fmt.format(i=i), block_len=BLK,
+            det = ReplayMark(M, KEY, nonce=nonce_fmt.format(i=i), block_len=BLK,
                                sync_frac=1.0, n_payload_bits=1, s_min=0.5,
                                retries=1).detect(ids, pls[i], GEN, 0)
             rows.append(dict(n=int(det["n_sync"]), hits=int(det["hits_sync"]),

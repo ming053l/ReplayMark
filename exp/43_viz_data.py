@@ -15,7 +15,7 @@ os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
 torch.set_num_threads(16)
 from basinmark.model import BasinModel
-from basinmark.resample import ResampleMark
+from basinmark.resample import ReplayMark
 
 KEY, GEN, BLK, NDOC = b"retrace-key-A", 512, 32, 2
 D = json.load(open("/ssd2/ming/basinmark/results/23_floor.json"))
@@ -27,7 +27,7 @@ showcase = []
 for i in range(NDOC):
     ids = torch.tensor([D["ids"]["control"][i]])
     pl = pls[i]
-    w = ResampleMark(M, KEY, nonce=f"fl-{i}", block_len=BLK, sync_frac=1.0,
+    w = ReplayMark(M, KEY, nonce=f"fl-{i}", block_len=BLK, sync_frac=1.0,
                      n_payload_bits=1, s_min=0.5, retries=1)
     w._p_len = pl
     gen_end = pl + GEN

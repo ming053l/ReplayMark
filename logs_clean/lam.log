@@ -1,9 +1,0 @@
-[drafts ready] n_probes=16 |S_j|=12
-lam=3        tau=4.0 | s*Delta +0.063 -> +0.129 | bit acc 0.667 | changed 0.24 cost 0.30 nats
-lam=3        tau=6.0 | s*Delta +0.063 -> +0.231 | bit acc 0.771 | changed 0.30 cost 0.43 nats
-lam=10       tau=4.0 | s*Delta +0.063 -> +0.031 | bit acc 0.604 | changed 0.29 cost 0.34 nats
-lam=10       tau=6.0 | s*Delta +0.063 -> +0.170 | bit acc 0.646 | changed 0.39 cost 0.87 nats
-lam=30       tau=4.0 | s*Delta +0.063 -> +0.096 | bit acc 0.500 | changed 0.36 cost 0.69 nats
-lam=30       tau=6.0 | s*Delta +0.063 -> +0.059 | bit acc 0.458 | changed 0.53 cost 1.57 nats
-lam=1e+06    tau=4.0 | s*Delta +0.063 -> +0.158 | bit acc 0.542 | changed 0.46 cost 1.13 nats
-lam=1e+06    tau=6.0 | s*Delta +0.063 -> +0.205 | bit acc 0.688 | changed 0.83 cost 3.24 nats

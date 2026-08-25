@@ -1,7 +1,7 @@
 """Downstream task preservation: GSM8K accuracy under the watermark (dgMARK Table-2 axis).
 
 dgMARK's project page argues quality with downstream tasks (MMLU/GSM8K/HumanEval), not
-perplexity alone. The same axis matters more for ReTrace: its measured perplexity is at or
+perplexity alone. The same axis matters more for ReplayMark: its measured perplexity is at or
 below the matched control, and a task metric checks that the sub-control perplexity is not
 purchased with degenerate (easy, repetitive) text that happens to score well under GPT-2.
 
@@ -16,7 +16,7 @@ sys.path.insert(0, "/ssd2/ming/basinmark")
 os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
 from basinmark.model import BasinModel
-from basinmark.resample import ResampleMark
+from basinmark.resample import ReplayMark
 
 KEY, GEN, BLK, NS = b"retrace-key-A", 256, 32, 50
 DATA = "/ssd2/ming/basinmark/data/gsm8k_test.jsonl"
@@ -53,9 +53,9 @@ out = {}
 for name, kw in ARMS:
     rec, t0 = [], time.time()
     for i, p in enumerate(prompts):
-        w = ResampleMark(M, KEY, nonce=f"gsm-{i}", **BASE, **kw)
+        w = ReplayMark(M, KEY, nonce=f"gsm-{i}", **BASE, **kw)
         y = w.generate(p, gen_len=GEN, steps=GEN, message=0, seed=32000 + i)
-        d = ResampleMark(M, KEY, nonce=f"gsm-{i}", **BASE, s_min=0.5,
+        d = ReplayMark(M, KEY, nonce=f"gsm-{i}", **BASE, s_min=0.5,
                          retries=1).detect(y, pls[i], GEN, 0)
         txt = M.tok.decode(y[0, pls[i]:pls[i] + GEN], skip_special_tokens=True)
         pred = final_number(txt)

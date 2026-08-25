@@ -14,7 +14,7 @@ os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
 from basinmark.model import BasinModel
 from basinmark.data import c4_prompts
-from basinmark.resample import ResampleMark, MASK_ID
+from basinmark.resample import ReplayMark, MASK_ID
 
 KEY, GEN, BLK, NS, W = b"retrace-key-A", 512, 32, 16, 128
 M = BasinModel()
@@ -51,9 +51,9 @@ out = {}
 for name, kw, win in ARMS:
     rec, t0 = [], time.time()
     for i, p in enumerate(prompts):
-        w = ResampleMark(M, KEY, nonce=f"w-{i}", **BASE, ctx_window=win, **kw)
+        w = ReplayMark(M, KEY, nonce=f"w-{i}", **BASE, ctx_window=win, **kw)
         y = w.generate(p, gen_len=GEN, steps=GEN, message=0, seed=34000 + i)
-        det = ResampleMark(M, KEY, nonce=f"w-{i}", **BASE, ctx_window=win,
+        det = ReplayMark(M, KEY, nonce=f"w-{i}", **BASE, ctx_window=win,
                            s_min=0.5, retries=1)
         d0 = det.detect(y, pls[i], GEN, 0)
         da = det.detect(redenoise(y, pls[i]), pls[i], GEN, 0)

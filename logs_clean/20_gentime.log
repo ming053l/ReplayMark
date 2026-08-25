@@ -1,9 +1,0 @@
-[reference generation] ppl 26.21
-[two-phase order, lam=0] ppl 51.86 (x1.98)  z +0.00  <- cost of the decoding order alone
-*** ABORT SWEEP: the two-phase schedule alone costs x1.98, before any watermark. dgMARK's ENTIRE cost is x1.10. Global two-phase generation is the wrong formulation; block-local is the next step. Running one config for the record only. ***
-posthoc  tau=6.0  lam=20.0  | z +2.94 | TPR@1% 0.50 @5% 0.62 | ppl 65.29 (x2.49)
-gentime  tau=6.0  lam=20.0  | z +1.14 | TPR@1% 0.00 @5% 0.12 | ppl 203.65 (x7.77)
-===== post-hoc vs generation-time =====
-reference ppl 26.21; two-phase order alone x1.98
-  tau=6.0 lam=20.0:  post-hoc z +2.94 x2.49   ->  gen-time z +1.14 x7.77
-dgMARK reference point: x1.10 ppl -> TPR@1% 0.92 ; x1.25 -> 0.99

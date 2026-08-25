@@ -1,4 +1,0 @@
-[drafts ready] |S_j| will be 192/n_probes
-n_probes=16  |S|=12  lam=1.0  tau=4.0 | bit acc 0.542 (no-wm 0.542) changed 0.16 cost 0.05 nats | 14s/sample
-n_probes=16  |S|=12  lam=3.0  tau=4.0 | bit acc 0.667 (no-wm 0.542) changed 0.24 cost 0.30 nats | 14s/sample
-n_probes=32  |S|=6   lam=1.0  tau=4.0 | bit acc 0.531 (no-wm 0.448) changed 0.16 cost 0.07 nats | 28s/sample

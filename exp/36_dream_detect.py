@@ -14,7 +14,7 @@ os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
 from basinmark.dream_model import DreamModel
 from basinmark.data import c4_prompts
-from basinmark.resample import ResampleMark
+from basinmark.resample import ReplayMark
 
 KEY, GEN, BLK, NS = b"retrace-key-A", 512, 32, 30
 M = DreamModel()
@@ -35,9 +35,9 @@ pls = [p.shape[1] for p in prompts]
 BASE = dict(block_len=BLK, sync_frac=1.0, n_payload_bits=1)
 
 # ---- preflight ----
-w = ResampleMark(M, KEY, nonce="pre", **BASE, s_min=0.5, retries=8, p_floor=0.10)
+w = ReplayMark(M, KEY, nonce="pre", **BASE, s_min=0.5, retries=8, p_floor=0.10)
 y = w.generate(prompts[0], gen_len=64, steps=64, message=0, seed=1)
-d = ResampleMark(M, KEY, nonce="pre", **BASE, s_min=0.5, retries=1).detect(
+d = ReplayMark(M, KEY, nonce="pre", **BASE, s_min=0.5, retries=1).detect(
     y, pls[0], 64, 0)
 txt = M.tok.decode(y[0, pls[0]:pls[0] + 64], skip_special_tokens=True)
 print(f"[preflight] carriers {w.stats['carrier']} accepted {w.stats['accepted']} "
@@ -54,9 +54,9 @@ out = {}
 for name, kw, n_arm in ARMS:
     rec, t0 = [], time.time()
     for i, p in enumerate(prompts[:n_arm]):
-        w = ResampleMark(M, KEY, nonce=f"dr-{i}", **BASE, **kw)
+        w = ReplayMark(M, KEY, nonce=f"dr-{i}", **BASE, **kw)
         y = w.generate(p, gen_len=GEN, steps=GEN, message=0, seed=36000 + i)
-        d = ResampleMark(M, KEY, nonce=f"dr-{i}", **BASE, s_min=0.5,
+        d = ReplayMark(M, KEY, nonce=f"dr-{i}", **BASE, s_min=0.5,
                          retries=1).detect(y, pls[i], GEN, 0)
         rec.append(dict(ids=y[0].tolist(), p=d["p_value"], rate=d["rate_sync"],
                         nll=nll1(M.tok.decode(y[0, pls[i]:pls[i] + GEN],

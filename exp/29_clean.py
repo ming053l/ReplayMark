@@ -15,7 +15,7 @@ sys.path.insert(0, "/ssd1/ming/basinmark")
 import numpy as np, torch
 from basinmark.model import BasinModel
 from basinmark.data import c4_prompts
-from basinmark.resample import ResampleMark
+from basinmark.resample import ReplayMark
 
 KEY, GEN, BLK, NS = b"retrace-key-A", 1024, 32, 16
 import os; os.environ["HF_HOME"] = "/ssd1/ming/hf_cache"
@@ -43,9 +43,9 @@ out = {}
 for name, kw in ARMS:
     rec, t0 = [], time.time()
     for i, p in enumerate(prompts):
-        w = ResampleMark(M, KEY, nonce=f"g2-{i}", **BASE, **kw)
+        w = ReplayMark(M, KEY, nonce=f"g2-{i}", **BASE, **kw)
         y = w.generate(p, gen_len=GEN, steps=GEN, message=0, seed=13000 + i)
-        d = ResampleMark(M, KEY, nonce=f"g2-{i}", **BASE, s_min=0.5,
+        d = ReplayMark(M, KEY, nonce=f"g2-{i}", **BASE, s_min=0.5,
                          retries=1).detect(y, pls[i], GEN, 0)
         rec.append(dict(ids=y[0].tolist(), p=d["p_value"], rate=d["rate_sync"],
                         nll=nll1(M.tok.decode(y[0, pls[i]:pls[i] + GEN],

@@ -19,7 +19,7 @@ def probe_pattern(key: bytes, j: int, n: int, probe_rate: float, ctx_rate: float
     D1  -- context ablation for arm 1, same size, disjoint from S and D0.
 
     D0/D1 are drawn exchangeably, which is what gives the detector its exact
-    Binomial(M, 1/2) null (see DESIGN.md section 1).
+    Binomial(M, 1/2) reference distribution.
     """
     rng = stream(key, "probe", j, n)
     perm = rng.permutation(n)

@@ -1,6 +1,6 @@
 """Wall-clock verification cost (exp/45): seconds per 512-token document, measured.
 
-Shibboleth: full ResampleMark.detect replay (16 blocks x 9 masked evaluations, chunk=2)
+ReplayMark: full ReplayMark.detect replay (16 blocks x 9 masked evaluations, chunk=2)
 on GPU, averaged over 5 saved documents after one warm-up. KGW and dgMARK: their
 text-and-key detectors on the same documents (hash lookups only, no model).
 """
@@ -10,7 +10,7 @@ sys.path.insert(0, "/ssd2/ming/basinmark/baselines/dgmark-watermarking/src")
 os.environ["HF_HOME"] = "/ssd2/ming/hf_cache"
 import numpy as np, torch
 from basinmark.model import BasinModel
-from basinmark.resample import ResampleMark
+from basinmark.resample import ReplayMark
 from basinmark.kgw import kgw_detect
 from utils import check_watermark_compliance
 
@@ -22,14 +22,14 @@ docs = [torch.tensor([D["ids"]["control"][i]]) for i in range(N + 1)]
 pls = D["pls"]
 
 # warm-up
-ResampleMark(M, KEY, nonce="fl-0", block_len=BLK, sync_frac=1.0, n_payload_bits=1,
+ReplayMark(M, KEY, nonce="fl-0", block_len=BLK, sync_frac=1.0, n_payload_bits=1,
              s_min=0.5, retries=1).detect(docs[0], pls[0], GEN, 0)
 torch.cuda.synchronize()
 
 ours = []
 for i in range(1, N + 1):
     t0 = time.time()
-    ResampleMark(M, KEY, nonce=f"fl-{i}", block_len=BLK, sync_frac=1.0,
+    ReplayMark(M, KEY, nonce=f"fl-{i}", block_len=BLK, sync_frac=1.0,
                  n_payload_bits=1, s_min=0.5, retries=1).detect(docs[i], pls[i], GEN, 0)
     torch.cuda.synchronize()
     ours.append(time.time() - t0)

@@ -1,6 +1,6 @@
 """KGW at 512 tokens on Dream-7B-Instruct (n=30, deltas 0/1), vocab 152064.
 
-Reported on the same axes as BasinMark and the local dgMARK run: TPR at an analytic FPR
+Reported on the same axes as ReplayMark and the local dgMARK run: TPR at an analytic FPR
 threshold, GPT-2-large perplexity ratio against its OWN no-watermark control (left-to-right
 decoding, same sampler), and detection cost.
 """

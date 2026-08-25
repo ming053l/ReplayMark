@@ -1,5 +1,0 @@
-[drafts ready] lam=20.0 pool=0.6
-L=8   R=3   blocks=48   ceiling z=6.93 | z +4.29 (62% of ceiling) no-wm -0.25 | bit acc 0.930 | median p 4.4e-07 | detect forwards 8 | 3s/sample
-L=8   R=6   blocks=96   ceiling z=9.80 | z +5.15 (53% of ceiling) no-wm +0.10 | bit acc 0.938 | median p 5.5e-10 | detect forwards 8 | 3s/sample
-L=16  R=6   blocks=96   ceiling z=9.80 | z +5.33 (54% of ceiling) no-wm +0.33 | bit acc 0.906 | median p 3.8e-10 | detect forwards 16 | 6s/sample
-L=16  R=12  blocks=192  ceiling z=13.86 | z +5.55 (40% of ceiling) no-wm -0.03 | bit acc 0.883 | median p 1.9e-11 | detect forwards 16 | 6s/sample
