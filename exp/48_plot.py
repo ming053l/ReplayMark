@@ -25,13 +25,13 @@ def wilson(h, n, z=1.96):
     w = z * np.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
     return c - w, c + w
 
-plt.rcParams.update({"font.size": 8, "axes.titlesize": 9,
+plt.rcParams.update({"font.size": 9.5, "axes.titlesize": 10.5,
                      "font.family": "serif",
                      "font.serif": ["Times New Roman", "Nimbus Roman", "DejaVu Serif"],
                      "mathtext.fontset": "stix"})
-fig, (axa, axb) = plt.subplots(1, 2, figsize=(9.0, 2.9),
+fig, (axa, axb) = plt.subplots(1, 2, figsize=(7.6, 2.7),
                                gridspec_kw=dict(width_ratios=[1, 1.35],
-                                                wspace=0.28))
+                                                wspace=0.32))
 
 groups = [("llada_control", "LLaDA\ncontrol", GRAY),
           ("llada_R8k10", "LLaDA\n$R{=}8,\\kappa{=}.1$", BLUE),
@@ -47,9 +47,9 @@ for x, (key, lab, col) in enumerate(groups):
     axa.errorbar([x + 0.30], [m], yerr=[ci], fmt="_", color="#222222",
                  capsize=3, markersize=11, elinewidth=1.1)
 axa.set_xticks(range(len(groups)))
-axa.set_xticklabels([g[1] for g in groups], fontsize=7)
+axa.set_xticklabels([g[1] for g in groups], fontsize=8)
 axa.set_ylabel("carriers per document $|P|$")
-axa.set_title("(a) carrier counts (dot = document; mean $\\pm$ 95% CI)", loc="left")
+axa.set_title("(a) carrier counts per document", loc="left")
 
 for off, (key, lab, col) in enumerate([("llada_R8k10", "LLaDA $R{=}8,\\kappa{=}0.1$", BLUE),
                                        ("dream_R16k05", "Dream $R{=}16,\\kappa{=}0.05$",
@@ -62,14 +62,14 @@ for off, (key, lab, col) in enumerate([("llada_R8k10", "LLaDA $R{=}8,\\kappa{=}0
         axb.plot([x], [r["rate"]], marker="o", ms=2.4, color=col)
     axb.plot([], [], color=col, lw=1.4, label=lab)
 axb.axhline(0.5, ls="--", lw=0.9, c="#555555")
-axb.text(len(D["llada_R8k10"]) + 1.2, 0.512, "null", fontsize=6.5,
+axb.text(len(D["llada_R8k10"]) + 1.2, 0.512, "null", fontsize=8,
          color="#555555", ha="center")
 axb.set_ylim(0.3, 1.02)
 axb.set_xticks([])
 axb.set_xlabel("documents, sorted by match rate")
 axb.set_ylabel("keyed match rate")
 axb.set_title("(b) per-document 95% Wilson intervals", loc="left")
-axb.legend(frameon=False, loc="lower right", fontsize=7, handlelength=1.2)
+axb.legend(frameon=False, loc="lower right", fontsize=8.5, handlelength=1.2)
 
 fig.savefig("/ssd2/ming/basinmark/paper/figures/fig_carrier_ci.pdf",
             bbox_inches="tight")
