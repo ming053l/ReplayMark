@@ -1,3 +1,19 @@
+# RESUME — 2026-08-25: ALL local experiment chains COMPLETE
+
+Everything measured is in the paper (Overleaf 93c3649 / GitHub 6eb0122; main text 8 pages).
+Landed since the last note: Table 2 multinomial half complete BOTH models (Shibboleth ties
+its own control in all six quality cells; dgMARK loses 0.15-0.28 on every Dream benchmark);
+exp/44 sparse survival (pooled 0.81@1% at 50% in-place destruction; pooled=bonf 0.50 at 75%
+— crossover only at extremes); exp/45 wall-clock (Shibboleth 26.8 s/doc vs KGW 0.17 s vs
+dgMARK <1 ms); exp/46 peer re-denoise HONEST NEGATIVE (10% re-denoise: KGW 0.90->0.85,
+dgMARK 0.85->0.80 — the attack is hard for prefix-synced replay specifically); exp/48
+carrier stats (mean |P| 192-271, spread 30-500 from EOS padding; per-doc Wilson CIs in
+Appendix). Carrier-map figure promoted into the method section by the user.
+
+STILL OPEN: greedy-Shibboleth mode + Table 2 greedy cells, empirical-FPR curve, paraphrase
+attack — assigned to server B (branch serverB; its exp/47 L-sweep numbers are in the paper
+but results/47_*.json has NOT been pushed yet — reconcile when it lands).
+
 # RESUME — 2026-08-23 evening: ALL SCHEDULED RUNS LANDED except exp/33b (in flight)
 
 Everything measured is in the paper (Overleaf 6eca03d / GitHub 5518bf3). Landed today:
