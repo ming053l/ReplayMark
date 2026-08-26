@@ -1,11 +1,4 @@
-"""The keyed challenge structure, shared verbatim by embedder and detector.
-
-Anything here that the two sides could compute differently is a place the watermark
-silently dies, so it lives in one module and both import it. Two failures already came
-from exactly that: arms that did not mask the blocks after the current one (the detector
-then conditioned on tokens that did not exist during generation), and a float32
-log_softmax whose difference underflowed to zero at a quarter of positions.
-"""
+"""Keyed probes, response directions, carrier roles, and scoring rules."""
 import hashlib, hmac
 import numpy as np
 from .prng import stream
@@ -54,11 +47,9 @@ def block_challenges(key, block_lo, block_len, n_patterns, ctx_frac=0.20, min_ct
 
     mode="contrast" builds the pair from opposite ends of the context instead of at
     random: one pattern ablates the positions nearest the block, the other the furthest.
-    Recency dominates next-token prediction, so the two arms then disagree far more, which
-    widens the dynamic range of g -- the quantity `exp/21_challenge.py` measured a
-    1.8-2.2x headroom on when merely picking the best of 28 random pairs. Validity is
-    unaffected: the exact null needs the *orientation* bit to be a keyed coin, not the
-    unordered pair to be content-independent.
+    Recency dominates next-token prediction, so the two arms disagree more and widen the
+    dynamic range of g. The exact test requires the orientation bit to be a keyed coin; the
+    unordered pair itself need not be content-independent.
     """
     if region is None:
         region = np.arange(0, block_lo)

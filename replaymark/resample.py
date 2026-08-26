@@ -1,40 +1,10 @@
-"""ReplayMark: probe-and-replay model-response watermarking.
+"""ReplayMark generation and same-checkpoint response replay.
 
-The commit-order story is retired, by measurement. `exp/07` separated the two mechanisms
-that the waiting scheduler had conflated:
-
-    same context, fresh draw   P(compatible within R) = 0.475, 0.625, 0.738, 0.812, 0.875
-    context only, no new noise  became compatible      = 0.062, 0.050, 0.075, 0.087, 0.113
-
-Resampling supplies roughly eight times the capacity that committing other positions does,
-so the carrier machinery built around deferral -- long waits, slack accounting, CCTC holes,
-frontier-anchored commits -- was solving the wrong problem. What remains is much smaller:
-
-    draw v ~ p_theta(. | x)  until  w_i * eps_i * g_i(v) > 0,  at most R times
-
-and every retry is free, because the logits do not change: one forward already gives the
-whole row. The step budget stops mattering; R does.
-
-Two properties follow immediately. With per-position acceptance mass
-`q_i = P_{v ~ p_i}[v in A_i]` the success probability is `1 - (1 - q_i)^R`, so R trades
-watermark strength against nothing but arithmetic; and the accepted token is distributed as
-`p_i(v | v in A_i)`.
-
-That second point is a real change to the sampling distribution and is not claimed
-otherwise. Every emitted token is still drawn from the model's own conditional and its
-support is unchanged, but the distribution is conditioned on the acceptance predicate. The
-novelty is not that the predicate is free of distortion -- it is that the predicate is the
-model's own reconstruction response rather than a hash of the token identity.
-
-The empirical curve saturates at 0.875 rather than approaching 1, which is the signature of
-heterogeneous `q_i`: at some positions almost all mass sits on one side of the contrast and
-no number of retries helps. Carrier selection therefore uses
-
-    S_i = 2 * min(q_i^+, q_i^-)
-
-which is orientation-symmetric -- it never looks at eps_i or at the message -- so the
-conditional null is untouched, and is computed from the block-masked conditional, which the
-verifier reconstructs exactly.
+For each position, the method compares token probabilities under two hidden-context probes.
+It selects positions with sufficient probability on both response directions, then resamples
+from the live model distribution until the keyed direction is met or the retry budget ends.
+The detector reconstructs the same probes from the completed sequence and applies an exact
+binomial test to the keyed response matches.
 """
 import hashlib, hmac
 import numpy as np, torch
@@ -48,7 +18,7 @@ from .challenges import orientation_bits, tie_bits, score, block_challenges, rol
 class ReplayMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=8, ctx_frac=0.20,
                  n_payload_bits=7, sync_frac=0.5, challenge="contrast", s_min=0.5,
-                 retries=4, temperature=0.8, fallback="fresh", max_carriers=None, p_floor=0.0,
+                 retries=4, temperature=0.8, max_carriers=None, p_floor=0.0,
                  nonce=None, ctx_window=None):
         self.M = model
         self.key = key if nonce is None else hmac.new(
@@ -60,12 +30,6 @@ class ReplayMark:
         # once retries are exhausted, which drags the rate below its own null.
         self.challenge, self.s_min = challenge, s_min
         self.retries, self.temperature = retries, temperature
-        # On exhaustion, emitting the last REJECTED draw makes the position a certain miss,
-        # so the statistic would need acceptance > 0.5 merely to beat its own null. One more
-        # unconditional draw removes that: the position then hits with its natural
-        # probability q_i, giving 1 - (1-q)^(R+1) rather than 1 - (1-q)^R, at no extra
-        # forward pass. "last" keeps the old behaviour for the ablation.
-        self.fallback = fallback
         self.max_carriers = max_carriers   # per block; None = every S > s_min position
         # Acceptance may additionally require p(v) >= p_floor * max_v p(v): a key-free,
         # embedder-only cap on the per-token NLL cost (at most -log p_floor beyond the
@@ -115,9 +79,9 @@ class ReplayMark:
         p = torch.softmax(lp[-1] / self.temperature, dim=-1)
         # Choose the challenge pair PER POSITION, by two-sided acceptance mass. A fixed
         # near/far pair leaves mean S at 0.283; the best available pair raises it to 0.454
-        # (exp/09). The choice is orientation-symmetric -- S is invariant under swapping the
-        # pair -- and is computed from the block-masked conditional, so it never sees the
-        # key's direction or the message and the verifier reproduces it exactly.
+        # The choice is orientation-symmetric -- S is invariant under swapping the pair --
+        # and is computed from the block-masked conditional, so it never sees the key's
+        # direction or the message and the verifier reproduces it exactly.
         L = len(pats)
         bestS = np.full(len(B), -1.0)
         bestUV = np.zeros((len(B), 2), dtype=np.int64)
@@ -293,9 +257,8 @@ class ReplayMark:
                             self.stats["accepted"] += 1
                         else:
                             self.stats["exhausted"] += 1
-                            if self.fallback == "fresh":
-                                tok = int(torch.multinomial(row, 1, generator=gen))
-                                self.stats["draws"] += 1
+                            tok = int(torch.multinomial(row, 1, generator=gen))
+                            self.stats["draws"] += 1
                     x[0, i] = tok
                     self.stats["committed"] += 1
         return x.cpu()

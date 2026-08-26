@@ -17,9 +17,7 @@ class LLaDAModel:
         self.tok = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
         self.model = AutoModel.from_pretrained(
             path, trust_remote_code=True, torch_dtype=dtype).to(device).eval()
-        # sm75 has no flash kernel; upstream disables mem-efficient SDPA (a note written
-        # for A100s), so torch silently falls back to the math backend and materialises
-        # the full L x L attention matrix per layer. Same bug as MMaDA-Parallel.
+        # Enable memory-efficient SDPA where the installed PyTorch build supports it.
         torch.backends.cuda.enable_mem_efficient_sdp(True)
         torch.backends.cuda.enable_math_sdp(True)
         self.device = device
@@ -57,13 +55,11 @@ class LLaDAModel:
 
     @torch.no_grad()
     def generate(self, prompt_ids, gen_len=128, steps=128, block_len=32, temperature=0.0,
-                 seed=0, remasking="low_confidence", legacy_conf=False):
+                 seed=0, remasking="low_confidence"):
         """LLaDA's reference sampler, matching GSAI-ML/LLaDA `generate.py`.
 
-        The confidence used for low-confidence remasking is p(x0) under the *clean*
-        softmax, not the max of the Gumbel-perturbed logits. An earlier version used the
-        latter, which ranks positions by a noise draw rather than by model certainty and
-        is not the reference sampler the baselines are evaluated with.
+        Low-confidence remasking ranks sampled tokens by their probability under the clean
+        model distribution.
         """
         g = torch.Generator(device=self.device).manual_seed(seed)
         B, P = prompt_ids.shape
@@ -86,13 +82,7 @@ class LLaDAModel:
                           + (-torch.log(-torch.log(u)))).argmax(-1)
                 else:
                     x0 = logits.argmax(-1)
-                if remasking == "low_confidence" and legacy_conf:
-                    # reproduces the earlier bug on purpose, for the capacity ablation:
-                    # rank by the max of the Gumbel-perturbed logits, i.e. by a noise
-                    # draw rather than by model certainty
-                    conf = F.softmax(
-                        (logits.double() / max(temperature, 1e-6)), dim=-1).max(-1).values
-                elif remasking == "low_confidence":
+                if remasking == "low_confidence":
                     conf = F.softmax(logits.double(), dim=-1).gather(
                         -1, x0.unsqueeze(-1)).squeeze(-1)
                 else:

@@ -13,3 +13,10 @@ build/
 dist/
 logs/
 logs_clean/*.tmp
+DoctorTrigger/
+results_BB/
+texput.log
+exp/52_dump_raw.py
+exp/53_dump_pipeline.py
+results/52_raw_dump.json
+results/53_pipeline.json
