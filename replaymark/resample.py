@@ -6,12 +6,15 @@ from the live model distribution until the keyed direction is met or the retry b
 The detector reconstructs the same probes from the completed sequence and applies an exact
 binomial test to the keyed response matches.
 """
-import hashlib, hmac
-import numpy as np, torch
-import torch.nn.functional as F
+import hashlib
+import hmac
+from numbers import Integral
+
+import numpy as np
+import torch
 from scipy.stats import binom
+
 from .model import MASK_ID
-from .prng import stream
 from .challenges import orientation_bits, tie_bits, score, block_challenges, roles
 
 
@@ -19,7 +22,29 @@ class ReplayMark:
     def __init__(self, model, key: bytes, block_len=32, n_patterns=8, ctx_frac=0.20,
                  n_payload_bits=7, sync_frac=0.5, challenge="contrast", s_min=0.5,
                  retries=4, temperature=0.8, max_carriers=None, p_floor=0.0,
-                 nonce=None, ctx_window=None):
+                 nonce=None, ctx_window=None, probe_batch_size=2):
+        for name, value, minimum in (
+            ("block_len", block_len, 1), ("n_patterns", n_patterns, 2),
+            ("n_payload_bits", n_payload_bits, 1), ("retries", retries, 1),
+            ("probe_batch_size", probe_batch_size, 1),
+        ):
+            if isinstance(value, bool) or not isinstance(value, Integral) or value < minimum:
+                raise ValueError(f"{name} must be an integer >= {minimum}")
+        for name, value in (("ctx_frac", ctx_frac), ("sync_frac", sync_frac),
+                            ("s_min", s_min), ("p_floor", p_floor)):
+            if not np.isfinite(value) or not 0 <= value <= 1:
+                raise ValueError(f"{name} must be finite and between 0 and 1")
+        if not np.isfinite(temperature) or temperature <= 0:
+            raise ValueError("temperature must be finite and positive")
+        for name, value in (("max_carriers", max_carriers), ("ctx_window", ctx_window)):
+            if value is not None and (isinstance(value, bool)
+                    or not isinstance(value, Integral) or value < 0):
+                raise ValueError(f"{name} must be a nonnegative integer or None")
+        if challenge not in ("contrast", "random"):
+            raise ValueError("challenge must be 'contrast' or 'random'")
+        if not isinstance(key, bytes) or not key:
+            raise ValueError("key must be nonempty bytes")
+        self.probe_batch_size = probe_batch_size
         self.M = model
         self.key = key if nonce is None else hmac.new(
             key, str(nonce).encode(), hashlib.sha256).digest()
@@ -49,6 +74,15 @@ class ReplayMark:
         self.mask_id = getattr(model, "mask_id", MASK_ID)
         self._p_len = None                 # set by generate()/detect()
 
+    def _validate_sequence(self, ids, gen_len):
+        if ids.ndim != 2 or ids.shape[0] != 1:
+            raise ValueError("ReplayMark expects token IDs with shape [1, sequence_length]")
+        if ids.dtype != torch.long:
+            raise ValueError("token IDs must have dtype torch.long")
+        if (isinstance(gen_len, bool) or not isinstance(gen_len, Integral)
+                or gen_len <= 0 or gen_len % self.block_len):
+            raise ValueError("gen_len must be positive and divisible by block_len")
+
     # ------------------------------------------------ Reproducible Response Bank (RRB)
     @torch.no_grad()
     def _build_response_bank(self, x, lo, gen_end):
@@ -63,7 +97,7 @@ class ReplayMark:
         if self.ctx_window is not None and self._p_len is not None:
             w_lo = max(self._p_len, lo - self.ctx_window)
             region = np.concatenate([np.arange(0, self._p_len), np.arange(w_lo, lo)])
-        pats, pairs = block_challenges(self.key, lo, self.block_len, self.n_patterns,
+        pats, _ = block_challenges(self.key, lo, self.block_len, self.n_patterns,
                                        self.ctx_frac, mode=self.challenge, region=region)
         base = x.clone()
         base[0, lo:gen_end] = self.mask_id
@@ -73,7 +107,7 @@ class ReplayMark:
         for m, d in zip(batch, pats):
             m[0, torch.tensor(d)] = self.mask_id
         batch.append(base)
-        lp = self.M.logprobs_rows(torch.cat(batch, 0), torch.tensor(B), chunk=2,
+        lp = self.M.logprobs_rows(torch.cat(batch, 0), torch.tensor(B), chunk=self.probe_batch_size,
                                   dtype=torch.float64)
         # the sampling distribution the generator will actually draw from, at temperature
         p = torch.softmax(lp[-1] / self.temperature, dim=-1)
@@ -110,11 +144,9 @@ class ReplayMark:
     def _carrier(self, S):
         """Positions whose acceptance mass is two-sided enough to be worth counting.
 
-        With S_i = 2 min(q+, q-), a single draw is accepted with probability at least
-        S_i / 2 whichever side the key asks for, so R retries succeed with probability
-        1 - (1 - S_i/2)^R. Below the threshold that stays under 0.5, and a position that
-        exhausts its retries emits a rejected draw -- a certain miss, not a coin flip -- so
-        including it costs signal rather than merely adding noise.
+        S is measured under the block-masked probe distribution, not the live decoder
+        distribution. The threshold is key-direction independent. Generation uses an
+        unconditional fallback after exhausting the guided proposals.
         """
         keep = S > self.s_min
         if self.max_carriers is not None and keep.sum() > self.max_carriers:
@@ -129,6 +161,11 @@ class ReplayMark:
     # -------------------------------------------------------------- detection
     @torch.no_grad()
     def detect(self, ids, prompt_len, gen_len, message=0):
+        self._validate_sequence(ids, gen_len)
+        if (isinstance(prompt_len, bool) or not isinstance(prompt_len, Integral)
+                or prompt_len <= 0 or ids.shape[1] != prompt_len + gen_len):
+            raise ValueError("ids must contain a nonempty prompt followed by exactly gen_len tokens")
+        ids = ids.detach().cpu()
         self._p_len = prompt_len
         span = np.arange(prompt_len, prompt_len + gen_len)
         eps = orientation_bits(self.key, span)
@@ -175,6 +212,13 @@ class ReplayMark:
     # -------------------------------------------------------------- generation
     @torch.no_grad()
     def generate(self, prompt_ids, gen_len=256, steps=128, message=0, seed=0):
+        self._validate_sequence(prompt_ids, gen_len)
+        if prompt_ids.shape[1] == 0:
+            raise ValueError("prompt must contain at least one token")
+        n_blocks = gen_len // self.block_len
+        if (isinstance(steps, bool) or not isinstance(steps, Integral)
+                or steps < n_blocks or steps % n_blocks):
+            raise ValueError("steps must be positive and divisible by the number of blocks")
         gen = torch.Generator(device=self.M.device).manual_seed(seed)
         Pn = prompt_ids.shape[1]
         self._p_len = Pn

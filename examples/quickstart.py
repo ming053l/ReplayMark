@@ -7,13 +7,15 @@ from pathlib import Path
 # Also support direct execution from a source checkout before an editable install.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from replaymark import LLaDAModel, ReplayMark
+from replaymark import DreamModel, LLaDAModel, ReplayMark
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--prompt", required=True)
-    parser.add_argument("--model", default=None, help="Hugging Face ID or local LLaDA path")
+    parser.add_argument("--backend", choices=("llada", "dream"), default="llada")
+    parser.add_argument("--probe-batch-size", type=int, default=2)
+    parser.add_argument("--model", default=None, help="Hugging Face ID or local checkpoint path")
     parser.add_argument("--generation-length", type=int, default=64)
     parser.add_argument("--block-length", type=int, default=32)
     parser.add_argument("--key", default="replaymark-demo-key")
@@ -24,10 +26,14 @@ def parse_args():
 
 def main():
     args = parse_args()
-    if args.generation_length % args.block_length:
-        raise ValueError("generation length must be divisible by block length")
+    if (args.generation_length <= 0 or args.block_length <= 0
+            or args.generation_length % args.block_length):
+        raise ValueError("generation and block lengths must be positive; generation length must be divisible by block length")
 
-    model = LLaDAModel(path=args.model)
+    if args.probe_batch_size <= 0:
+        raise ValueError("probe batch size must be positive")
+    model_class = LLaDAModel if args.backend == "llada" else DreamModel
+    model = model_class(path=args.model)
     prompt_ids = model.build_prompt(args.prompt)
     config = dict(
         block_len=args.block_length,
@@ -38,6 +44,7 @@ def main():
         retries=16,
         p_floor=0.05,
         nonce=args.nonce,
+        probe_batch_size=args.probe_batch_size,
     )
     key = args.key.encode("utf-8")
     writer = ReplayMark(model, key, **config)

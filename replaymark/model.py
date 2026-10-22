@@ -38,8 +38,12 @@ class LLaDAModel:
         outs = []
         for s in range(0, ids_batch.shape[0], chunk):
             logits = self.model(ids_batch[s:s + chunk].to(self.device)).logits
-            outs.append(F.log_softmax(logits[:, rows, :].to(dtype), dim=-1).cpu())
+            # Release full-sequence logits before allocating high-precision probe
+            # probabilities. Only the requested rows are needed for replay.
+            selected = logits[:, rows.to(logits.device), :].to(dtype)
             del logits
+            outs.append(F.log_softmax(selected, dim=-1).cpu())
+            del selected
         return torch.cat(outs, 0)
 
     def corrupt(self, ids, positions):

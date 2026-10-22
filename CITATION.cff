@@ -14,3 +14,18 @@ authors:
 repository-code: "https://github.com/ming053l/ReplayMark"
 version: 0.1.0
 date-released: 2026-08-26
+preferred-citation:
+  type: conference-paper
+  title: "ReplayMark: Probe-and-Replay Model-Response Watermarking for Diffusion Language Models"
+  authors:
+    - family-names: Lee
+      given-names: Chia-Ming
+    - family-names: Tsai
+      given-names: Wen-Hsin
+    - family-names: Tung
+      given-names: Yuk Ying
+    - family-names: Hsu
+      given-names: Chih-Chung
+  collection-title: "NeurIPS 2026 Workshop on Foundations of Language Model Security"
+  year: 2026
+  url: "https://openreview.net/forum?id=fmXX4kVZ30"
