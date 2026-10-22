@@ -16,6 +16,11 @@ partially hidden context. During generation, it favors plausible tokens whose re
 match a secret key. To verify the finished text, it reconstructs the probes and measures
 that agreement using the same checkpoint.
 
+[![Animation explaining green-listed words and green-listed model responses](assets/paradigms.gif)](https://ming053l.github.io/ReplayMark/)
+
+*How the colors are assigned: token membership comes from a hash; ReplayMark's colors
+describe whether a model response matches the keyed direction. Probabilities are illustrative.*
+
 ## How it works
 
 A diffusion language model predicts masked tokens from the visible context. Hiding
@@ -147,6 +152,13 @@ activation memory but do not reduce the number of probes. Probe log-probabilitie
 stored on CPU; the response bank can still consume substantial host RAM. Preserve the
 checkpoint, precision, and settings between embedding and replay. Memory requirements
 and replay agreement should be measured on the target hardware.
+
+## Generation example
+
+[![Animated comparison of saved outputs without a watermark and with ReplayMark](assets/comparison.gif)](https://ming053l.github.io/ReplayMark/)
+
+*Saved outputs from the same prompt, with an illustrative reveal animation. This example
+shows individual completions; aggregate detection results are reported below.*
 
 ## Main results
 
