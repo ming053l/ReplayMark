@@ -2,7 +2,9 @@
 
 **Probe-and-replay model-response watermarking for diffusion language models.**
 
-[Paper](paper/main_public.pdf) | [Anonymous workshop version](paper/main.pdf) |
+**NeurIPS 2026 FLMSec Workshop · Distinguished Paper**
+
+[Project Page](https://ming053l.github.io/ReplayMark/) | [Paper](https://openreview.net/pdf?id=fmXX4kVZ30) | [OpenReview](https://openreview.net/forum?id=fmXX4kVZ30) |
 [Paper source](paper/main.tex) | [Results](results)
 
 ReplayMark embeds a keyed signal in reproducible masked-DLM responses and verifies it by
